@@ -8,6 +8,7 @@
 
 #include <float.h>
 
+#include "CommandLineOptions.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
 #include "FFT2D.h"
@@ -104,6 +105,9 @@ void displayData(int n0, int n1, const complexVector& data, const QString& title
 
 int main(int argc, char *argv[])
 {
+    QApplication app(argc, argv);
+    CommandLineOptions options(argc, argv);
+
     int samples = 2250;
     int arms = 16;
     QDir::setCurrent("../k-export-liver/");
@@ -183,7 +187,6 @@ int main(int argc, char *argv[])
     fft.excute(gDataCpu);
     fft.fftShift(gDataCpu);
 
-    QApplication app(argc, argv);
     displayData(gridSize, gridSize, gDataCpu, "image");
 
     return app.exec();
