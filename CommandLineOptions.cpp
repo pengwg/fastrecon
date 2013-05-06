@@ -15,7 +15,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     {
         options, parse_opt,
         "traj_file data_file [output_file]",
-        "\vOutput to recon.dat if out_file is not given"
+        "2D and 3D MR gridding recon using cpu and gpu.\vOutput to recon.dat if out_file is not given."
     };
 
     parse_error = argp_parse (&argp, argc, argv, 0, 0, this);
@@ -53,10 +53,18 @@ error_t CommandLineOptions::parse_opt (int key, char *arg, struct argp_state *st
         break;
 
     case ARGP_KEY_END:
-        if (parent->arg_count >= 2)
-            argp_failure(state, 1, 0, "too few arguments");
+        if (parent->arg_count == 3)
+        {
+            argp_usage(state);
+        }
+        else if (parent->arg_count == 2)
+        {
+            argp_error(state, "not enough arguments");
+        }
         else if (parent->arg_count < 0)
-            argp_failure (state, 1, 0, "too many arguments");
+        {
+            argp_error(state, "too many arguments");
+        }
         break;
     }
     return 0;
