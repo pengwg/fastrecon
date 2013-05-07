@@ -7,7 +7,7 @@ struct ReconParameters
 {
     QString traj_filename;
     QString data_filename;
-    QString out_filename;
+    QString result_filename;
 
     int samples;
     int projections;

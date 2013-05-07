@@ -18,9 +18,13 @@
 #include "GridGpu.h"
 #endif
 
-void loadData(QVector<TrajPoint> &trajPoints, complexVector &trajData, int trajSize)
+void loadData(QVector<TrajPoint> &trajPoints, complexVector &trajData, ReconParameters &params)
 {
-    QFile file("liver.trj");
+    int trajSize = params.samples * params.projections;
+    trajPoints.resize(trajSize);
+    trajData.resize(trajSize);
+
+    QFile file(params.traj_filename);
     file.open(QIODevice::ReadOnly);
 
     QVector<float> buffer(trajSize * 3);
@@ -40,7 +44,7 @@ void loadData(QVector<TrajPoint> &trajPoints, complexVector &trajData, int trajS
         pdata += 3;
     }
 
-    file.setFileName("liver.0.data");
+    file.setFileName(params.data_filename);
     file.open(QIODevice::ReadOnly);
 
     size = sizeof(float) * trajSize * 2;
@@ -108,18 +112,15 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     ProgramOptions options(argc, argv);
     options.showOptions();
+    ReconParameters params = options.getReconParameters();
 
-    int samples = 2250;
-    int arms = 16;
-    QDir::setCurrent("../k-export-liver/");
+    QVector<TrajPoint> trajPoints;
+    complexVector trajData;
 
-    QVector<TrajPoint> trajPoints(samples * arms);
-    complexVector trajData(samples * arms);
-
-    loadData(trajPoints, trajData, samples * arms);
+    loadData(trajPoints, trajData, params);
 
     int kWidth = 4;
-    int overGridFactor = 2;
+    int overGridFactor = params.overgridding_factor;
     ConvKernel kernel(kWidth, overGridFactor, 256);
 
     int gridSize = 256 * overGridFactor;
