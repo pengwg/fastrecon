@@ -15,7 +15,7 @@ include_directories(
 
 set(MAIN_SRC_FILES
     Main.cpp
-    CommandLineOptions.cpp
+    ProgramOptions.cpp
 )
 
 find_package(CUDA)

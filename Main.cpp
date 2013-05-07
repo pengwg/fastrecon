@@ -8,7 +8,7 @@
 
 #include <float.h>
 
-#include "CommandLineOptions.h"
+#include "ProgramOptions.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
 #include "FFT2D.h"
@@ -106,7 +106,8 @@ void displayData(int n0, int n1, const complexVector& data, const QString& title
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    CommandLineOptions options(argc, argv);
+    ProgramOptions options(argc, argv);
+    options.showOptions();
 
     int samples = 2250;
     int arms = 16;
