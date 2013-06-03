@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.9)
 
 add_definitions( -std=c++11 )
 
-# set(CMAKE_BUILD_TYPE release)
+set(CMAKE_BUILD_TYPE Release)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)

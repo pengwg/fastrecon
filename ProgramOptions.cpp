@@ -6,11 +6,10 @@
 #include "ProgramOptions.h"
 
 ProgramOptions::ProgramOptions(int argc, char *argv[])
-    : arg_count(3)
 {
+    commandLineOptions(argc, argv);
     QString path = QDir::currentPath();
     iniOptions(path);
-    commandLineOptions(argc, argv);
 }
 
 error_t ProgramOptions::iniOptions(QString path)
@@ -31,45 +30,52 @@ error_t ProgramOptions::commandLineOptions(int argc, char *argv[])
 {
     struct argp_option options[] =
     {
-        { 0, 's', 0, 0, "Display reconstruction in a window"},
-        { 0, 't', "traj_filename", 0, ""},
-        { 0, 'd', "data_filename", 0, ""},
-        { 0, 'r', "result_filename", 0, ""},
-        { 0, 'o', "og_factor", 0, ""},
+        { 0, 0, 0, 0, "Recon parameters:", 1},
+        { 0, 'g', "FACTOR", 0, "Define over-gridding factor"},
+        { 0, 0, 0, 0, "Miscellaneous:", 2},
+        { "show", 777, 0, 0, "Display reconstruction in a window"},
+        { 0, 0, 0, 0, "Help options:", -1},
+        { 0, 'h', 0, OPTION_HIDDEN},
         {0}
     };
 
     struct argp argp =
     {
         options, parse_opt,
-        0,
-        "Command line options override input.ini options."
+        "RECON.ini",
+        "CPU & GPU MRI recon program.\v"
+        "Command line options have precedence over RECON.ini."
     };
 
-    parse_error = argp_parse (&argp, argc, argv, 0, 0, this);
+    parse_error = argp_parse(&argp, argc, argv, 0, 0, this);
     return parse_error;
 }
 
-error_t ProgramOptions::parse_opt (int key, char *arg, struct argp_state *state)
+error_t ProgramOptions::parse_opt(int key, char *arg, struct argp_state *state)
 {
     ProgramOptions *parent = static_cast<ProgramOptions *> (state->input);
 
     switch (key)
     {
-    case 's':
+    case 777:
         parent->display = true;
         break;
-    case 't':
-        parent->reconParameters.traj_filename = QString(arg);
-        break;
-    case 'd':
-        parent->reconParameters.data_filename = QString(arg);
-        break;
-    case 'r':
-        parent->reconParameters.result_filename = QString(arg);
-        break;
-    case 'o':
+    case 'g':
         parent->reconParameters.overgridding_factor = atof(arg);
+        break;
+    case 'h':
+        argp_usage(state);
+        break;
+    case ARGP_KEY_ARG:
+        parent->arg_count--;
+        if (parent->arg_count >= 0)
+            parent->iniFileName = QString(arg);
+        break;
+    case ARGP_KEY_END:
+        if (parent->arg_count >= 1)
+            argp_failure(state, 1, 0, "Missing RECON.ini arguments");
+        else if (parent->arg_count < 0)
+            argp_failure(state, 1, 0, "too many arguments");
         break;
     }
     return 0;

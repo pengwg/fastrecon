@@ -9,9 +9,9 @@ struct ReconParameters
     QString data_filename;
     QString result_filename;
 
-    int samples;
-    int projections;
-    float overgridding_factor;
+    int samples = 0;
+    int projections = 0;
+    float overgridding_factor = 0;
 };
 
 class ProgramOptions
@@ -29,10 +29,11 @@ private:
 
     static error_t parse_opt (int key, char *arg, struct argp_state *state);
     error_t parse_error;
-    int arg_count;
+    int arg_count = 1;
 
     bool display = false;
     ReconParameters reconParameters;
+    QString iniFileName;
 };
 
 #endif // COMMANDLINEOPTIONS_H
