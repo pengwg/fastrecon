@@ -8,21 +8,31 @@
 ProgramOptions::ProgramOptions(int argc, char *argv[])
 {
     commandLineOptions(argc, argv);
-    QString path = QDir::currentPath();
-    iniOptions(path);
+    iniOptions(iniFileName);
 }
 
-error_t ProgramOptions::iniOptions(QString path)
+error_t ProgramOptions::iniOptions(QString fileName)
 {
-    QSettings settings(path + "/input.ini", QSettings::IniFormat);
+    QFileInfo fileInfo(fileName);
+    if (!fileInfo.exists())
+    {
+        qCritical("File '%s' does not exist!", qPrintable(fileName));
+        exit(1);
+    }
+
+    QDir dir;
+    QString path = dir.relativeFilePath(fileInfo.canonicalPath()) + '/';
+
+    QSettings settings(fileName, QSettings::IniFormat);
 
     reconParameters.samples = settings.value("samples").toInt();
     reconParameters.projections = settings.value("projections").toInt();
-    reconParameters.overgridding_factor = settings.value("overgridding_factor").toFloat();
-    reconParameters.traj_filename = settings.value("traj_filename").toString();
-    reconParameters.data_filename = settings.value("data_filename").toString();
-    reconParameters.result_filename = settings.value("out_filename").toString();
+    reconParameters.traj_filename = path + settings.value("traj_filename").toString();
+    reconParameters.data_filename = path + settings.value("data_filename").toString();
+    reconParameters.result_filename = path + settings.value("out_filename").toString();
 
+    if (reconParameters.overgridding_factor == 0)
+        reconParameters.overgridding_factor = settings.value("overgridding_factor").toFloat();
     return 0;
 }
 

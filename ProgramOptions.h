@@ -24,7 +24,7 @@ public:
     ReconParameters getReconParameters() const;
 
 private:
-    error_t iniOptions(QString path);
+    error_t iniOptions(QString fileName);
     error_t commandLineOptions(int argc, char *argv[]);
 
     static error_t parse_opt (int key, char *arg, struct argp_state *state);
