@@ -110,6 +110,7 @@ void displayData(int n0, int n1, const complexVector& data, const QString& title
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
     ProgramOptions options(argc, argv);
     options.showOptions();
     ReconParameters params = options.getReconParameters();
@@ -189,7 +190,11 @@ int main(int argc, char *argv[])
     fft.excute(gDataCpu);
     fft.fftShift(gDataCpu);
 
-    displayData(gridSize, gridSize, gDataCpu, "image");
-
-    return app.exec();
+    if (options.isDisplay())
+    {
+        displayData(gridSize, gridSize, gDataCpu, "image");
+        return app.exec();
+    }
+    else
+        return 0;
 }

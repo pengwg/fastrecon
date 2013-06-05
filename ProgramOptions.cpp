@@ -8,22 +8,22 @@
 ProgramOptions::ProgramOptions(int argc, char *argv[])
 {
     commandLineOptions(argc, argv);
-    iniOptions(iniFileName);
+    loadIniOptions();
 }
 
-error_t ProgramOptions::iniOptions(QString fileName)
+error_t ProgramOptions::loadIniOptions()
 {
-    QFileInfo fileInfo(fileName);
+    QFileInfo fileInfo(iniFileName);
     if (!fileInfo.exists())
     {
-        qCritical("File '%s' does not exist!", qPrintable(fileName));
+        qCritical("File '%s' does not exist!", qPrintable(iniFileName));
         exit(1);
     }
 
     QDir dir;
     QString path = dir.relativeFilePath(fileInfo.canonicalPath()) + '/';
 
-    QSettings settings(fileName, QSettings::IniFormat);
+    QSettings settings(iniFileName, QSettings::IniFormat);
 
     reconParameters.samples = settings.value("samples").toInt();
     reconParameters.projections = settings.value("projections").toInt();
@@ -42,8 +42,10 @@ error_t ProgramOptions::commandLineOptions(int argc, char *argv[])
     {
         { 0, 0, 0, 0, "Recon parameters:", 1},
         { 0, 'g', "FACTOR", 0, "Define over-gridding factor"},
+
         { 0, 0, 0, 0, "Miscellaneous:", 2},
         { "show", 777, 0, 0, "Display reconstruction in a window"},
+
         { 0, 0, 0, 0, "Help options:", -1},
         { 0, 'h', 0, OPTION_HIDDEN},
         {0}
@@ -91,7 +93,7 @@ error_t ProgramOptions::parse_opt(int key, char *arg, struct argp_state *state)
     return 0;
 }
 
-void ProgramOptions::showOptions()
+void ProgramOptions::showOptions() const
 {
     std::cout << "Trajectory: " << reconParameters.traj_filename.toStdString() << std::endl
               << "Data: " << reconParameters.data_filename.toStdString() << std::endl

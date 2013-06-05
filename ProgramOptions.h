@@ -18,13 +18,13 @@ class ProgramOptions
 {
 public:
     ProgramOptions(int argc, char *argv[]);
-    void showOptions();
+    void showOptions() const;
 
     bool isDisplay() const { return display; }
     ReconParameters getReconParameters() const;
 
 private:
-    error_t iniOptions(QString fileName);
+    error_t loadIniOptions();
     error_t commandLineOptions(int argc, char *argv[]);
 
     static error_t parse_opt (int key, char *arg, struct argp_state *state);
