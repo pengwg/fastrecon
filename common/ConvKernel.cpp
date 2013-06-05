@@ -14,12 +14,12 @@ ConvKernel::~ConvKernel()
 
 }
 
-const QVector<float> & ConvKernel::getKernelData()
+const QVector<float> *ConvKernel::getKernelData()
 {
     if (m_kernelData.get() == 0)
         m_kernelData.reset(new QVector<float> (m_length));
     else
-        return *m_kernelData;
+        return m_kernelData.get();
 
     float w = m_kWidth;
     float a = m_ogFactor;
@@ -39,7 +39,7 @@ const QVector<float> & ConvKernel::getKernelData()
 
     }
 
-    return *m_kernelData;
+    return m_kernelData.get();
 }
 
 
