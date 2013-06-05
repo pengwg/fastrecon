@@ -22,9 +22,16 @@ public:
     int dataSize() const;
     int channels() const;
 
+    void setTraj(KTraj *traj);
+    void addChannelData(KData *data);
+
+    const KTraj *getTraj() const;
+    const KData *getChannelData(int channel) const;
+
+    void clear();
+
 private:
-    int m_dataSize;
-    int m_channels;
+    int m_dataSize = 0;
 
     std::vector<std::shared_ptr<KData>> m_kDataMultiChannel;
     std::shared_ptr<KTraj> m_kTraj;
