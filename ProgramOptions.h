@@ -9,9 +9,13 @@ struct ReconParameters
     QString data_filename;
     QString result_filename;
 
-    int samples = 0;
-    int projections = 0;
+    int samples;
+    int projections;
     float overgridding_factor = 0;
+
+    int rcxres;
+    int rcyres;
+    int rczres;
 };
 
 class ProgramOptions

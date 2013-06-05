@@ -31,8 +31,13 @@ error_t ProgramOptions::loadIniOptions()
     reconParameters.data_filename = path + settings.value("data_filename").toString();
     reconParameters.result_filename = path + settings.value("out_filename").toString();
 
+    reconParameters.rcxres = settings.value("rcxres").toInt();
+    reconParameters.rcyres = settings.value("rcyres").toInt();
+    reconParameters.rczres = settings.value("rczres").toInt();
+
     if (reconParameters.overgridding_factor == 0)
         reconParameters.overgridding_factor = settings.value("overgridding_factor").toFloat();
+
     return 0;
 }
 
@@ -100,7 +105,10 @@ void ProgramOptions::showOptions() const
               << "Output: " << reconParameters.result_filename.toStdString()<< std::endl
               << "Samples: " << reconParameters.samples << std::endl
               << "Projections: " << reconParameters.projections << std::endl
-              << "Overgridding factor: " << reconParameters.overgridding_factor << std::endl;
+              << "Overgridding factor: " << reconParameters.overgridding_factor << std::endl
+              << "rcxres: " << reconParameters.rcxres << std::endl
+              << "rcyres: " << reconParameters.rcyres << std::endl
+              << "rczres: " << reconParameters.rczres << std::endl;
 }
 
 ReconParameters ProgramOptions::getReconParameters() const
