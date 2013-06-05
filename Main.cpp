@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     loadData(trajPoints, trajData, params);
 
     int kWidth = 4;
-    int overGridFactor = params.overgridding_factor;
+    float overGridFactor = params.overgridding_factor;
     ConvKernel kernel(kWidth, overGridFactor, 256);
 
     int gridSize = 256 * overGridFactor;
