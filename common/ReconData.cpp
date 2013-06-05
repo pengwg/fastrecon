@@ -2,19 +2,21 @@
 
 #include "ReconData.h"
 
-ReconData::ReconData()
+ReconData::ReconData(int rcDim)
+    : m_rcDim(rcDim)
 {
 }
 
 void ReconData::setTraj(KTraj *traj)
 {
-    if (m_dataSize != 0 && m_dataSize != traj->size())
+    int dataSize = traj->size() / (m_rcDim + 1);
+    if (m_dataSize != 0 && m_dataSize != dataSize)
     {
         std::cerr << "Error: trajectory and data have different size!" << std::endl;
         exit(1);
     }
 
-    m_dataSize = traj->size();
+    m_dataSize = dataSize;
     m_kTraj.reset(traj);
 }
 
