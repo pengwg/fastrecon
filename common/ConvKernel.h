@@ -2,19 +2,23 @@
 #define CONVKERNEL_H
 
 #include <QVector>
+#include <memory>
 
 class ConvKernel
 {
 public:
     ConvKernel(float kWidth, float overGridFactor, int length = 32);
-    QVector<float> getKernelData();
-    float getKernelWidth();
+    ~ConvKernel();
+
+    const QVector<float> & getKernelData();
+    float getKernelWidth() const;
 
 private:
     float m_kWidth;
     float m_ogFactor;
+    int m_length;
 
-    QVector<float> m_kernelData;
+    std::shared_ptr<QVector<float> > m_kernelData;
 };
 
 #endif // CONVKERNEL_H

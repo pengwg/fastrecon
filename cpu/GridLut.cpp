@@ -19,7 +19,7 @@ void GridLut::gridding(QVector<TrajPoint> &trajPoints, complexVector &trajData, 
     gData.resize(m_gridSize * m_gridSize);
 
     float kHW = m_kernel.getKernelWidth() / 2;
-    QVector<float> kernelData = m_kernel.getKernelData();
+    const QVector<float> & kernelData = m_kernel.getKernelData();
     int klength = kernelData.size();
 
     int idx = 0;
