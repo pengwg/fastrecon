@@ -9,6 +9,8 @@
 #include <float.h>
 
 #include "ProgramOptions.h"
+#include "ReconData.h"
+
 #include "ConvKernel.h"
 #include "GridLut.h"
 #include "FFT2D.h"

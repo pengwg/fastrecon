@@ -6,6 +6,7 @@ set(GRID_CPU_SRC_FILES
     GridLut.cpp
     FFT2D.cpp
     ../common/ConvKernel.cpp
+    ../common/ReconData.cpp
 )
 
 include_directories(
