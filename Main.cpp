@@ -64,44 +64,45 @@ void loadData(QVector<TrajPoint> &trajPoints, complexVector &trajData, ReconPara
 
 void loadReconData(ReconData &reconData, const ReconParameters &params)
 {
-    int dataSize = params.samples * params.projections;
+    int size = params.samples * params.projections;
 
     // Load trajectory
     QFile file(params.traj_filename);
     file.open(QIODevice::ReadOnly);
 
-    int dim = reconData.m_rcDim;
-    KTraj *traj = new KTraj(dataSize * (dim + 1));
+    int dim = params.rczres > 1 ? 3 : 2;
+    int length = size * (dim + 1);
+    float *buffer = new float[length];
 
-    qint64 size = traj->size() * sizeof(KTraj::value_type);
-    auto count = file.read((char *)traj->data(), size);
+    auto count = file.read((char *)buffer, length * sizeof(float));
     file.close();
 
-    if (size != count)
+    if (length * sizeof(float) != count)
     {
         qWarning() << "Error: wrong data size in " << params.traj_filename << '\n';
         std::exit(1);
     }
 
-    reconData.setTraj(traj);
+    if (dim == 2)
+        reconData.setTraj(reinterpret_cast<KPoint2D *>(buffer), size);
+    else if (dim == 3)
+        reconData.setTraj(reinterpret_cast<KPoint3D *>(buffer), size);
 
     // Load data
     file.setFileName(params.data_filename);
     file.open(QIODevice::ReadOnly);
 
-    KData *kdata = new KData(dataSize);
-
-    size = kdata->size() * sizeof(KData::value_type);
-    count = file.read((char *)kdata->data(), size);
+    KData *kdata = new KData[size];
+    count = file.read((char *)kdata, size * sizeof(KData));
     file.close();
 
-    if (size != count)
+    if (size * sizeof(KData) != count)
     {
         qWarning() << "Error: wrong data size in " << params.traj_filename << '\n';
         std::exit(1);
     }
 
-    reconData.addChannelData(kdata);
+    reconData.addChannelData(kdata, size);
 }
 
 void displayData(int n0, int n1, const complexVector& data, const QString& title)
@@ -157,8 +158,7 @@ int main(int argc, char *argv[])
     options.showOptions();
     ReconParameters params = options.getReconParameters();
 
-    int dim = params.rczres == 0 ? 2 : 3;
-    ReconData reconData(dim);
+    ReconData reconData;
     loadReconData(reconData, params);
 
 

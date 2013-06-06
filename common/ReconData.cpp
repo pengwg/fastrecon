@@ -2,40 +2,52 @@
 
 #include "ReconData.h"
 
-ReconData::ReconData(int rcDim)
-    : m_rcDim(rcDim)
+ReconData::ReconData()
 {
 }
 
-void ReconData::setTraj(KTraj *traj)
+void ReconData::setTraj(KPoint2D *traj2D, int size)
 {
-    int dataSize = traj->size() / (m_rcDim + 1);
-    if (m_dataSize != 0 && m_dataSize != dataSize)
+    m_rcDim = 2;
+    if (channels() > 0 && m_size != size)
     {
         std::cerr << "Error: trajectory and data have different size!" << std::endl;
         exit(1);
     }
 
-    m_dataSize = dataSize;
-    m_kTraj.reset(traj);
+    m_size = size;
+    m_kTraj2D.reset(traj2D);
 }
 
-void ReconData::addChannelData(KData *data)
+void ReconData::setTraj(KPoint3D *traj3D, int size)
 {
-    if (m_dataSize != 0 && m_dataSize != data->size())
+    m_rcDim = 3;
+    if (channels() > 0 && m_size != size)
     {
         std::cerr << "Error: trajectory and data have different size!" << std::endl;
         exit(1);
     }
 
-    m_dataSize = data->size();
+    m_size = size;
+    m_kTraj3D.reset(traj3D);
+}
+
+void ReconData::addChannelData(KData *data, int size)
+{
+    if (m_size != 0 && m_size != size)
+    {
+        std::cerr << "Error: trajectory and data have different size!" << std::endl;
+        exit(1);
+    }
+
+    m_size = size;
     m_kDataMultiChannel.push_back(std::shared_ptr<KData>(data));
 }
 
-const KTraj *ReconData::getTraj() const
+/*const KTraj *ReconData::getTraj() const
 {
     return m_kTraj.get();
-}
+}*/
 
 const KData *ReconData::getChannelData(int channel) const
 {
@@ -44,16 +56,17 @@ const KData *ReconData::getChannelData(int channel) const
 
 void ReconData::clear()
 {
-    m_dataSize = 0;
+    m_size = 0;
 
-    m_kTraj.reset();
+    m_kTraj2D.reset();
+    m_kTraj3D.reset();
     m_kDataMultiChannel.clear();
 }
 
 
 int ReconData::dataSize() const
 {
-    return m_dataSize;
+    return m_size;
 }
 
 int ReconData::channels() const

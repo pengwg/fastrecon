@@ -20,31 +20,32 @@ typedef struct
     float dcf;
 } KPoint3D;
 
-typedef std::vector<float> KTraj;
-typedef std::vector<std::complex<float> > KData;
+typedef std::complex<float> KData;
 
 class ReconData
 {
 public:
-    ReconData(int rcDim);
+    ReconData();
     int dataSize() const;
     int channels() const;
 
-    void setTraj(KTraj *traj);
-    void addChannelData(KData *data);
+    void setTraj(KPoint2D *traj2D, int size);
+    void setTraj(KPoint3D *traj3D, int size);
 
-    const KTraj *getTraj() const;
+    void addChannelData(KData *data, int size);
+
+    // const KTraj *getTraj() const;
     const KData *getChannelData(int channel) const;
 
     void clear();
 
-    const int m_rcDim;
-
 private:
-    int m_dataSize = 0;
+    int m_rcDim = 0;
+    int m_size = 0;
 
     std::vector<std::shared_ptr<KData> > m_kDataMultiChannel;
-    std::shared_ptr<KTraj> m_kTraj;
+    std::shared_ptr<KPoint2D> m_kTraj2D;
+    std::shared_ptr<KPoint3D> m_kTraj3D;
 };
 
 #endif // RECONDATA_H
