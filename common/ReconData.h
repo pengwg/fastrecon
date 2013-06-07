@@ -34,7 +34,9 @@ public:
 
     void addChannelData(KData *data, int size);
 
-    // const KTraj *getTraj() const;
+    const KPoint2D *getTraj2D() const;
+    const KPoint3D *getTraj3D() const;
+
     const KData *getChannelData(int channel) const;
 
     void clear();

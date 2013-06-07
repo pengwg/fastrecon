@@ -44,10 +44,15 @@ void ReconData::addChannelData(KData *data, int size)
     m_kDataMultiChannel.push_back(std::shared_ptr<KData>(data));
 }
 
-/*const KTraj *ReconData::getTraj() const
+const KPoint2D *ReconData::getTraj2D() const
 {
-    return m_kTraj.get();
-}*/
+    return m_kTraj2D.get();
+}
+
+const KPoint3D *ReconData::getTraj3D() const
+{
+    return m_kTraj3D.get();
+}
 
 const KData *ReconData::getChannelData(int channel) const
 {
