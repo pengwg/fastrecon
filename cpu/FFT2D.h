@@ -4,8 +4,8 @@
 #include <complex>
 #include <fftw3.h>
 #include <QVector>
+#include "ReconData.h"
 
-typedef QVector< std::complex<float> > complexVector;
 
 class FFT2D
 {
@@ -13,8 +13,8 @@ public:
     FFT2D(int n0, int n1, bool forward);
     ~FFT2D();
 
-    void excute(complexVector & data);
-    void fftShift(complexVector & data);
+    void excute(KData &data);
+    void fftShift(KData &data);
 
 private:
     const int m_n0;

@@ -20,48 +20,6 @@
 #include "GridGpu.h"
 #endif
 
-void loadData(QVector<TrajPoint> &trajPoints, complexVector &trajData, ReconParameters &params)
-{
-    int trajSize = params.samples * params.projections;
-    trajPoints.resize(trajSize);
-    trajData.resize(trajSize);
-
-    QFile file(params.traj_filename);
-    file.open(QIODevice::ReadOnly);
-
-    QVector<float> buffer(trajSize * 3);
-
-    qint64 size = sizeof(float) * trajSize * 3;
-    auto count = file.read((char *)buffer.data(), size);
-    Q_ASSERT(count == size);
-
-    file.close();
-
-    float *pdata = buffer.data();
-    for (int i = 0; i < trajSize; i++) {
-        trajPoints[i].kx = pdata[0];
-        trajPoints[i].ky = pdata[1];
-        trajPoints[i].dcf = pdata[2];
-        trajPoints[i].idx = i;
-        pdata += 3;
-    }
-
-    file.setFileName(params.data_filename);
-    file.open(QIODevice::ReadOnly);
-
-    size = sizeof(float) * trajSize * 2;
-    count = file.read((char *)buffer.data(), size);
-    Q_ASSERT(count == size);
-
-    file.close();
-
-    pdata = buffer.data();
-    for (int i = 0; i < trajSize; i++) {
-        trajData[i] = std::complex<float> (pdata[0], pdata[1]);
-        pdata += 2;
-    }
-}
-
 template <class T>
 void loadTraj(ReconData &reconData, const ReconParameters &params)
 {
@@ -108,7 +66,7 @@ void loadReconData(ReconData &reconData, const ReconParameters &params)
     reconData.addChannelData(kdata);
 }
 
-void displayData(int n0, int n1, const complexVector& data, const QString& title)
+void displayData(int n0, int n1, const KData& data, const QString& title)
 {
     QVector<float> dataValue;
 
@@ -164,20 +122,14 @@ int main(int argc, char *argv[])
     ReconData reconData;
     loadReconData(reconData, params);
 
-
-    QVector<TrajPoint> trajPoints;
-    complexVector trajData;
-
-    loadData(trajPoints, trajData, params);
-
     int kWidth = 4;
     float overGridFactor = params.overgridding_factor;
     ConvKernel kernel(kWidth, overGridFactor, 256);
 
     int gridSize = params.rcxres * overGridFactor;
 
-    complexVector gDataCpu, gDataGpu;
-    // KData gDataCpu
+    // complexVector gDataCpu, gDataGpu;
+    KData gDataCpu;
     QElapsedTimer timer;
 
     int rep = 100;
@@ -187,8 +139,7 @@ int main(int argc, char *argv[])
     GridLut gridCpu(gridSize, kernel);
     timer.start();
     for (int i = 0; i < rep; i++)
-        gridCpu.gridding(trajPoints, trajData, gDataCpu);
-    qWarning() << "\nCPU gridding time =" << timer.elapsed() << "ms";
+        gridCpu.gridding2D(reconData, gDataCpu);
 
 #ifdef CUDA_CAPABLE
     // GPU gridding
@@ -236,10 +187,14 @@ int main(int argc, char *argv[])
 
 #endif
 
+    for (int i = 0; i < rep; i++) {
     FFT2D fft(gridSize, gridSize, false);
     fft.fftShift(gDataCpu);
     fft.excute(gDataCpu);
     fft.fftShift(gDataCpu);
+    }
+
+    qWarning() << "\nCPU gridding time =" << timer.elapsed() << "ms";
 
     if (options.isDisplay())
     {

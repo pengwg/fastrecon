@@ -14,22 +14,24 @@ GridLut::~GridLut()
 
 }
 
-void GridLut::gridding(QVector<TrajPoint> &trajPoints, complexVector &trajData, complexVector &gData)
+void GridLut::gridding2D(const ReconData &reconData, KData &out)
 {
-    gData.resize(m_gridSize * m_gridSize);
+    out.resize(m_gridSize * m_gridSize);
 
     float kHW = m_kernel.getKernelWidth() / 2;
     const QVector<float> *kernelData = m_kernel.getKernelData();
     int klength = kernelData->size();
 
     int idx = 0;
+    const Traj2D *traj = reconData.getTraj2D();
+    const KData *kData = reconData.getChannelData(0);
 
-    for (auto &traj : trajPoints) {
-        float xCenter = (0.5 + traj.kx) * m_gridSize; // kx in (-0.5, 0.5)
+    for (const KPoint2D &point : (*traj)) {
+        float xCenter = (0.5 + point.kx) * m_gridSize; // kx in (-0.5, 0.5)
         int xStart = ceil(xCenter - kHW);
         int xEnd = floor(xCenter + kHW);
 
-        float yCenter = (0.5 + traj.ky) * m_gridSize; // ky in (-0.5, 0.5)
+        float yCenter = (0.5 + point.ky) * m_gridSize; // ky in (-0.5, 0.5)
         int yStart = ceil(yCenter  - kHW);
         int yEnd = floor(yCenter + kHW);
 
@@ -39,7 +41,7 @@ void GridLut::gridding(QVector<TrajPoint> &trajPoints, complexVector &trajData, 
         yStart = fmax(yStart, 0);
         yEnd = fmin(yEnd, m_gridSize - 1);
 
-        auto data = traj.dcf * trajData[idx];
+        auto data = point.dcf * kData->at(idx);
 
         int i = yStart * m_gridSize + xStart;
         int di = m_gridSize - (xEnd - xStart) - 1;
@@ -54,7 +56,7 @@ void GridLut::gridding(QVector<TrajPoint> &trajPoints, complexVector &trajData, 
 
                 if (dk < kHW) {
                     int ki = round(dk / kHW * (klength - 1));
-                    gData[i] += kernelData->at(ki) * data;
+                    out[i] += kernelData->at(ki) * data;
                 }
                 i++;
             }

@@ -4,16 +4,7 @@
 #include <complex>
 
 #include "ConvKernel.h"
-
-typedef struct
-{
-    float kx;
-    float ky;
-    float dcf;
-    int idx;
-} TrajPoint;
-
-typedef QVector< std::complex<float> > complexVector;
+#include "ReconData.h"
 
 class GridLut
 {
@@ -21,7 +12,7 @@ public:
     GridLut(int gridSize, ConvKernel &kernel);
     virtual ~GridLut();
 
-    void gridding(QVector<TrajPoint> &trajPoints, complexVector &trajData, complexVector &gData);
+    void gridding2D(const ReconData &reconData, KData &out);
 
 protected:
     ConvKernel m_kernel;

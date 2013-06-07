@@ -16,7 +16,7 @@ FFT2D::~FFT2D()
     fftwf_free(m_in);
 }
 
-void FFT2D::excute(complexVector & data)
+void FFT2D::excute(KData &data)
 {
     int i = 0;
     for (auto value : data) {
@@ -34,7 +34,7 @@ void FFT2D::excute(complexVector & data)
     }
 }
 
-void FFT2D::fftShift(complexVector &data)
+void FFT2D::fftShift(KData &data)
 {
     int n0h = m_n0 / 2;
     int n1h = m_n1 / 2;
