@@ -62,47 +62,50 @@ void loadData(QVector<TrajPoint> &trajPoints, complexVector &trajData, ReconPara
     }
 }
 
-void loadReconData(ReconData &reconData, const ReconParameters &params)
+template <class T>
+void loadTraj(ReconData &reconData, const ReconParameters &params)
 {
     int size = params.samples * params.projections;
+    T *traj = new T(size);
 
-    // Load trajectory
     QFile file(params.traj_filename);
     file.open(QIODevice::ReadOnly);
-
-    int dim = params.rczres > 1 ? 3 : 2;
-    int length = size * (dim + 1);
-    float *buffer = new float[length];
-
-    auto count = file.read((char *)buffer, length * sizeof(float));
+    auto count = file.read((char *)traj->data(), size * sizeof(typename T::value_type));
     file.close();
 
-    if (length * sizeof(float) != count)
+    if (count != size * sizeof(typename T::value_type))
     {
         qWarning() << "Error: wrong data size in " << params.traj_filename << '\n';
         std::exit(1);
     }
 
-    if (dim == 2)
-        reconData.setTraj(reinterpret_cast<KPoint2D *>(buffer), size);
-    else if (dim == 3)
-        reconData.setTraj(reinterpret_cast<KPoint3D *>(buffer), size);
+    reconData.setTraj(traj);
+}
 
+void loadReconData(ReconData &reconData, const ReconParameters &params)
+{
+    // Load trajectory
+    if (params.rczres > 1)
+        loadTraj<Traj3D>(reconData, params);
+    else
+        loadTraj<Traj2D>(reconData, params);
+            
     // Load data
-    file.setFileName(params.data_filename);
-    file.open(QIODevice::ReadOnly);
+    int size = params.samples * params.projections;
+    KData *kdata = new KData(size);
 
-    KData *kdata = new KData[size];
-    count = file.read((char *)kdata, size * sizeof(KData));
+    QFile file(params.data_filename);
+    file.open(QIODevice::ReadOnly);
+    auto count = file.read((char *)kdata->data(), size * sizeof(KData::value_type));
     file.close();
 
-    if (size * sizeof(KData) != count)
+    if (count != size * sizeof(KData::value_type))
     {
         qWarning() << "Error: wrong data size in " << params.traj_filename << '\n';
         std::exit(1);
     }
 
-    reconData.addChannelData(kdata, size);
+    reconData.addChannelData(kdata);
 }
 
 void displayData(int n0, int n1, const complexVector& data, const QString& title)
@@ -174,6 +177,7 @@ int main(int argc, char *argv[])
     int gridSize = params.rcxres * overGridFactor;
 
     complexVector gDataCpu, gDataGpu;
+    // KData gDataCpu
     QElapsedTimer timer;
 
     int rep = 100;
