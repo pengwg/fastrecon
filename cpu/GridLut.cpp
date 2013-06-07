@@ -14,58 +14,6 @@ GridLut::~GridLut()
 
 }
 
-template <>
-void GridLut::gridding(const ReconData<Traj2D> &reconData, KData &out)
-{
-    out.resize(m_gridSize * m_gridSize);
-
-    float kHW = m_kernel.getKernelWidth() / 2;
-    const QVector<float> *kernelData = m_kernel.getKernelData();
-    int klength = kernelData->size();
-
-    int idx = 0;
-    const Traj2D *traj = reconData.getTraj();
-    const KData *kData = reconData.getChannelData(0);
-
-    float center[2];
-    int start[2], end[2];
-
-    for (const KPoint2D &point : (*traj)) {
-        for (int i = 0; i < 2; i++)
-        {
-            center[i] = (0.5 + point.kspace[i]) * m_gridSize; // kspace in (-0.5, 0.5)
-            start[i] = ceil(center[i] - kHW);
-            end[i] = floor(center[i] + kHW);
-
-            start[i] = fmax(start[i], 0);
-            end[i] = fmin(end[i], m_gridSize - 1);
-        }
-
-        auto data = point.dcf * kData->at(idx);
-
-        int i = start[1] * m_gridSize + start[0];
-        int di = m_gridSize - (end[0] - start[0]) - 1;
-
-        for (int y = start[1]; y <= end[1]; y++) {
-            float dy = y - center[1];
-            float dy2 = dy * dy;
-
-            for (int x = start[0]; x <= end[0]; x++) {
-                float dx = x - center[0];
-                float dk = sqrtf(dy2 + dx * dx);
-
-                if (dk < kHW) {
-                    int ki = round(dk / kHW * (klength - 1));
-                    out[i] += kernelData->at(ki) * data;
-                }
-                i++;
-            }
-            i += di;
-        }
-        idx++;
-    }
-}
-
 template <typename T>
 void GridLut::gridding(const ReconData<T> &reconData, KData &out)
 {
@@ -79,12 +27,8 @@ void GridLut::gridding(const ReconData<T> &reconData, KData &out)
     const T *traj = reconData.getTraj();
     const KData *kData = reconData.getChannelData(0);
 
-    float center[3];
-    int start[3], end[3];
-
-    start[2] = 0;
-    end[2] = 1;
-    center[2] = 0;
+    float center[3] = {0};
+    int start[3] = {0}, end[3] = {0};
 
     for (const auto &point : (*traj)) {
         for (int i = 0; i < reconData.rcDim(); i++)
@@ -129,8 +73,8 @@ void GridLut::gridding(const ReconData<T> &reconData, KData &out)
     }
 }
 
-// template
-// void GridLut::gridding(const ReconData<Traj2D> &reconData, KData &out);
+template
+void GridLut::gridding(const ReconData<Traj2D> &reconData, KData &out);
 
 template
 void GridLut::gridding(const ReconData<Traj3D> &reconData, KData &out);
