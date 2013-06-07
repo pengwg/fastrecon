@@ -12,6 +12,8 @@ void ReconData<T>::setTraj(T *traj)
     }
 
     m_size = traj->size();
+    m_rcDim = sizeof(traj->at(0).kspace) / sizeof(traj->at(0).kspace[0]);
+
     m_traj.reset(traj);
 }
 
@@ -30,3 +32,4 @@ void ReconData<T>::addChannelData(KData *data)
 
 template class ReconData<Traj2D>;
 template class ReconData<Traj3D>;
+

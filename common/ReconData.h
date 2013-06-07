@@ -7,16 +7,13 @@
 
 typedef struct
 {
-    float kx;
-    float ky;
+    float kspace[2];
     float dcf;
 } KPoint2D;
 
 typedef struct
 {
-    float kx;
-    float ky;
-    float kz;
+    float kspace[3];
     float dcf;
 } KPoint3D;
 
@@ -48,6 +45,8 @@ public:
         m_traj.reset();
         m_kDataMultiChannel.clear();
     }
+
+    int rcDim() const { return m_rcDim; }
 
 private:
     int m_rcDim = 0;
