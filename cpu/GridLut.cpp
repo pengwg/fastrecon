@@ -14,7 +14,7 @@ GridLut::~GridLut()
 
 }
 
-void GridLut::gridding2D(const ReconData &reconData, KData &out)
+void GridLut::gridding(const ReconData<Traj2D> &reconData, KData &out)
 {
     out.resize(m_gridSize * m_gridSize);
 
@@ -23,7 +23,7 @@ void GridLut::gridding2D(const ReconData &reconData, KData &out)
     int klength = kernelData->size();
 
     int idx = 0;
-    const Traj2D *traj = reconData.getTraj2D();
+    const Traj2D *traj = reconData.getTraj();
     const KData *kData = reconData.getChannelData(0);
 
     for (const KPoint2D &point : (*traj)) {
@@ -64,4 +64,9 @@ void GridLut::gridding2D(const ReconData &reconData, KData &out)
         }
         idx++;
     }
+}
+
+void GridLut::gridding(const ReconData<Traj3D> &reconData, KData &out)
+{
+
 }

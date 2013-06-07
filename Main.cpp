@@ -20,52 +20,6 @@
 #include "GridGpu.h"
 #endif
 
-template <class T>
-void loadTraj(ReconData &reconData, const ReconParameters &params)
-{
-    int size = params.samples * params.projections;
-    T *traj = new T(size);
-
-    QFile file(params.traj_filename);
-    file.open(QIODevice::ReadOnly);
-    auto count = file.read((char *)traj->data(), size * sizeof(typename T::value_type));
-    file.close();
-
-    if (count != size * sizeof(typename T::value_type))
-    {
-        qWarning() << "Error: wrong data size in " << params.traj_filename << '\n';
-        std::exit(1);
-    }
-
-    reconData.setTraj(traj);
-}
-
-void loadReconData(ReconData &reconData, const ReconParameters &params)
-{
-    // Load trajectory
-    if (params.rczres > 1)
-        loadTraj<Traj3D>(reconData, params);
-    else
-        loadTraj<Traj2D>(reconData, params);
-            
-    // Load data
-    int size = params.samples * params.projections;
-    KData *kdata = new KData(size);
-
-    QFile file(params.data_filename);
-    file.open(QIODevice::ReadOnly);
-    auto count = file.read((char *)kdata->data(), size * sizeof(KData::value_type));
-    file.close();
-
-    if (count != size * sizeof(KData::value_type))
-    {
-        qWarning() << "Error: wrong data size in " << params.traj_filename << '\n';
-        std::exit(1);
-    }
-
-    reconData.addChannelData(kdata);
-}
-
 void displayData(int n0, int n1, const KData& data, const QString& title)
 {
     QVector<float> dataValue;
@@ -109,7 +63,70 @@ void displayData(int n0, int n1, const KData& data, const QString& title)
     imgWnd->show();
 }
 
+template <typename T>
+void loadReconData(ReconData<T> &reconData, const ReconParameters &params)
+{
+    // Load trajectory
+    int size = params.samples * params.projections;
+    T *traj = new T(size);
 
+    QFile file(params.traj_filename);
+    file.open(QIODevice::ReadOnly);
+    auto count = file.read((char *)traj->data(), size * sizeof(typename T::value_type));
+    file.close();
+
+    if (count != size * sizeof(typename T::value_type))
+    {
+        qWarning() << "Error: wrong data size in " << params.traj_filename << '\n';
+        std::exit(1);
+    }
+
+    reconData.setTraj(traj);
+
+    // Load data
+    size = params.samples * params.projections;
+    KData *kdata = new KData(size);
+
+    file.setFileName(params.data_filename);
+    file.open(QIODevice::ReadOnly);
+    count = file.read((char *)kdata->data(), size * sizeof(KData::value_type));
+    file.close();
+
+    if (count != size * sizeof(KData::value_type))
+    {
+        qWarning() << "Error: wrong data size in " << params.traj_filename << '\n';
+        std::exit(1);
+    }
+
+    reconData.addChannelData(kdata);
+}
+
+template <typename T>
+void gridding(const ReconParameters &params, KData &out)
+{
+    ReconData<T> reconData;
+    loadReconData<>(reconData, params);
+
+    int kWidth = 4;
+    float overGridFactor = params.overgridding_factor;
+    ConvKernel kernel(kWidth, overGridFactor, 256);
+
+    int gridSize = params.rcxres * overGridFactor;
+
+    int rep = 1;
+    qWarning() << "\nIteration" << rep << 'x';
+
+    // CPU gridding
+    GridLut gridCpu(gridSize, kernel);
+
+    QElapsedTimer timer;
+    timer.start();
+
+    for (int i = 0; i < rep; i++)
+        gridCpu.gridding(reconData, out);
+
+    qWarning() << "\nCPU gridding time =" << timer.elapsed() << "ms";
+}
 
 int main(int argc, char *argv[])
 {
@@ -119,27 +136,12 @@ int main(int argc, char *argv[])
     options.showOptions();
     ReconParameters params = options.getReconParameters();
 
-    ReconData reconData;
-    loadReconData(reconData, params);
-
-    int kWidth = 4;
-    float overGridFactor = params.overgridding_factor;
-    ConvKernel kernel(kWidth, overGridFactor, 256);
-
-    int gridSize = params.rcxres * overGridFactor;
-
-    // complexVector gDataCpu, gDataGpu;
     KData gDataCpu;
-    QElapsedTimer timer;
 
-    int rep = 100;
-    qWarning() << "\nIteration" << rep << 'x';
-
-    // CPU gridding
-    GridLut gridCpu(gridSize, kernel);
-    timer.start();
-    for (int i = 0; i < rep; i++)
-        gridCpu.gridding2D(reconData, gDataCpu);
+    if (params.rczres > 1)
+        gridding<Traj3D>(params, gDataCpu);
+    else
+        gridding<Traj2D>(params, gDataCpu);;
 
 #ifdef CUDA_CAPABLE
     // GPU gridding
@@ -187,14 +189,12 @@ int main(int argc, char *argv[])
 
 #endif
 
-    for (int i = 0; i < rep; i++) {
+    int gridSize = params.rcxres * params.overgridding_factor;;
+
     FFT2D fft(gridSize, gridSize, false);
     fft.fftShift(gDataCpu);
     fft.excute(gDataCpu);
     fft.fftShift(gDataCpu);
-    }
-
-    qWarning() << "\nCPU gridding time =" << timer.elapsed() << "ms";
 
     if (options.isDisplay())
     {

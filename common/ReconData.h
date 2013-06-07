@@ -24,32 +24,40 @@ typedef std::vector<KPoint2D> Traj2D;
 typedef std::vector<KPoint3D> Traj3D;
 typedef std::vector<std::complex<float> > KData;
 
+template <typename T>
 class ReconData
 {
 public:
-    ReconData();
-    int dataSize() const;
-    int channels() const;
+    ReconData() {}
 
-    void setTraj(Traj2D *traj2D);
-    void setTraj(Traj3D *traj3D);
+    int dataSize() const {return m_size;}
+    int channels() const {return m_kDataMultiChannel.size();}
 
+    void setTraj(T *traj);
     void addChannelData(KData *data);
 
-    const Traj2D *getTraj2D() const;
-    const Traj3D *getTraj3D() const;
+    const T *getTraj() const { return m_traj.get(); }
 
-    const KData *getChannelData(int channel) const;
+    const KData *getChannelData(int channel) const
+    { return m_kDataMultiChannel[channel].get(); }
 
-    void clear();
+    void clear()
+    {
+        m_size = 0;
+
+        m_traj.reset();
+        m_kDataMultiChannel.clear();
+    }
 
 private:
     int m_rcDim = 0;
     int m_size = 0;
 
     std::vector<std::shared_ptr<KData> > m_kDataMultiChannel;
-    std::shared_ptr<Traj2D> m_traj2D;
-    std::shared_ptr<Traj3D> m_traj3D;
+    std::shared_ptr<T> m_traj;
 };
+
+extern template class ReconData<Traj2D>;
+extern template class ReconData<Traj3D>;
 
 #endif // RECONDATA_H
