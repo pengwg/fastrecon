@@ -63,19 +63,19 @@ void displayData(int n0, int n1, const KData& data, const QString& title)
     imgWnd->show();
 }
 
-template <typename T>
-void loadReconData(ReconData<T> &reconData, const ReconParameters &params)
+template <int N>
+void loadReconData(ReconData<N> &reconData, const ReconParameters &params)
 {
     // Load trajectory
     int size = params.samples * params.projections;
-    T *traj = new T(size);
+    Traj<N> *traj = new Traj<N>(size);
 
     QFile file(params.traj_filename);
     file.open(QIODevice::ReadOnly);
-    auto count = file.read((char *)traj->data(), size * sizeof(typename T::value_type));
+    auto count = file.read((char *)traj->data(), size * sizeof(typename Traj<N>::value_type));
     file.close();
 
-    if (count != size * sizeof(typename T::value_type))
+    if (count != size * sizeof(typename Traj<N>::value_type))
     {
         qWarning() << "Error: wrong data size in " << params.traj_filename << '\n';
         std::exit(1);
@@ -101,10 +101,10 @@ void loadReconData(ReconData<T> &reconData, const ReconParameters &params)
     reconData.addChannelData(kdata);
 }
 
-template <typename T>
+template <int N>
 void gridding(const ReconParameters &params, KData &out)
 {
-    ReconData<T> reconData;
+    ReconData<N> reconData;
     loadReconData<>(reconData, params);
 
     int kWidth = 4;
@@ -139,9 +139,9 @@ int main(int argc, char *argv[])
     KData data;
 
     if (params.rczres > 1)
-        gridding<Traj3D>(params, data);
+        gridding<3>(params, data);
     else
-        gridding<Traj2D>(params, data);;
+        gridding<2>(params, data);;
 
 #ifdef CUDA_CAPABLE
     // GPU gridding

@@ -2,8 +2,8 @@
 
 #include "ReconData.h"
 
-template <typename T>
-void ReconData<T>::setTraj(T *traj)
+template <int N>
+void ReconData<N>::setTraj(Traj<N> *traj)
 {
     if (channels() > 0 && m_size != traj->size())
     {
@@ -17,8 +17,8 @@ void ReconData<T>::setTraj(T *traj)
     m_traj.reset(traj);
 }
 
-template <typename T>
-void ReconData<T>::addChannelData(KData *data)
+template <int N>
+void ReconData<N>::addChannelData(KData *data)
 {
     if (m_size != 0 && m_size != data->size())
     {
@@ -30,6 +30,6 @@ void ReconData<T>::addChannelData(KData *data)
     m_kDataMultiChannel.push_back(std::shared_ptr<KData>(data));
 }
 
-template class ReconData<Traj2D>;
-template class ReconData<Traj3D>;
+template class ReconData<2>;
+template class ReconData<3>;
 

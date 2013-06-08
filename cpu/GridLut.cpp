@@ -14,17 +14,17 @@ GridLut::~GridLut()
 
 }
 
-template <typename T>
-void GridLut::gridding(const ReconData<T> &reconData, KData &out)
+template <int N>
+void GridLut::gridding(const ReconData<N> &reconData, KData &out)
 {
-    out.resize(powf(m_gridSize, reconData.rcDim()));
+    out.resize(powf(m_gridSize, N));
 
     float kHW = m_kernel.getKernelWidth() / 2;
     const std::vector<float> *kernelData = m_kernel.getKernelData();
     int klength = kernelData->size();
 
     int idx = 0;
-    const T *traj = reconData.getTraj();
+    const auto *traj = reconData.getTraj();
     const KData *kData = reconData.getChannelData(0);
 
     float center[3] = {0};
@@ -79,7 +79,7 @@ void GridLut::gridding(const ReconData<T> &reconData, KData &out)
 }
 
 template
-void GridLut::gridding(const ReconData<Traj2D> &reconData, KData &out);
+void GridLut::gridding(const ReconData<2> &reconData, KData &out);
 
 template
-void GridLut::gridding(const ReconData<Traj3D> &reconData, KData &out);
+void GridLut::gridding(const ReconData<3> &reconData, KData &out);

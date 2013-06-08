@@ -5,23 +5,19 @@
 #include <complex>
 #include <vector>
 
-typedef struct
+template <int N>
+struct KPoint
 {
-    float pos[2];
+    float pos[N];
     float dcf;
-} KPoint2D;
+};
 
-typedef struct
-{
-    float pos[3];
-    float dcf;
-} KPoint3D;
+template <int N>
+using Traj = std::vector<KPoint<N> >;
 
-typedef std::vector<KPoint2D> Traj2D;
-typedef std::vector<KPoint3D> Traj3D;
 typedef std::vector<std::complex<float> > KData;
 
-template <typename T>
+template <int N>
 class ReconData
 {
 public:
@@ -30,10 +26,10 @@ public:
     int dataSize() const {return m_size;}
     int channels() const {return m_kDataMultiChannel.size();}
 
-    void setTraj(T *traj);
+    void setTraj(Traj<N> *traj);
     void addChannelData(KData *data);
 
-    const T *getTraj() const { return m_traj.get(); }
+    const Traj<N> *getTraj() const { return m_traj.get(); }
 
     const KData *getChannelData(int channel) const
     { return m_kDataMultiChannel[channel].get(); }
@@ -54,7 +50,7 @@ private:
     int m_size = 0;
 
     std::vector<std::shared_ptr<KData> > m_kDataMultiChannel;
-    std::shared_ptr<T> m_traj;
+    std::shared_ptr<Traj<N> > m_traj;
 };
 
 #endif // RECONDATA_H
