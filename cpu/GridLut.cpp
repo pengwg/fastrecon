@@ -30,10 +30,11 @@ void GridLut::gridding(const ReconData<T> &reconData, KData &out)
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};
 
-    for (const auto &point : (*traj)) {
+    for (const auto &point : (*traj))
+    {
         for (int i = 0; i < reconData.rcDim(); i++)
         {
-            center[i] = (0.5 + point.kspace[i]) * m_gridSize; // kspace in (-0.5, 0.5)
+            center[i] = (0.5 + point.pos[i]) * m_gridSize; // kspace in (-0.5, 0.5)
             start[i] = ceil(center[i] - kHW);
             end[i] = floor(center[i] + kHW);
 
@@ -47,19 +48,23 @@ void GridLut::gridding(const ReconData<T> &reconData, KData &out)
         int di = m_gridSize - (end[0] - start[0]) - 1;
         int di2 = m_gridSize * m_gridSize - ((end[0] - start[0]) + 1) * ((end[1] - start[1]) + 1);
 
-        for (int z = start[2]; z <= end[2]; z++) {
+        for (int z = start[2]; z <= end[2]; z++)
+        {
             float dz = z - center[2];
             float dz2 = dz * dz;
 
-            for (int y = start[1]; y <= end[1]; y++) {
+            for (int y = start[1]; y <= end[1]; y++)
+            {
                 float dy = y - center[1];
                 float dy2 = dy * dy;
 
-                for (int x = start[0]; x <= end[0]; x++) {
+                for (int x = start[0]; x <= end[0]; x++)
+                {
                     float dx = x - center[0];
                     float dk = sqrtf(dz2 + dy2 + dx * dx);
 
-                    if (dk < kHW) {
+                    if (dk < kHW)
+                    {
                         int ki = round(dk / kHW * (klength - 1));
                         out[i] += kernelData->at(ki) * data;
                     }

@@ -7,13 +7,13 @@
 
 typedef struct
 {
-    float kspace[2];
+    float pos[2];
     float dcf;
 } KPoint2D;
 
 typedef struct
 {
-    float kspace[3];
+    float pos[3];
     float dcf;
 } KPoint3D;
 
@@ -41,6 +41,7 @@ public:
     void clear()
     {
         m_size = 0;
+        m_rcDim = 0;
 
         m_traj.reset();
         m_kDataMultiChannel.clear();
@@ -55,8 +56,5 @@ private:
     std::vector<std::shared_ptr<KData> > m_kDataMultiChannel;
     std::shared_ptr<T> m_traj;
 };
-
-extern template class ReconData<Traj2D>;
-extern template class ReconData<Traj3D>;
 
 #endif // RECONDATA_H

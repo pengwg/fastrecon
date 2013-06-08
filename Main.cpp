@@ -136,12 +136,12 @@ int main(int argc, char *argv[])
     options.showOptions();
     ReconParameters params = options.getReconParameters();
 
-    KData gDataCpu;
+    KData data;
 
     if (params.rczres > 1)
-        gridding<Traj3D>(params, gDataCpu);
+        gridding<Traj3D>(params, data);
     else
-        gridding<Traj2D>(params, gDataCpu);;
+        gridding<Traj2D>(params, data);;
 
 #ifdef CUDA_CAPABLE
     // GPU gridding
@@ -192,13 +192,13 @@ int main(int argc, char *argv[])
     int gridSize = params.rcxres * params.overgridding_factor;;
 
     FFT2D fft(gridSize, gridSize, false);
-    fft.fftShift(gDataCpu);
-    fft.excute(gDataCpu);
-    fft.fftShift(gDataCpu);
+    fft.fftShift(data);
+    fft.excute(data);
+    fft.fftShift(data);
 
     if (options.isDisplay())
     {
-        displayData(gridSize, gridSize, gDataCpu, "image");
+        displayData(gridSize, gridSize, data, "image");
         return app.exec();
     }
     else
