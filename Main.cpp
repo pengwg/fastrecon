@@ -13,7 +13,7 @@
 
 #include "ConvKernel.h"
 #include "GridLut.h"
-#include "FFT2D.h"
+#include "FFT.h"
 
 #ifdef CUDA_CAPABLE
 #include "FFTGpu.h"
@@ -191,7 +191,9 @@ int main(int argc, char *argv[])
 
     int gridSize = params.rcxres * params.overgridding_factor;;
 
-    FFT2D fft(gridSize, gridSize, false);
+    FFT fft;
+    fft.plan(gridSize, gridSize, false);
+
     fft.fftShift(data);
     fft.excute(data);
     fft.fftShift(data);

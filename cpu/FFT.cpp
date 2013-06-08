@@ -1,22 +1,44 @@
-#include "FFT2D.h"
+#include "FFT.h"
 
-FFT2D::FFT2D(int n0, int n1, bool forward)
-    : m_n0(n0), m_n1(n1)
+FFT::FFT()
 {
+
+ 
+}
+
+FFT::~FFT()
+{
+    if (m_plan)
+        fftwf_destroy_plan(m_plan);
+    
+    if (m_in)
+        fftwf_free(m_in);
+}
+
+void FFT::plan(int n0, int n1, bool forward)
+{
+    m_n0 = n0;
+    m_n1 = n1;
+    
     m_in = (fftwf_complex *)fftwf_malloc(sizeof(fftw_complex) * n0 * n1);
     int sign = forward ? FFTW_FORWARD : FFTW_BACKWARD;
 
     m_plan = fftwf_plan_dft_2d(n0, n1, m_in, m_in, sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
-    // m_plan = fftwf_plan_dft_2d(n0, n1, m_in, m_in, sign, FFTW_PATIENT | FFTW_DESTROY_INPUT);
 }
 
-FFT2D::~FFT2D()
+void FFT::plan(int n0, int n1, int n2, bool forward)
 {
-    fftwf_destroy_plan(m_plan);
-    fftwf_free(m_in);
+    m_n0 = n0;
+    m_n1 = n1;
+    m_n2 = n2;
+
+    m_in = (fftwf_complex *)fftwf_malloc(sizeof(fftw_complex) * n0 * n1 * n2);
+    int sign = forward ? FFTW_FORWARD : FFTW_BACKWARD;
+
+    m_plan = fftwf_plan_dft_3d(n0, n1, n2, m_in, m_in, sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
 }
 
-void FFT2D::excute(KData &data)
+void FFT::excute(KData &data)
 {
     int i = 0;
     for (auto value : data) {
@@ -34,7 +56,7 @@ void FFT2D::excute(KData &data)
     }
 }
 
-void FFT2D::fftShift(KData &data)
+void FFT::fftShift(KData &data)
 {
     int n0h = m_n0 / 2;
     int n1h = m_n1 / 2;
