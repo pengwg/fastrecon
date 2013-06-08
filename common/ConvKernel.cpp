@@ -14,10 +14,12 @@ ConvKernel::~ConvKernel()
 
 }
 
-const QVector<float> *ConvKernel::getKernelData()
+const std::vector<float> *ConvKernel::getKernelData()
 {
+    std::vector<float> *data;
+
     if (m_kernelData.get() == 0)
-        m_kernelData.reset(new QVector<float> (m_length));
+        data = new std::vector<float>(m_length);
     else
         return m_kernelData.get();
 
@@ -32,12 +34,13 @@ const QVector<float> *ConvKernel::getKernelData()
         float k = dk * i;
         double x = beta * sqrt(1 - powf(2 * k / w, 2));
 
-        (*m_kernelData)[i] = gsl_sf_bessel_I0(x) / w;
+        data->at(i) = gsl_sf_bessel_I0(x) / w;
 
-        if (i == 0) kernel0 = (*m_kernelData)[0];
-        (*m_kernelData)[i] /= kernel0;
+        if (i == 0) kernel0 = data->at(0);
+        data->at(i) /= kernel0;
 
     }
+    m_kernelData.reset(data);
 
     return m_kernelData.get();
 }

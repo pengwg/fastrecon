@@ -98,7 +98,7 @@ error_t ProgramOptions::parse_opt(int key, char *arg, struct argp_state *state)
     return 0;
 }
 
-void ProgramOptions::showOptions() const
+void ProgramOptions::showParameters() const
 {
     std::cout << "Trajectory: " << reconParameters.traj_filename.toStdString() << std::endl
               << "Data: " << reconParameters.data_filename.toStdString() << std::endl

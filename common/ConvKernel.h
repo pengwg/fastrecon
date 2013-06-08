@@ -1,8 +1,8 @@
 #ifndef CONVKERNEL_H
 #define CONVKERNEL_H
 
-#include <QVector>
 #include <memory>
+#include <vector>
 
 class ConvKernel
 {
@@ -10,7 +10,7 @@ public:
     ConvKernel(float kWidth, float overGridFactor, int length = 32);
     ~ConvKernel();
 
-    const QVector<float> *getKernelData();
+    const std::vector<float> *getKernelData();
     float getKernelWidth() const;
 
 private:
@@ -18,7 +18,7 @@ private:
     float m_ogFactor;
     int m_length;
 
-    std::shared_ptr<QVector<float> > m_kernelData;
+    std::shared_ptr<std::vector<float> > m_kernelData;
 };
 
 #endif // CONVKERNEL_H

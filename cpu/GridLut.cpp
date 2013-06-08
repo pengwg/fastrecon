@@ -20,7 +20,7 @@ void GridLut::gridding(const ReconData<T> &reconData, KData &out)
     out.resize(powf(m_gridSize, reconData.rcDim()));
 
     float kHW = m_kernel.getKernelWidth() / 2;
-    const QVector<float> *kernelData = m_kernel.getKernelData();
+    const std::vector<float> *kernelData = m_kernel.getKernelData();
     int klength = kernelData->size();
 
     int idx = 0;

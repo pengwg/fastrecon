@@ -22,7 +22,7 @@ class ProgramOptions
 {
 public:
     ProgramOptions(int argc, char *argv[]);
-    void showOptions() const;
+    void showParameters() const;
 
     bool isDisplay() const { return display; }
     ReconParameters getReconParameters() const;

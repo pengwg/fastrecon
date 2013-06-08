@@ -4,7 +4,7 @@ find_package(FFTW3 COMPONENTS single REQUIRED)
 
 set(GRID_CPU_SRC_FILES
     GridLut.cpp
-    FFT2D.cpp
+    FFT.cpp
     ../common/ConvKernel.cpp
     ../common/ReconData.cpp
 )

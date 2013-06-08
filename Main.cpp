@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     ProgramOptions options(argc, argv);
-    options.showOptions();
+    options.showParameters();
     ReconParameters params = options.getReconParameters();
 
     KData data;
