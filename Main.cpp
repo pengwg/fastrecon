@@ -202,10 +202,10 @@ int main(int argc, char *argv[])
 
     qWarning() << "\nCPU FFT time =" << timer.elapsed() << "ms";
 
-    QFile file(params.result_filename);
+    /*QFile file(params.result_filename);
     file.open(QIODevice::WriteOnly);
     auto count = file.write((const char *)data.data(), data.size() * sizeof(typename KData::value_type));
-    file.close();
+    file.close();*/
 
     if (options.isDisplay())
     {
