@@ -34,7 +34,7 @@ void GridLut::gridding(const ReconData<N> &reconData, KData &out)
     {
         for (int i = 0; i < reconData.rcDim(); i++)
         {
-            center[i] = (0.5 + point.pos[i]) * m_gridSize; // kspace in (-0.5, 0.5)
+            center[i] = (0.5 + point.pos[i]) * (m_gridSize - 1); // kspace in (-0.5, 0.5)
             start[i] = ceil(center[i] - kHW);
             end[i] = floor(center[i] + kHW);
 
@@ -46,7 +46,7 @@ void GridLut::gridding(const ReconData<N> &reconData, KData &out)
 
         int i = start[2] * m_gridSize * m_gridSize + start[1] * m_gridSize + start[0];
         int di = m_gridSize - (end[0] - start[0]) - 1;
-        int di2 = m_gridSize * m_gridSize - ((end[0] - start[0]) + 1) * ((end[1] - start[1]) + 1);
+        int di2 = m_gridSize * m_gridSize - (end[1] - start[1] + 1) * m_gridSize;
 
         for (int z = start[2]; z <= end[2]; z++)
         {

@@ -24,8 +24,8 @@ void displayData(int n0, int n1, int n2, const KData& data, const QString& title
 {
     std::vector<float> dataValue;
 
-    int start = (n0 * n1) * n2 / 2;
-    int end = (n0 * n1) * (n2 / 2 + 1);
+    int start = (n0 * n1) * (n2 / 2 - 1);
+    int end = (n0 * n1) * (n2 / 2);
 
     for (auto it = data.begin() + start; it < data.begin() + end; it++) {
         float value = std::abs(*it);
@@ -197,10 +197,15 @@ int main(int argc, char *argv[])
     timer.start();
 
     // fft.fftShift(data);
-    fft.excute(data);
+    // fft.excute(data);
     // fft.fftShift(data);
 
     qWarning() << "\nCPU FFT time =" << timer.elapsed() << "ms";
+
+    QFile file(params.result_filename);
+    file.open(QIODevice::WriteOnly);
+    auto count = file.write((const char *)data.data(), data.size() * sizeof(typename KData::value_type));
+    file.close();
 
     if (options.isDisplay())
     {
