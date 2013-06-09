@@ -1,11 +1,11 @@
 #include <QString>
 #include <QDir>
 #include <QFile>
-#include <QDebug>
 #include <QApplication>
 #include <QLabel>
 #include <QElapsedTimer>
 
+#include <iostream>
 #include <float.h>
 
 #include "ProgramOptions.h"
@@ -77,7 +77,7 @@ void loadReconData(ReconData<N> &reconData, const ReconParameters &params)
 
     if (count != size * sizeof(typename Traj<N>::value_type))
     {
-        qWarning() << "Error: wrong data size in " << params.traj_filename << '\n';
+        std::cout << "Error: wrong data size in " << params.traj_filename.toStdString() << std::endl;
         std::exit(1);
     }
 
@@ -94,7 +94,7 @@ void loadReconData(ReconData<N> &reconData, const ReconParameters &params)
 
     if (count != size * sizeof(KData::value_type))
     {
-        qWarning() << "Error: wrong data size in " << params.traj_filename << '\n';
+        std::cout << "Error: wrong data size in " << params.traj_filename.toStdString() << std::endl;
         std::exit(1);
     }
 
@@ -114,18 +114,19 @@ void gridding(const ReconParameters &params, KData &out)
     int gridSize = params.rcxres * overGridFactor;
 
     int rep = 1;
-    qWarning() << "\nIteration" << rep << 'x';
+    std::cout << "\nIteration " << rep << 'x' << std::endl;
 
     // CPU gridding
     GridLut gridCpu(gridSize, kernel);
 
     QElapsedTimer timer;
     timer.start();
+    std::cout << "CPU gridding... " << std::flush;
 
     for (int i = 0; i < rep; i++)
         gridCpu.gridding(reconData, out);
 
-    qWarning() << "\nCPU gridding time =" << timer.elapsed() << "ms";
+    std::cout << timer.elapsed() << "ms";
 }
 
 int main(int argc, char *argv[])
@@ -196,11 +197,12 @@ int main(int argc, char *argv[])
     QElapsedTimer timer;
     timer.start();
 
+    std::cout << "  |  FFT... " << std::flush;
     // fft.fftShift(data);
-    // fft.excute(data);
-    // fft.fftShift(data);
+    fft.excute(data);
+    fft.fftShift(data);
 
-    qWarning() << "\nCPU FFT time =" << timer.elapsed() << "ms";
+    std::cout << timer.elapsed() << "ms" << std::endl;
 
     /*QFile file(params.result_filename);
     file.open(QIODevice::WriteOnly);

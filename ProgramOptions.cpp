@@ -2,6 +2,7 @@
 #include <QSettings>
 #include <argp.h>
 #include <iostream>
+#include <iomanip>
 
 #include "ProgramOptions.h"
 
@@ -100,15 +101,16 @@ error_t ProgramOptions::parse_opt(int key, char *arg, struct argp_state *state)
 
 void ProgramOptions::showParameters() const
 {
-    std::cout << "Trajectory: " << reconParameters.traj_filename.toStdString() << std::endl
-              << "Data: " << reconParameters.data_filename.toStdString() << std::endl
-              << "Output: " << reconParameters.result_filename.toStdString()<< std::endl
-              << "Samples: " << reconParameters.samples << std::endl
-              << "Projections: " << reconParameters.projections << std::endl
-              << "Overgridding factor: " << reconParameters.overgridding_factor << std::endl
-              << "rcxres: " << reconParameters.rcxres << std::endl
-              << "rcyres: " << reconParameters.rcyres << std::endl
-              << "rczres: " << reconParameters.rczres << std::endl;
+    std::cout << std::left
+              << std::setw(22) << "Trajectory:" << reconParameters.traj_filename.toStdString() << std::endl
+              << std::setw(22) << "Data:" << reconParameters.data_filename.toStdString() << std::endl
+              << std::setw(22) << "Output:" << reconParameters.result_filename.toStdString()<< std::endl
+              << std::setw(22) << "Samples:" << reconParameters.samples << std::endl
+              << std::setw(22) << "Projections:" << reconParameters.projections << std::endl
+              << std::setw(22) << "Overgridding factor:" << reconParameters.overgridding_factor << std::endl
+              << std::setw(22) << "rcxres:" << reconParameters.rcxres << std::endl
+              << std::setw(22) << "rcyres:" << reconParameters.rcyres << std::endl
+              << std::setw(22) << "rczres:" << reconParameters.rczres << std::endl;
 }
 
 ReconParameters ProgramOptions::getReconParameters() const
