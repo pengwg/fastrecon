@@ -20,20 +20,20 @@
 #include "GridGpu.h"
 #endif
 
-void displayData(int n0, int n1, const KData& data, const QString& title)
+void displayData(int n0, int n1, int n2, const KData& data, const QString& title)
 {
-    QVector<float> dataValue;
+    std::vector<float> dataValue;
 
-    float max = 0;
-    float min = FLT_MAX;
+    int start = (n0 * n1) * n2 / 2;
+    int end = (n0 * n1) * (n2 / 2 + 1);
 
-    for (auto cValue : data) {
-        float value = std::abs(cValue);
-        if (value > max) max = value;
-        if (value < min) min = value;
-
-        dataValue << value;
+    for (auto it = data.begin() + start; it < data.begin() + end; it++) {
+        float value = std::abs(*it);
+        dataValue.push_back(value);
     }
+
+    float max = *std::max_element(dataValue.begin(), dataValue.end());
+    float min = *std::min_element(dataValue.begin(), dataValue.end());
 
     QImage dataImage(n1, n0, QImage::Format_Indexed8);
     for (int i = 0; i < 256; i++) {
@@ -167,14 +167,6 @@ int main(int argc, char *argv[])
         gridGpu.retrieveData(gDataGpu);
     qWarning() << "\nGPU data retrive time =" << timer.elapsed() << "ms";
 
-    // CPU FFT
-    FFT2D fft(gridSize, gridSize, false);
-    timer.restart();
-    for (int i = 0; i < rep; i++) {
-        fft.fftShift(gDataCpu);
-        fft.excute(gDataCpu);
-        fft.fftShift(gDataCpu);
-    }
 
     qWarning() << "\nCPU FFT time =" << timer.elapsed() << "ms";
 
@@ -190,17 +182,29 @@ int main(int argc, char *argv[])
 #endif
 
     int gridSize = params.rcxres * params.overgridding_factor;;
+    int zSize = 0;
 
     FFT fft;
-    fft.plan(gridSize, gridSize, false);
+    if (params.rczres > 1)
+    {
+        fft.plan(gridSize, gridSize, gridSize, false);
+        zSize = gridSize;
+    }
+    else
+        fft.plan(gridSize, gridSize, false);
 
-    fft.fftShift(data);
+    QElapsedTimer timer;
+    timer.start();
+
+    // fft.fftShift(data);
     fft.excute(data);
-    fft.fftShift(data);
+    // fft.fftShift(data);
+
+    qWarning() << "\nCPU FFT time =" << timer.elapsed() << "ms";
 
     if (options.isDisplay())
     {
-        displayData(gridSize, gridSize, data, "image");
+        displayData(gridSize, gridSize, zSize, data, "image");
         return app.exec();
     }
     else
