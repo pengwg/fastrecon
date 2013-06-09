@@ -17,9 +17,9 @@ public:
     void fftShift(KData &data);
 
 private:
-    int m_n0;
-    int m_n1;
-    int m_n2;
+    int m_n0 = 0;
+    int m_n1 = 1;
+    int m_n2 = 1;
 
     fftwf_plan m_plan = nullptr;
     fftwf_complex *m_in = nullptr;

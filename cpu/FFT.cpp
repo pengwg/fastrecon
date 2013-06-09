@@ -1,9 +1,10 @@
+#include <string.h>
+#include <iostream>
+
 #include "FFT.h"
 
 FFT::FFT()
 {
-
- 
 }
 
 FFT::~FFT()
@@ -40,20 +41,15 @@ void FFT::plan(int n0, int n1, int n2, bool forward)
 
 void FFT::excute(KData &data)
 {
-    int i = 0;
-    for (auto value : data) {
-        m_in[i][0] = value.real();
-        m_in[i][1] = value.imag();
-        i++;
+    if (data.size() != m_n0 * m_n1 * m_n2)
+    {
+        std::cerr << "Error: wrong FFT size" << std::endl;
+        exit(1);
     }
 
+    memcpy(m_in, data.data(), m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
     fftwf_execute(m_plan);
-
-    i = 0;
-    for (auto & value : data) {
-        value = std::complex<float> (m_in[i][0], m_in[i][1]);
-        i++;
-    }
+    memcpy(data.data(), m_in, m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
 }
 
 void FFT::fftShift(KData &data)
