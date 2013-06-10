@@ -20,9 +20,10 @@
 #include "GridGpu.h"
 #endif
 
-void displayData(int n0, int n1, int n2, const KData& data, const QString& title)
+void displayData(const KData& data, int n0, int n1, int n2, const QString& title)
 {
     std::vector<float> dataValue;
+    if (n2 == 0) n2 = 2;
 
     int start = (n0 * n1) * (n2 / 2 - 1);
     int end = (n0 * n1) * (n2 / 2);
@@ -211,7 +212,7 @@ int main(int argc, char *argv[])
 
     if (options.isDisplay())
     {
-        displayData(gridSize, gridSize, zSize, data, "image");
+        displayData(data, gridSize, gridSize, zSize, "image");
         return app.exec();
     }
     else
