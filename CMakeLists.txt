@@ -1,4 +1,4 @@
-project(GriddingRecon)
+project(FastRecon)
 
 cmake_minimum_required(VERSION 2.8.9)
 
@@ -27,7 +27,7 @@ endif(CUDA_FOUND)
 
 add_subdirectory(cpu)
 
-add_executable(griddingrecon ${MAIN_SRC_FILES})
+add_executable(fastrecon ${MAIN_SRC_FILES})
 
-target_link_libraries(griddingrecon gridCPU)
-qt5_use_modules(griddingrecon Core Widgets)
+target_link_libraries(fastrecon gridCPU)
+qt5_use_modules(fastrecon Core Widgets)
