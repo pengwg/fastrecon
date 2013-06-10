@@ -23,12 +23,12 @@ void GridLut::gridding(const ReconData<N> &reconData, KData &out)
     const std::vector<float> *kernelData = m_kernel.getKernelData();
     int klength = kernelData->size();
 
-    int idx = 0;
     const auto *traj = reconData.getTraj();
     const KData *kData = reconData.getChannelData(0);
 
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};
+    auto itData = kData->cbegin();
 
     for (const auto &point : (*traj))
     {
@@ -42,9 +42,10 @@ void GridLut::gridding(const ReconData<N> &reconData, KData &out)
             end[i] = fmin(end[i], m_gridSize - 1);
         }
 
-        auto data = point.dcf * kData->at(idx);
+        auto data = point.dcf * (*itData++);
 
         int i = start[2] * m_gridSize * m_gridSize + start[1] * m_gridSize + start[0];
+        auto itOut = out.begin() + i;
         int di = m_gridSize - (end[0] - start[0]) - 1;
         int di2 = m_gridSize * m_gridSize - (end[1] - start[1] + 1) * m_gridSize;
 
@@ -66,15 +67,14 @@ void GridLut::gridding(const ReconData<N> &reconData, KData &out)
                     if (dk < kHW)
                     {
                         int ki = round(dk / kHW * (klength - 1));
-                        out[i] += kernelData->at(ki) * data;
+                        *itOut += kernelData->at(ki) * data;
                     }
-                    i++;
+                    itOut++;
                 }
-                i += di;
+                itOut += di;
             }
-            i += di2;
+            itOut += di2;
         }
-        idx++;
     }
 }
 
