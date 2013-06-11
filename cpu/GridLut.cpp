@@ -1,4 +1,5 @@
-#include <QDebug>
+#include <QElapsedTimer>
+#include <iostream>
 
 #include "GridLut.h"
 
@@ -16,12 +17,19 @@ GridLut::~GridLut()
 
 void GridLut::gridding(const ReconData &reconData, ImageData &imgData)
 {
+    QElapsedTimer timer;
+    timer.start();
+
     int rcDim = reconData.rcDim();
     for (int i = 0; i < reconData.channels(); i++)
     {
+        std::cout << "Gridding channel " << i << "... " << std::flush;
+
         ComplexVector *out = new ComplexVector(powf(m_gridSize, rcDim));
         griddingChannel(reconData, i, *out);
         imgData.push_back(std::shared_ptr<ComplexVector>(out));
+
+        std::cout << timer.restart() << " ms" << std::endl;
     }
 }
 

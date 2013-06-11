@@ -156,14 +156,10 @@ void gridding(const ReconParameters &params, ImageData &out)
     // CPU gridding
     GridLut gridCpu(gridSize, kernel);
 
-    QElapsedTimer timer;
-    timer.start();
-    std::cout << "CPU gridding... " << std::flush;
+    std::cout << "\nCPU gridding... " << std::endl;
 
     for (int i = 0; i < rep; i++)
         gridCpu.gridding(reconData, out);
-
-    std::cout << timer.elapsed() << " ms";
 }
 
 int main(int argc, char *argv[])
@@ -192,21 +188,30 @@ int main(int argc, char *argv[])
     QElapsedTimer timer;
     timer.start();
 
-    std::cout << "  |  FFT... " << std::flush;
-    // fft.fftShift(data);
-    fft.excute(*imgData[3].get());
-    fft.fftShift(*imgData[3].get());
+    std::cout << "\nCPU FFT... " << std::endl;
+    int i = 0;
 
-    std::cout << timer.elapsed() << " ms" << std::endl;
+    for (auto &data : imgData)
+    {
+        std::cout << "FFT channel " << i++ << "... " << std::flush;
+
+        // fft.fftShift(data);
+        fft.excute(*data.get());
+        fft.fftShift(*data.get());
+
+        std::cout << timer.restart() << " ms" << std::endl;
+    }
 
     /*QFile file(params.result_filename);
     file.open(QIODevice::WriteOnly);
     auto count = file.write((const char *)data.data(), data.size() * sizeof(typename KData::value_type));
     file.close();*/
 
+    i = 0;
     if (options.isDisplay())
     {
-        displayData(*imgData[3].get(), gridSize, gridSize, zSize, "image");
+        for (auto &data : imgData)
+            displayData(*data.get(), gridSize, gridSize, zSize, QString("channel ") + QString::number(i++));
         return app.exec();
     }
     else
