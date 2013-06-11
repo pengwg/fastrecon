@@ -22,16 +22,18 @@ error_t ProgramOptions::loadIniOptions()
     }
 
     QDir dir;
-    QString path = dir.relativeFilePath(fileInfo.canonicalPath()) + '/';
+    QString path = dir.relativeFilePath(fileInfo.canonicalPath());
 
     QSettings settings(iniFileName, QSettings::IniFormat);
 
-    reconParameters.samples = settings.value("samples").toInt();
-    reconParameters.projections = settings.value("projections").toInt();
-    reconParameters.traj_filename = path + settings.value("traj_filename").toString();
-    reconParameters.data_filename = path + settings.value("data_filename").toString();
-    reconParameters.result_filename = path + settings.value("out_filename").toString();
+    reconParameters.path = path;
+    reconParameters.trajFiles = settings.value("traj_file").toString();
+    reconParameters.dcfFile = settings.value("weight_file").toString();
+    reconParameters.dataFiles = settings.value("data_file").toString();
+    reconParameters.outFile = settings.value("out_file").toString();
 
+    reconParameters.samples = settings.value("xres").toInt();
+    reconParameters.projections = settings.value("projections").toInt();
     reconParameters.rcxres = settings.value("rcxres").toInt();
     reconParameters.rcyres = settings.value("rcyres").toInt();
     reconParameters.rczres = settings.value("rczres").toInt();
@@ -102,9 +104,6 @@ error_t ProgramOptions::parse_opt(int key, char *arg, struct argp_state *state)
 void ProgramOptions::showParameters() const
 {
     std::cout << std::left
-              << std::setw(22) << "Trajectory:" << reconParameters.traj_filename.toStdString() << std::endl
-              << std::setw(22) << "Data:" << reconParameters.data_filename.toStdString() << std::endl
-              << std::setw(22) << "Output:" << reconParameters.result_filename.toStdString()<< std::endl
               << std::setw(22) << "Samples:" << reconParameters.samples << std::endl
               << std::setw(22) << "Projections:" << reconParameters.projections << std::endl
               << std::setw(22) << "Overgridding factor:" << reconParameters.overgridding_factor << std::endl

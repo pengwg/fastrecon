@@ -71,14 +71,14 @@ void loadReconData(ReconData<N> &reconData, const ReconParameters &params)
     int size = params.samples * params.projections;
     Traj<N> *traj = new Traj<N>(size);
 
-    QFile file(params.traj_filename);
+    QFile file(params.path + '/' + params.trajFiles);
     file.open(QIODevice::ReadOnly);
     auto count = file.read((char *)traj->data(), size * sizeof(typename Traj<N>::value_type));
     file.close();
 
     if (count != size * sizeof(typename Traj<N>::value_type))
     {
-        std::cout << "Error: wrong data size in " << params.traj_filename.toStdString() << std::endl;
+        std::cout << "Error: wrong data size in " << params.trajFiles.toStdString() << std::endl;
         std::exit(1);
     }
 
@@ -88,14 +88,14 @@ void loadReconData(ReconData<N> &reconData, const ReconParameters &params)
     size = params.samples * params.projections;
     KData *kdata = new KData(size);
 
-    file.setFileName(params.data_filename);
+    file.setFileName(params.path + '/' + params.dataFiles);
     file.open(QIODevice::ReadOnly);
     count = file.read((char *)kdata->data(), size * sizeof(KData::value_type));
     file.close();
 
     if (count != size * sizeof(KData::value_type))
     {
-        std::cout << "Error: wrong data size in " << params.traj_filename.toStdString() << std::endl;
+        std::cout << "Error: wrong data size in " << params.trajFiles.toStdString() << std::endl;
         std::exit(1);
     }
 
@@ -127,7 +127,7 @@ void gridding(const ReconParameters &params, KData &out)
     for (int i = 0; i < rep; i++)
         gridCpu.gridding(reconData, out);
 
-    std::cout << timer.elapsed() << "ms";
+    std::cout << timer.elapsed() << " ms";
 }
 
 int main(int argc, char *argv[])
@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
     fft.excute(data);
     fft.fftShift(data);
 
-    std::cout << timer.elapsed() << "ms" << std::endl;
+    std::cout << timer.elapsed() << " ms" << std::endl;
 
     /*QFile file(params.result_filename);
     file.open(QIODevice::WriteOnly);
