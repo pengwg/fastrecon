@@ -64,8 +64,7 @@ void displayData(const ComplexVector& data, int n0, int n1, int n2, const QStrin
     imgWnd->show();
 }
 
-template <int N>
-void loadReconData(ReconData<N> &reconData, const ReconParameters &params)
+void loadReconData(ReconData &reconData, const ReconParameters &params)
 {
     // Load trajectory
     int size = params.samples * params.projections;
@@ -140,10 +139,9 @@ void loadReconData(ReconData<N> &reconData, const ReconParameters &params)
     }
 }
 
-template <int N>
 void gridding(const ReconParameters &params, ComplexVector &out)
 {
-    ReconData<N> reconData;
+    ReconData reconData;
     loadReconData(reconData, params);
 
     int kWidth = 4;
@@ -177,11 +175,7 @@ int main(int argc, char *argv[])
     ReconParameters params = options.getReconParameters();
 
     ComplexVector data;
-
-    if (params.rczres > 1)
-        gridding<3>(params, data);
-    else
-        gridding<2>(params, data);;
+    gridding(params, data);
 
 #ifdef CUDA_CAPABLE
     // GPU gridding

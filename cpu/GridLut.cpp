@@ -14,27 +14,31 @@ GridLut::~GridLut()
 
 }
 
-template <int N>
-void GridLut::gridding(const ReconData<N> &reconData, ComplexVector &out)
+void GridLut::gridding(const ReconData &reconData, ComplexVector &out)
 {
-    out.resize(powf(m_gridSize, N));
+    int rcDim = reconData.rcDim();
+    out.resize(powf(m_gridSize, rcDim));
 
     float kHW = m_kernel.getKernelWidth() / 2;
     const std::vector<float> *kernelData = m_kernel.getKernelData();
     int klength = kernelData->size();
 
-    const auto *traj = reconData.getTraj();
     const ComplexVector *kData = reconData.getChannelData(0);
+    auto itDcf = reconData.getDcf()->cbegin();
+    FloatVector::const_iterator itTrajComp[3];
+    for (int i = 0; i < rcDim; i++)
+    {
+        itTrajComp[i] = reconData.getTrajComponent(i)->cbegin();
+    }
 
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};
-    auto itData = kData->cbegin();
 
-    for (const auto &point : (*traj))
+    for (const auto &sample : (*kData))
     {
-        for (int i = 0; i < reconData.rcDim(); i++)
+        for (int i = 0; i < rcDim; i++)
         {
-            center[i] = (0.5 + point.pos[i]) * (m_gridSize - 1); // kspace in (-0.5, 0.5)
+            center[i] = (0.5 + *itTrajComp[i]++) * (m_gridSize - 1); // kspace in (-0.5, 0.5)
             start[i] = ceil(center[i] - kHW);
             end[i] = floor(center[i] + kHW);
 
@@ -42,7 +46,7 @@ void GridLut::gridding(const ReconData<N> &reconData, ComplexVector &out)
             end[i] = fmin(end[i], m_gridSize - 1);
         }
 
-        auto data = point.dcf * (*itData++);
+        auto data = (*itDcf++) * sample;
 
         int i = start[2] * m_gridSize * m_gridSize + start[1] * m_gridSize + start[0];
         auto itOut = out.begin() + i;
@@ -78,8 +82,3 @@ void GridLut::gridding(const ReconData<N> &reconData, ComplexVector &out)
     }
 }
 
-template
-void GridLut::gridding(const ReconData<2> &reconData, ComplexVector &out);
-
-template
-void GridLut::gridding(const ReconData<3> &reconData, ComplexVector &out);
