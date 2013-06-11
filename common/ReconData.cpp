@@ -2,7 +2,7 @@
 
 #include "ReconData.h"
 
-void ReconData::addChannelData(ComplexVector *data)
+void ReconData::addChannelData(const ComplexVector *data)
 {
     if (m_size != 0 && m_size != data->size())
     {
@@ -11,7 +11,7 @@ void ReconData::addChannelData(ComplexVector *data)
     }
 
     m_size = data->size();
-    m_kDataMultiChannel.push_back(std::shared_ptr<ComplexVector>(data));
+    m_kDataMultiChannel.push_back(std::shared_ptr<const ComplexVector>(data));
 }
 
 void ReconData::addTrajComponent(FloatVector *trajComp)

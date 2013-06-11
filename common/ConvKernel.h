@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include "ReconData.h"
 
 class ConvKernel
 {
@@ -10,7 +11,7 @@ public:
     ConvKernel(float kWidth, float overGridFactor, int length = 32);
     ~ConvKernel();
 
-    const std::vector<float> *getKernelData();
+    const FloatVector *getKernelData();
     float getKernelWidth() const;
 
 private:
@@ -18,7 +19,7 @@ private:
     float m_ogFactor;
     int m_length;
 
-    std::shared_ptr<std::vector<float> > m_kernelData;
+    std::shared_ptr<FloatVector> m_kernelData;
 };
 
 #endif // CONVKERNEL_H

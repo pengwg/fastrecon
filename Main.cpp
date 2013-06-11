@@ -139,7 +139,7 @@ void loadReconData(ReconData &reconData, const ReconParameters &params)
     }
 }
 
-void gridding(const ReconParameters &params, ComplexVector &out)
+void gridding(const ReconParameters &params, ImageData &out)
 {
     ReconData reconData;
     loadReconData(reconData, params);
@@ -174,46 +174,8 @@ int main(int argc, char *argv[])
     options.showParameters();
     ReconParameters params = options.getReconParameters();
 
-    ComplexVector data;
-    gridding(params, data);
-
-#ifdef CUDA_CAPABLE
-    // GPU gridding
-    GridGpu gridGpu(gridSize, kernel);
-    gridGpu.prepareGPU(trajPoints);
-
-    timer.restart();
-    for (int i = 0; i < rep; i++)
-        gridGpu.transferData(trajData);
-
-    cudaDeviceSynchronize();
-    qWarning() << "\nGPU data transfer time =" << timer.elapsed() << "ms";
-
-    timer.restart();
-    for (int i = 0; i < rep; i++)
-        gridGpu.gridding();
-
-    cudaDeviceSynchronize();
-    qWarning() << "\nGPU gridding time =" << timer.elapsed() << "ms";
-
-    timer.restart();
-    for (int i = 0; i < rep; i++)
-        gridGpu.retrieveData(gDataGpu);
-    qWarning() << "\nGPU data retrive time =" << timer.elapsed() << "ms";
-
-
-    qWarning() << "\nCPU FFT time =" << timer.elapsed() << "ms";
-
-    // GPU FFT
-    FFTGpu fftGpu(gridSize, gridSize);
-    timer.restart();
-    for (int i = 0; i < rep; i++) {
-        fftGpu.Execute((cufftComplex *)gridGpu.getDevicePointer());
-    }
-    cudaDeviceSynchronize();
-    qWarning() << "\nGPU FFT time =" << timer.elapsed() << "ms";
-
-#endif
+    ImageData imgData;
+    gridding(params, imgData);
 
     int gridSize = params.rcxres * params.overgridding_factor;;
     int zSize = 0;
@@ -232,8 +194,8 @@ int main(int argc, char *argv[])
 
     std::cout << "  |  FFT... " << std::flush;
     // fft.fftShift(data);
-    fft.excute(data);
-    fft.fftShift(data);
+    fft.excute(*imgData[3].get());
+    fft.fftShift(*imgData[3].get());
 
     std::cout << timer.elapsed() << " ms" << std::endl;
 
@@ -244,7 +206,7 @@ int main(int argc, char *argv[])
 
     if (options.isDisplay())
     {
-        displayData(data, gridSize, gridSize, zSize, "image");
+        displayData(*imgData[3].get(), gridSize, gridSize, zSize, "image");
         return app.exec();
     }
     else

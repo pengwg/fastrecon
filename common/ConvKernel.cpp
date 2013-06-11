@@ -14,7 +14,7 @@ ConvKernel::~ConvKernel()
 
 }
 
-const std::vector<float> *ConvKernel::getKernelData()
+const FloatVector *ConvKernel::getKernelData()
 {
     std::vector<float> *data;
 

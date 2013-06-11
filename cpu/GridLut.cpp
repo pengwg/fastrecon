@@ -14,17 +14,27 @@ GridLut::~GridLut()
 
 }
 
-void GridLut::gridding(const ReconData &reconData, ComplexVector &out)
+void GridLut::gridding(const ReconData &reconData, ImageData &imgData)
 {
     int rcDim = reconData.rcDim();
-    out.resize(powf(m_gridSize, rcDim));
+    for (int i = 0; i < reconData.channels(); i++)
+    {
+        ComplexVector *out = new ComplexVector(powf(m_gridSize, rcDim));
+        griddingChannel(reconData, i, *out);
+        imgData.push_back(std::shared_ptr<ComplexVector>(out));
+    }
+}
+
+void GridLut::griddingChannel(const ReconData &reconData, int channel, ComplexVector &out)
+{
+    const ComplexVector *kData = reconData.getChannelData(channel);
+    auto itDcf = reconData.getDcf()->cbegin();
+    int rcDim = reconData.rcDim();
 
     float kHW = m_kernel.getKernelWidth() / 2;
     const std::vector<float> *kernelData = m_kernel.getKernelData();
     int klength = kernelData->size();
 
-    const ComplexVector *kData = reconData.getChannelData(0);
-    auto itDcf = reconData.getDcf()->cbegin();
     FloatVector::const_iterator itTrajComp[3];
     for (int i = 0; i < rcDim; i++)
     {

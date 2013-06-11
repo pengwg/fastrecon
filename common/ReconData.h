@@ -7,6 +7,7 @@
 
 typedef std::vector<std::complex<float> > ComplexVector;
 typedef std::vector<float> FloatVector;
+typedef std::vector<std::shared_ptr<ComplexVector>> ImageData;
 
 class ReconData
 {
@@ -16,7 +17,7 @@ public:
     int dataSize() const {return m_size;}
     int channels() const {return m_kDataMultiChannel.size();}
 
-    void addChannelData(ComplexVector *data);
+    void addChannelData(const ComplexVector *data);
     void addTrajComponent(FloatVector *trajComp);
     void setDcf(FloatVector *dcf);
 
@@ -35,7 +36,7 @@ public:
 private:
     int m_size = 0;
 
-    std::vector<std::shared_ptr<ComplexVector> > m_kDataMultiChannel;
+    std::vector<std::shared_ptr<const ComplexVector> > m_kDataMultiChannel;
     std::vector<std::shared_ptr<FloatVector> > m_traj;
     std::shared_ptr<FloatVector> m_dcf;
 };
