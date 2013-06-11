@@ -15,8 +15,8 @@ public:
     void gridding(const ReconData &reconData, ImageData &imgData);
 
 protected:
-    ConvKernel m_kernel;
     int m_gridSize;
+    ConvKernel m_kernel;
     FloatVector m_center[3];
     std::vector<int> m_start[3];
     std::vector<int> m_end[3];

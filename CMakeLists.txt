@@ -2,7 +2,7 @@ project(FastRecon)
 
 cmake_minimum_required(VERSION 2.8.9)
 
-add_definitions( -std=c++11 )
+add_definitions( -std=c++11 -Wall -Wno-sign-compare)
 
 set(CMAKE_BUILD_TYPE Release)
 

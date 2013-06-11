@@ -28,7 +28,7 @@ const FloatVector *ConvKernel::getKernelData()
     float beta = M_PI * sqrt(w * w / (a * a) * (a - 0.5) * (a - 0.5) - 0.8);
 
     float dk = w / 2.0 / (m_length -1);
-    float kernel0;
+    float kernel0 = 1;
 
     for (int i = 0; i < m_length; i++) {
         float k = dk * i;
