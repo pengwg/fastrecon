@@ -15,7 +15,8 @@ struct KPoint
 template <int N>
 using Traj = std::vector<KPoint<N> >;
 
-typedef std::vector<std::complex<float> > KData;
+typedef std::vector<std::complex<float> > ComplexVector;
+typedef std::vector<float> FloatVector;
 
 template <int N>
 class ReconData
@@ -27,11 +28,13 @@ public:
     int channels() const {return m_kDataMultiChannel.size();}
 
     void setTraj(Traj<N> *traj);
-    void addChannelData(KData *data);
+    void addChannelData(ComplexVector *data);
+    void addTrajComponent(FloatVector *trajComp);
+    void setDcf(FloatVector *dcf);
 
     const Traj<N> *getTraj() const { return m_traj.get(); }
 
-    const KData *getChannelData(int channel) const
+    const ComplexVector *getChannelData(int channel) const
     { return m_kDataMultiChannel[channel].get(); }
 
     void clear()
@@ -49,8 +52,10 @@ private:
     int m_rcDim = 0;
     int m_size = 0;
 
-    std::vector<std::shared_ptr<KData> > m_kDataMultiChannel;
+    std::vector<std::shared_ptr<ComplexVector> > m_kDataMultiChannel;
     std::shared_ptr<Traj<N> > m_traj;
+    std::vector<std::shared_ptr<FloatVector> > m_traj1;
+    std::shared_ptr<FloatVector> m_dcf;
 };
 
 #endif // RECONDATA_H

@@ -18,7 +18,7 @@ void ReconData<N>::setTraj(Traj<N> *traj)
 }
 
 template <int N>
-void ReconData<N>::addChannelData(KData *data)
+void ReconData<N>::addChannelData(ComplexVector *data)
 {
     if (m_size != 0 && m_size != data->size())
     {
@@ -27,7 +27,33 @@ void ReconData<N>::addChannelData(KData *data)
     }
 
     m_size = data->size();
-    m_kDataMultiChannel.push_back(std::shared_ptr<KData>(data));
+    m_kDataMultiChannel.push_back(std::shared_ptr<ComplexVector>(data));
+}
+
+template <int N>
+void ReconData<N>::addTrajComponent(FloatVector *trajComp)
+{
+    if (m_size != 0 && m_size != trajComp->size())
+    {
+        std::cerr << "Error: data size does not match!" << std::endl;
+        exit(1);
+    }
+
+    m_size = trajComp->size();
+    m_traj1.push_back(std::shared_ptr<FloatVector>(trajComp));
+}
+
+template <int N>
+void ReconData<N>::setDcf(FloatVector *dcf)
+{
+    if (m_size != 0 && m_size != dcf->size())
+    {
+        std::cerr << "Error: data size does not match!" << std::endl;
+        exit(1);
+    }
+
+    m_size = dcf->size();
+    m_dcf.reset(dcf);
 }
 
 template class ReconData<2>;

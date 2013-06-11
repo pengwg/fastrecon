@@ -40,7 +40,7 @@ void FFT::plan(int xSize, int ySize, int zSize, bool forward)
     m_plan = fftwf_plan_dft_3d(ySize, xSize, zSize, m_in, m_in, sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
 }
 
-void FFT::excute(KData &data)
+void FFT::excute(ComplexVector &data)
 {
     if (data.size() != m_n0 * m_n1 * m_n2)
     {
@@ -53,7 +53,7 @@ void FFT::excute(KData &data)
     memcpy(data.data(), m_in, m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
 }
 
-void FFT::fftShift(KData &data)
+void FFT::fftShift(ComplexVector &data)
 {
     if (data.size() != m_n0 * m_n1 * m_n2)
     {
@@ -68,7 +68,7 @@ void FFT::fftShift(KData &data)
 
 }
 
-void FFT::fftShift2(KData &data)
+void FFT::fftShift2(ComplexVector &data)
 {
     int n0h = m_n0 / 2;
     int n1h = m_n1 / 2;
@@ -90,7 +90,7 @@ void FFT::fftShift2(KData &data)
     }
 }
 
-void FFT::fftShift3(KData &data)
+void FFT::fftShift3(ComplexVector &data)
 {
     int n0h = m_n0 / 2;
     int n1h = m_n1 / 2;

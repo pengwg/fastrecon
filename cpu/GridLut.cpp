@@ -15,7 +15,7 @@ GridLut::~GridLut()
 }
 
 template <int N>
-void GridLut::gridding(const ReconData<N> &reconData, KData &out)
+void GridLut::gridding(const ReconData<N> &reconData, ComplexVector &out)
 {
     out.resize(powf(m_gridSize, N));
 
@@ -24,7 +24,7 @@ void GridLut::gridding(const ReconData<N> &reconData, KData &out)
     int klength = kernelData->size();
 
     const auto *traj = reconData.getTraj();
-    const KData *kData = reconData.getChannelData(0);
+    const ComplexVector *kData = reconData.getChannelData(0);
 
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};
@@ -79,7 +79,7 @@ void GridLut::gridding(const ReconData<N> &reconData, KData &out)
 }
 
 template
-void GridLut::gridding(const ReconData<2> &reconData, KData &out);
+void GridLut::gridding(const ReconData<2> &reconData, ComplexVector &out);
 
 template
-void GridLut::gridding(const ReconData<3> &reconData, KData &out);
+void GridLut::gridding(const ReconData<3> &reconData, ComplexVector &out);

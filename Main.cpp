@@ -20,7 +20,7 @@
 #include "GridGpu.h"
 #endif
 
-void displayData(const KData& data, int n0, int n1, int n2, const QString& title)
+void displayData(const ComplexVector& data, int n0, int n1, int n2, const QString& title)
 {
     std::vector<float> dataValue;
     if (n2 == 0) n2 = 2;
@@ -69,44 +69,82 @@ void loadReconData(ReconData<N> &reconData, const ReconParameters &params)
 {
     // Load trajectory
     int size = params.samples * params.projections;
-    Traj<N> *traj = new Traj<N>(size);
 
-    QFile file(params.path + '/' + params.trajFiles);
+    QDir dir(params.path, QString(params.trajFiles), QDir::Name);
+    QStringList fileList = dir.entryList();
+
+    std::cout << std::endl << "Read trajectory:" << std::endl;
+    for (const QString &name : fileList)
+    {
+        FloatVector *traj = new FloatVector(size);
+
+        QString fileName = params.path + '/' + name;
+        std::cout << fileName.toStdString() << std::endl;
+
+        QFile file(fileName);
+        file.open(QIODevice::ReadOnly);
+        auto count = file.read((char *)traj->data(), size * sizeof(FloatVector::value_type));
+        file.close();
+
+        if (count != size * sizeof(FloatVector::value_type))
+        {
+            std::cout << "Error: wrong data size in " << fileName.toStdString() << std::endl;
+            std::exit(1);
+        }
+
+        reconData.addTrajComponent(traj);
+    }
+
+    // Load dcf
+    std::cout << std::endl << "Read dcf:" << std::endl;
+    FloatVector *dcf = new FloatVector(size);
+
+    QString fileName = params.path + '/' + params.dcfFile;
+    std::cout << fileName.toStdString() << std::endl;
+
+    QFile file(fileName);
     file.open(QIODevice::ReadOnly);
-    auto count = file.read((char *)traj->data(), size * sizeof(typename Traj<N>::value_type));
+    auto count = file.read((char *)dcf->data(), size * sizeof(FloatVector::value_type));
     file.close();
 
-    if (count != size * sizeof(typename Traj<N>::value_type))
+    if (count != size * sizeof(FloatVector::value_type))
     {
         std::cout << "Error: wrong data size in " << params.trajFiles.toStdString() << std::endl;
         std::exit(1);
     }
-
-    reconData.setTraj(traj);
+    reconData.setDcf(dcf);
 
     // Load data
-    size = params.samples * params.projections;
-    KData *kdata = new KData(size);
+    dir.setNameFilters(QStringList(params.dataFiles));
+    fileList = dir.entryList();
 
-    file.setFileName(params.path + '/' + params.dataFiles);
-    file.open(QIODevice::ReadOnly);
-    count = file.read((char *)kdata->data(), size * sizeof(KData::value_type));
-    file.close();
-
-    if (count != size * sizeof(KData::value_type))
+    std::cout << std::endl << "Read data:" << std::endl;
+    for (const QString &name : fileList)
     {
-        std::cout << "Error: wrong data size in " << params.trajFiles.toStdString() << std::endl;
-        std::exit(1);
-    }
+        ComplexVector *kdata = new ComplexVector(size);
+        QString fileName = params.path + '/' + name;
+        std::cout << fileName.toStdString() << std::endl;
 
-    reconData.addChannelData(kdata);
+        QFile file(fileName);
+        file.open(QIODevice::ReadOnly);
+        auto count = file.read((char *)kdata->data(), size * sizeof(ComplexVector::value_type));
+        file.close();
+
+        if (count != size * sizeof(ComplexVector::value_type))
+        {
+            std::cout << "Error: wrong data size in " << params.trajFiles.toStdString() << std::endl;
+            std::exit(1);
+        }
+
+        reconData.addChannelData(kdata);
+    }
 }
 
 template <int N>
-void gridding(const ReconParameters &params, KData &out)
+void gridding(const ReconParameters &params, ComplexVector &out)
 {
     ReconData<N> reconData;
-    loadReconData<>(reconData, params);
+    loadReconData(reconData, params);
 
     int kWidth = 4;
     float overGridFactor = params.overgridding_factor;
@@ -138,7 +176,7 @@ int main(int argc, char *argv[])
     options.showParameters();
     ReconParameters params = options.getReconParameters();
 
-    KData data;
+    ComplexVector data;
 
     if (params.rczres > 1)
         gridding<3>(params, data);

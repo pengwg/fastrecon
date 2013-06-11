@@ -13,7 +13,7 @@ public:
     virtual ~GridLut();
 
     template <int N>
-    void gridding(const ReconData<N> &reconData, KData &out);
+    void gridding(const ReconData<N> &reconData, ComplexVector &out);
 
 protected:
     ConvKernel m_kernel;
