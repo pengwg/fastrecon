@@ -141,25 +141,7 @@ void loadReconData(ReconData &reconData, const ReconParameters &params)
 
 void gridding(const ReconParameters &params, ImageData &out)
 {
-    ReconData reconData;
-    loadReconData(reconData, params);
 
-    int kWidth = 4;
-    float overGridFactor = params.overgridding_factor;
-    ConvKernel kernel(kWidth, overGridFactor, 256);
-
-    int gridSize = params.rcxres * overGridFactor;
-
-    int rep = 1;
-    std::cout << "\nIteration " << rep << 'x' << std::endl;
-
-    // CPU gridding
-    GridLut gridCpu(gridSize, kernel);
-
-    std::cout << "\nCPU gridding... " << std::endl;
-
-    for (int i = 0; i < rep; i++)
-        gridCpu.gridding(reconData, out);
 }
 
 int main(int argc, char *argv[])
@@ -170,17 +152,27 @@ int main(int argc, char *argv[])
     options.showParameters();
     ReconParameters params = options.getReconParameters();
 
-    ImageData imgData;
-    gridding(params, imgData);
+    // Load multi-channel data
+    ReconData reconData;
+    loadReconData(reconData, params);
 
-    int gridSize = params.rcxres * params.overgridding_factor;;
-    int zSize = 0;
+    // Gridding kernel
+    int kWidth = 3;
+    float overGridFactor = params.overgridding_factor;
+    ConvKernel kernel(kWidth, overGridFactor, 256);
 
+    // CPU gridding
+    int gridSize = params.rcxres * overGridFactor;
+    GridLut gridCpu(gridSize, kernel);
+
+    std::cout << "\nCPU gridding... " << std::endl;
+    ImageData imgData = gridCpu.gridding(reconData);
+
+    // CPU FFT
     FFT fft;
     if (params.rczres > 1)
     {
         fft.plan(gridSize, gridSize, gridSize, false);
-        zSize = gridSize;
     }
     else
         fft.plan(gridSize, gridSize, false);
@@ -202,12 +194,17 @@ int main(int argc, char *argv[])
         std::cout << timer.restart() << " ms" << std::endl;
     }
 
+    // Save result
     /*QFile file(params.result_filename);
     file.open(QIODevice::WriteOnly);
     auto count = file.write((const char *)data.data(), data.size() * sizeof(typename KData::value_type));
     file.close();*/
 
+    // Display data
     i = 0;
+    int zSize = 0;
+    if (params.rczres > 1) zSize = gridSize;
+
     if (options.isDisplay())
     {
         for (auto &data : imgData)

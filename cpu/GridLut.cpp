@@ -15,25 +15,25 @@ GridLut::~GridLut()
 
 }
 
-void GridLut::gridding(const ReconData &reconData, ImageData &imgData)
+ImageData GridLut::gridding(const ReconData &reconData)
 {
     QElapsedTimer timer;
     timer.start();
 
-    int rcDim = reconData.rcDim();
+    ImageData img;
     for (int i = 0; i < reconData.channels(); i++)
     {
         std::cout << "Gridding channel " << i << "... " << std::flush;
 
-        ComplexVector *out = new ComplexVector(powf(m_gridSize, rcDim));
-        griddingChannel(reconData, i, *out);
-        imgData.push_back(std::shared_ptr<ComplexVector>(out));
+        auto out = griddingChannel(reconData, i);
+        img.push_back(out);
 
         std::cout << timer.restart() << " ms" << std::endl;
     }
+    return img;
 }
 
-void GridLut::griddingChannel(const ReconData &reconData, int channel, ComplexVector &out)
+std::shared_ptr<ComplexVector> GridLut::griddingChannel(const ReconData &reconData, int channel)
 {
     const ComplexVector *kData = reconData.getChannelData(channel);
     auto itDcf = reconData.getDcf()->cbegin();
@@ -51,6 +51,7 @@ void GridLut::griddingChannel(const ReconData &reconData, int channel, ComplexVe
 
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};
+    ComplexVector *out = new ComplexVector(powf(m_gridSize, rcDim));
 
     for (const auto &sample : (*kData))
     {
@@ -67,7 +68,7 @@ void GridLut::griddingChannel(const ReconData &reconData, int channel, ComplexVe
         auto data = (*itDcf++) * sample;
 
         int i = start[2] * m_gridSize * m_gridSize + start[1] * m_gridSize + start[0];
-        auto itOut = out.begin() + i;
+        auto itOut = out->begin() + i;
         int di = m_gridSize - (end[0] - start[0]) - 1;
         int di2 = m_gridSize * m_gridSize - (end[1] - start[1] + 1) * m_gridSize;
 
@@ -98,5 +99,6 @@ void GridLut::griddingChannel(const ReconData &reconData, int channel, ComplexVe
             itOut += di2;
         }
     }
+    return std::shared_ptr<ComplexVector>(out);
 }
 
