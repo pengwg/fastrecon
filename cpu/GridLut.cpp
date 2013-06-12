@@ -69,6 +69,8 @@ std::shared_ptr<ComplexVector> GridLut::griddingChannel(const ReconData &reconDa
 
         int i = start[2] * m_gridSize * m_gridSize + start[1] * m_gridSize + start[0];
         auto itOut = out->begin() + i;
+
+        // Step size for linear addressing
         int di = m_gridSize - (end[0] - start[0]) - 1;
         int di2 = m_gridSize * m_gridSize - (end[1] - start[1] + 1) * m_gridSize;
 
@@ -89,7 +91,8 @@ std::shared_ptr<ComplexVector> GridLut::griddingChannel(const ReconData &reconDa
 
                     if (dk < kHW)
                     {
-                        int ki = round(dk / kHW * (klength - 1));
+                        // kernelData has hight resolution, interpolation error can be ignored
+                        int ki = (int)(dk / kHW * (klength - 1));
                         *itOut += kernelData->at(ki) * data;
                     }
                     itOut++;
