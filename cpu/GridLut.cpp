@@ -20,6 +20,8 @@ ImageData GridLut::gridding(const ReconData &reconData)
 {
     ImageData img;
 
+    omp_set_num_threads(std::min(reconData.channels(), omp_get_num_procs()));
+
 #pragma omp parallel shared(img, reconData)
     {
         int id = omp_get_thread_num();
@@ -29,7 +31,7 @@ ImageData GridLut::gridding(const ReconData &reconData)
         for (int i = 0; i < reconData.channels(); i++)
         {
             auto out = griddingChannel(reconData, i);
-#pragma omp critical
+#pragma omp ordered
             {
                 img.push_back(out);
                 std::cout << "Thread " << id << " gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;

@@ -172,6 +172,7 @@ int main(int argc, char *argv[])
 
     // CPU FFT
     std::cout << "\nCPU FFT... " << std::endl;
+    omp_set_num_threads(std::min(reconData.channels(), omp_get_num_procs()));
 #pragma omp parallel shared(imgData)
     {
         int id = omp_get_thread_num();
