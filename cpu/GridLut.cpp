@@ -20,8 +20,6 @@ ImageData GridLut::gridding(const ReconData &reconData)
 {
     ImageData img;
 
-    omp_set_num_threads(std::min(reconData.channels(), omp_get_num_procs()));
-
 #pragma omp parallel shared(img, reconData)
     {
         int id = omp_get_thread_num();

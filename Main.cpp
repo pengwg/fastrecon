@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <float.h>
+#include <omp.h>
 
 #include "ProgramOptions.h"
 #include "ReconData.h"
@@ -156,6 +157,8 @@ int main(int argc, char *argv[])
     float overGridFactor = params.overgridding_factor;
     ConvKernel kernel(kWidth, overGridFactor, 256);
 
+    omp_set_num_threads(std::min(reconData.channels(), omp_get_num_procs()));
+
     // CPU gridding
     int gridSize = params.rcxres * overGridFactor;
     GridLut gridCpu(gridSize, kernel);
@@ -163,7 +166,9 @@ int main(int argc, char *argv[])
     std::cout << "\nCPU gridding... " << std::endl;
     QElapsedTimer timer;
     timer.start();
+
     ImageData imgData = gridCpu.gridding(reconData);
+
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
 

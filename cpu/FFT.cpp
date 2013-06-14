@@ -66,8 +66,6 @@ void FFT::plan(int xSize, int ySize, int zSize, bool forward)
 
 void FFT::excute(ImageData &imgData)
 {
-    omp_set_num_threads(std::min(m_channels, omp_get_num_procs()));
-
 #pragma omp parallel shared(imgData)
     {
         int id = omp_get_thread_num();
