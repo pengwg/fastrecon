@@ -165,42 +165,27 @@ int main(int argc, char *argv[])
     QElapsedTimer timer;
     timer.start();
     ImageData imgData = gridCpu.gridding(reconData);
-    std::cout << "Gridding total time " << timer.restart() << " ms" << std::endl;
+    std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
 
     // CPU FFT
     std::cout << "\nCPU FFT... " << std::endl;
-    omp_set_num_threads(std::min(reconData.channels(), omp_get_num_procs()));
-#pragma omp parallel shared(imgData)
+    FFT fft(imgData.size());
+
+    if (params.rczres > 1)
     {
-        int id = omp_get_thread_num();
-
-        FFT fft;
-
-#pragma omp critical // fftwf_plan not thread-safe
-        if (params.rczres > 1)
-        {
-            fft.plan(gridSize, gridSize, gridSize, false);
-        }
-        else
-            fft.plan(gridSize, gridSize, false);
-
-        QElapsedTimer timer;
-        timer.start();
-
-#pragma omp for schedule(dynamic)
-        for (int i = 0; i < imgData.size(); i++)
-        {
-            auto data = imgData[i].get();
-
-            // fft.fftShift(data);
-            fft.excute(*data);
-            fft.fftShift(*data);
-#pragma omp critical
-            std::cout << "Thread " << id << " FFT channel " << i << " | " << timer.restart() << " ms" << std::endl;
-        }
+        fft.plan(gridSize, gridSize, gridSize, false);
     }
-    std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
+    else
+        fft.plan(gridSize, gridSize, false);
+
+    timer.restart();
+
+    // fft.fftShift(data);
+    fft.excute(imgData);
+    fft.fftShift(imgData);
+
+    std::cout << "FFT total time " << timer.elapsed() << " ms" << std::endl;
 
     // Save result
     /*QFile file(params.result_filename);
