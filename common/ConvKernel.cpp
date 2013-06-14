@@ -6,22 +6,7 @@
 ConvKernel::ConvKernel(float kWidth,  float overGridFactor, int length)
     : m_kWidth(kWidth), m_ogFactor(overGridFactor), m_length(length)
 {
-
-}
-
-ConvKernel::~ConvKernel()
-{
-
-}
-
-const FloatVector *ConvKernel::getKernelData()
-{
-    std::vector<float> *data;
-
-    if (m_kernelData.get() == 0)
-        data = new std::vector<float>(m_length);
-    else
-        return m_kernelData.get();
+    std::vector<float> *data = new std::vector<float>(m_length);
 
     float w = m_kWidth;
     float a = m_ogFactor;
@@ -41,7 +26,15 @@ const FloatVector *ConvKernel::getKernelData()
 
     }
     m_kernelData.reset(data);
+}
 
+ConvKernel::~ConvKernel()
+{
+
+}
+
+const FloatVector *ConvKernel::getKernelData() const
+{
     return m_kernelData.get();
 }
 

@@ -11,7 +11,7 @@ public:
     ConvKernel(float kWidth, float overGridFactor, int length = 32);
     ~ConvKernel();
 
-    const FloatVector *getKernelData();
+    const FloatVector *getKernelData() const;
     float getKernelWidth() const;
 
 private:
