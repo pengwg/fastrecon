@@ -64,8 +64,9 @@ void displayData(const ComplexVector& data, int n0, int n1, int n2, const QStrin
     imgWnd->show();
 }
 
-void loadReconData(ReconData &reconData, const ReconParameters &params)
+ReconData loadReconData(const ReconParameters &params)
 {
+    ReconData reconData;
     // Load trajectory
     int size = params.samples * params.projections;
 
@@ -137,12 +138,9 @@ void loadReconData(ReconData &reconData, const ReconParameters &params)
 
         reconData.addChannelData(kdata);
     }
+    return reconData;
 }
 
-void gridding(const ReconParameters &params, ImageData &out)
-{
-
-}
 
 int main(int argc, char *argv[])
 {
@@ -153,8 +151,7 @@ int main(int argc, char *argv[])
     ReconParameters params = options.getReconParameters();
 
     // Load multi-channel data
-    ReconData reconData;
-    loadReconData(reconData, params);
+    ReconData reconData = loadReconData(params);
 
     // Gridding kernel
     int kWidth = 3;
