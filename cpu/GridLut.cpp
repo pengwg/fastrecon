@@ -1,5 +1,6 @@
 #include <QElapsedTimer>
 #include <iostream>
+#include <omp.h>
 
 #include "GridLut.h"
 
@@ -17,18 +18,23 @@ GridLut::~GridLut()
 
 ImageData GridLut::gridding(const ReconData &reconData)
 {
-    QElapsedTimer timer;
-    timer.start();
-
     ImageData img;
-    for (int i = 0; i < reconData.channels(); i++)
+
+#pragma omp parallel shared(img, reconData)
     {
-        std::cout << "Gridding channel " << i << "... " << std::flush;
-
-        auto out = griddingChannel(reconData, i);
-        img.push_back(out);
-
-        std::cout << timer.restart() << " ms" << std::endl;
+        int id = omp_get_thread_num();
+        QElapsedTimer timer;
+        timer.start();
+#pragma omp for schedule(dynamic) ordered
+        for (int i = 0; i < reconData.channels(); i++)
+        {
+            auto out = griddingChannel(reconData, i);
+#pragma omp critical
+            {
+                img.push_back(out);
+                std::cout << "Thread " << id << " gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
+            }
+        }
     }
     return img;
 }

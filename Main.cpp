@@ -163,7 +163,10 @@ int main(int argc, char *argv[])
     GridLut gridCpu(gridSize, kernel);
 
     std::cout << "\nCPU gridding... " << std::endl;
+    QElapsedTimer timer;
+    timer.start();
     ImageData imgData = gridCpu.gridding(reconData);
+    std::cout << "Total Time " << timer.elapsed() << " ms" << std::endl;
 
     // CPU FFT
     FFT fft;
@@ -174,12 +177,11 @@ int main(int argc, char *argv[])
     else
         fft.plan(gridSize, gridSize, false);
 
-    QElapsedTimer timer;
-    timer.start();
+
 
     std::cout << "\nCPU FFT... " << std::endl;
     int i = 0;
-
+    timer.restart();
     for (auto &data : imgData)
     {
         std::cout << "FFT channel " << i++ << "... " << std::flush;
