@@ -145,8 +145,6 @@ ReconData loadReconData(const ReconParameters &params)
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
-
     ProgramOptions options(argc, argv);
     options.showParameters();
     ReconParameters params = options.getReconParameters();
@@ -217,6 +215,7 @@ int main(int argc, char *argv[])
 
     if (options.isDisplay())
     {
+        QApplication app(argc, argv);
         for (auto &data : imgData)
             displayData(*data.get(), gridSize, gridSize, zSize, QString("channel ") + QString::number(i++));
         return app.exec();
