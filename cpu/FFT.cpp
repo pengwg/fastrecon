@@ -1,6 +1,7 @@
 #include <string.h>
 #include <iostream>
 #include <QElapsedTimer>
+#include <omp.h>
 
 #include "FFT.h"
 
@@ -51,6 +52,8 @@ void FFT::plan(int xSize, int ySize, int zSize, bool forward)
 
     m_in.clear();
     m_plan.clear();
+
+    // Create plan for each channel used by multi-thread
     for (int i = 0; i < m_channels; i++)
     {
         auto in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * xSize * ySize * zSize);
@@ -63,25 +66,33 @@ void FFT::plan(int xSize, int ySize, int zSize, bool forward)
 
 void FFT::excute(ImageData &imgData)
 {
-    QElapsedTimer timer;
-    timer.start();
+    omp_set_num_threads(std::min(m_channels, omp_get_num_procs()));
 
-    for (int i = 0; i < m_channels; i++)
+#pragma omp parallel shared(imgData)
     {
-        auto data = imgData[i].get();
-        if (data->size() != m_n0 * m_n1 * m_n2)
+        int id = omp_get_thread_num();
+        QElapsedTimer timer;
+        timer.start();
+
+#pragma omp for schedule(dynamic)
+        for (int i = 0; i < m_channels; i++)
         {
-            std::cerr << "Error: FFT wrong data size" << std::endl;
-            exit(1);
+            auto data = imgData[i].get();
+            if (data->size() != m_n0 * m_n1 * m_n2)
+            {
+                std::cerr << "Error: FFT wrong data size" << std::endl;
+                exit(1);
+            }
+
+            auto in = m_in[i];
+            auto plan = m_plan[i];
+            memcpy(in, data->data(), m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
+            fftwf_execute(plan);
+            memcpy(data->data(), in, m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
+
+#pragma omp critical
+            std::cout << "Thread " << id << " FFT channel " << i << " | " << timer.restart() << " ms" << std::endl;
         }
-
-        auto in = m_in[i];
-        auto plan = m_plan[i];
-        memcpy(in, data->data(), m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
-        fftwf_execute(plan);
-        memcpy(data->data(), in, m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
-
-        std::cout << " FFT channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }
 }
 

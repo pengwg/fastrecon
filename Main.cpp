@@ -7,7 +7,6 @@
 
 #include <iostream>
 #include <float.h>
-#include <omp.h>
 
 #include "ProgramOptions.h"
 #include "ReconData.h"
