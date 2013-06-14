@@ -8,6 +8,12 @@ set(CMAKE_BUILD_TYPE Release)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(OpenMP)
+
+if(OPENMP_FOUND)
+    set(CMAKE_CXX_FLAGS ${OpenMP_CXX_FLAGS})
+endif(OPENMP_FOUND)
+
 include_directories(
     ${CMAKE_SOURCE_DIR}/common/
     cpu/

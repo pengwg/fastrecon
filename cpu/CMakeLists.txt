@@ -1,11 +1,5 @@
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 
-find_package(OpenMP)
-if(OPENMP_FOUND)
-    set(CMAKE_CXX_FLAGS ${OpenMP_CXX_FLAGS})
-    #add_definitions(${OpenMP_CXX_FLAGS})
-endif(OPENMP_FOUND)
-
 find_package(FFTW3 COMPONENTS single REQUIRED)
 
 set(GRID_CPU_SRC_FILES
