@@ -22,7 +22,7 @@ void FFT::plan(int xSize, int ySize, bool forward)
     m_n1 = ySize;
     m_n2 = 1;
     
-    m_in = (fftwf_complex *)fftwf_malloc(sizeof(fftw_complex) * xSize * ySize);
+    m_in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * xSize * ySize);
     int sign = forward ? FFTW_FORWARD : FFTW_BACKWARD;
 
     m_plan = fftwf_plan_dft_2d(ySize, xSize, m_in, m_in, sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
@@ -34,7 +34,7 @@ void FFT::plan(int xSize, int ySize, int zSize, bool forward)
     m_n1 = ySize;
     m_n2 = zSize;
 
-    m_in = (fftwf_complex *)fftwf_malloc(sizeof(fftw_complex) * xSize * ySize * zSize);
+    m_in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * xSize * ySize * zSize);
     int sign = forward ? FFTW_FORWARD : FFTW_BACKWARD;
 
     m_plan = fftwf_plan_dft_3d(ySize, xSize, zSize, m_in, m_in, sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
