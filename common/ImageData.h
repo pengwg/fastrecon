@@ -18,16 +18,17 @@ typedef std::vector<std::complex<float> > ComplexVector;
 class ImageData
 {
 public:
-    ImageData(const ImageSize &size);
+    ImageData(const int dim, const ImageSize &size);
 
     void addChannelImage(ComplexVector *image);
-    ComplexVector *getChannelImage(int channel);
-    const ComplexVector *getChannelImage(int channel) const;
+    ComplexVector *getChannelImage(int channel) const;
     int channels() const;
     ImageSize size() const;
     int length() const;
+    int dim() const;
 
 private:
+    int m_dim;
     ImageSize m_size;
     std::vector<std::shared_ptr<ComplexVector>> m_data;
 };

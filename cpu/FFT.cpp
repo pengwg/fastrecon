@@ -5,9 +5,11 @@
 
 #include "FFT.h"
 
-FFT::FFT(int dims, int channels, int size, int sign)
-    : m_dims(dims), m_channels(channels), m_size(size), m_sign(sign)
+FFT::FFT(int dims, ImageSize size, int sign)
+    : m_dims(dims), m_size(size), m_sign(sign)
 {
+    if (dims == 2)
+        m_size.z = 1;
 }
 
 FFT::~FFT()
@@ -23,24 +25,20 @@ FFT::~FFT()
     }
 }
 
-void FFT::plan(int threads, int xSize, int ySize, int zSize)
+void FFT::plan(int threads)
 {
-    m_n0 = xSize;
-    m_n1 = ySize;
-    m_n2 = zSize;
-
     m_in.clear();
     m_plan.clear();
 
     // Create plans used by each threads
     for (int i = 0; i < threads; i++)
     {
-        auto in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * xSize * ySize * zSize);
+        auto in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * m_size.x * m_size.y * m_size.z);
         fftwf_plan plan;
         if (m_dims == 2)
-            plan = fftwf_plan_dft_2d(ySize, xSize, in, in, m_sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
+            plan = fftwf_plan_dft_2d(m_size.y, m_size.x, in, in, m_sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
         else if (m_dims ==3)
-            plan = fftwf_plan_dft_3d(ySize, xSize, zSize, in, in, m_sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
+            plan = fftwf_plan_dft_3d(m_size.z, m_size.y, m_size.x, in, in, m_sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
 
         m_in.push_back(in);
         m_plan.push_back(plan);
@@ -53,11 +51,11 @@ void FFT::excute(ImageData &imgData)
     if (m_plan.size() < threads)
     {
         std::cout << "Create plans for " << threads << " threads" << std::endl;
-        plan(threads, m_size, m_size, m_size);
+        plan(threads);
     }
-    if (imgData.length() != m_n0 * m_n1 * m_n2)
+    if (imgData.length() != m_size.x * m_size.y * m_size.z)
     {
-        std::cerr << "Error: FFT wrong data size" << std::endl;
+        std::cerr << "Error: FFT wrong image size" << std::endl;
         exit(1);
     }
 
@@ -68,15 +66,15 @@ void FFT::excute(ImageData &imgData)
         timer.start();
 
 #pragma omp for schedule(dynamic)
-        for (int i = 0; i < m_channels; i++)
+        for (int i = 0; i < imgData.channels(); i++)
         {
             auto data = imgData.getChannelImage(i);
             auto in = m_in[id];
             auto plan = m_plan[id];
 
-            memcpy(in, data->data(), m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
+            memcpy(in, data->data(), imgData.length() * sizeof(fftwf_complex));
             fftwf_execute(plan);
-            memcpy(data->data(), in, m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
+            memcpy(data->data(), in, imgData.length() * sizeof(fftwf_complex));
 
 #pragma omp critical
             std::cout << "Thread " << id << " FFT channel " << i << " | " << timer.restart() << " ms" << std::endl;
@@ -86,14 +84,15 @@ void FFT::excute(ImageData &imgData)
 
 void FFT::fftShift(ImageData &imgData)
 {
-    for (int n = 0; n < m_channels; n++)
+    if (imgData.length() != m_size.x * m_size.y * m_size.z)
+    {
+        std::cerr << "Error: FFTSHIFT wrong image size" << std::endl;
+        exit(1);
+    }
+
+    for (int n = 0; n < imgData.channels(); n++)
     {
         auto data = imgData.getChannelImage(n);
-        if (data->size() != m_n0 * m_n1 * m_n2)
-        {
-            std::cerr << "Error: FFTSHIFT wrong data size" << std::endl;
-            exit(1);
-        }
 
         if (m_dims == 3)
             fftShift3(data);
@@ -104,8 +103,8 @@ void FFT::fftShift(ImageData &imgData)
 
 void FFT::fftShift2(ComplexVector *data)
 {
-    int n0h = m_n0 / 2;
-    int n1h = m_n1 / 2;
+    int n0h = m_size.x / 2;
+    int n1h = m_size.y / 2;
 
     int x1, y1;
 
@@ -113,11 +112,11 @@ void FFT::fftShift2(ComplexVector *data)
     {
         y1 = y + n1h;
 
-        for (int x = 0; x < m_n0; x++)
+        for (int x = 0; x < m_size.x; x++)
         {
             x1 = x < n0h ? x + n0h : x - n0h;
-            int i = y * m_n0 + x;
-            int j = y1 * m_n0 + x1;
+            int i = y * m_size.x + x;
+            int j = y1 * m_size.x + x1;
 
             std::swap(data->at(i), data->at(j));
         }
@@ -126,9 +125,9 @@ void FFT::fftShift2(ComplexVector *data)
 
 void FFT::fftShift3(ComplexVector *data)
 {
-    int n0h = m_n0 / 2;
-    int n1h = m_n1 / 2;
-    int n2h = m_n2 / 2;
+    int n0h = m_size.x / 2;
+    int n1h = m_size.y / 2;
+    int n2h = m_size.z / 2;
 
     int x1, y1, z1;
 
@@ -136,16 +135,16 @@ void FFT::fftShift3(ComplexVector *data)
     {
         z1 = z + n2h;
 
-        for (int y = 0; y < m_n1; y++)
+        for (int y = 0; y < m_size.y; y++)
         {
             y1 = y < n1h ? y + n1h : y - n1h;
 
-            for (int x = 0; x < m_n0; x++)
+            for (int x = 0; x < m_size.x; x++)
             {
                 x1 = x < n0h ? x + n0h : x - n0h;
 
-                int i = z * m_n0 * m_n1 + y * m_n0 + x;
-                int j = z1 * m_n0 * m_n1 + y1 * m_n0 + x1;
+                int i = z * m_size.x * m_size.y + y * m_size.x + x;
+                int j = z1 * m_size.x * m_size.y + y1 * m_size.x + x1;
 
                 std::swap(data->at(i), data->at(j));
             }

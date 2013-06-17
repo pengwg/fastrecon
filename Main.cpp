@@ -22,10 +22,14 @@
 #include "GridGpu.h"
 #endif
 
-void displayData(const ComplexVector& data, int n0, int n1, int n2, const QString& title)
+void displayData(const ComplexVector& data, ImageSize size, const QString& title)
 {
     std::vector<float> dataValue;
-    if (n2 == 0) n2 = 2;
+    int n0 = size.x;
+    int n1 = size.y;
+    int n2 = size.z;
+
+    if (n2 < 2) n2 = 2;
 
     int nImages = 6;
 
@@ -186,7 +190,7 @@ int main(int argc, char *argv[])
 
     // CPU FFT
     std::cout << "\nCPU FFT... " << std::endl;
-    FFT fft(reconData.rcDim(), imgData.channels(), gridSize);
+    FFT fft(reconData.rcDim(), {gridSize, gridSize, gridSize});
 
     timer.restart();
 
@@ -213,8 +217,7 @@ int main(int argc, char *argv[])
     file.close();*/
 
     // Display data
-    int zSize = 0;
-    if (params.rczres > 1) zSize = gridSize;
+    int n = 0;
 
     if (options.isDisplay())
     {
@@ -222,7 +225,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < finalData.channels(); i++)
         {
             auto data = finalData.getChannelImage(i);
-            displayData(*data, gridSize, gridSize, zSize, QString("channel ") + QString::number(i++));
+            displayData(*data, finalData.size(), QString("channel ") + QString::number(n++));
         }
         return app.exec();
     }

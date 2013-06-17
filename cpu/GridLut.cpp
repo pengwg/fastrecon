@@ -18,7 +18,7 @@ GridLut::~GridLut()
 
 ImageData GridLut::gridding(const ReconData &reconData)
 {
-    ImageData img({m_gridSize, m_gridSize, m_gridSize});
+    ImageData img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
 #pragma omp parallel shared(img, reconData)
     {

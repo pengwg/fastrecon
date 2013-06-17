@@ -8,7 +8,7 @@ SOS::SOS()
 
 ImageData SOS::execute(const ImageData &imgData)
 {
-    ImageData img(imgData.size());
+    ImageData img(imgData.dim(), imgData.size());
     auto out = new ComplexVector(imgData.length());
 
     for (int n = 0; n < imgData.channels(); n++)

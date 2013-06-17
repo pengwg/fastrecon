@@ -1,8 +1,8 @@
 #include <iostream>
 #include "ImageData.h"
 
-ImageData::ImageData(const ImageSize &size)
-    : m_size(size)
+ImageData::ImageData(const int dim, const ImageSize &size)
+    : m_dim(dim), m_size(size)
 {
 
 }
@@ -17,15 +17,7 @@ void ImageData::addChannelImage(ComplexVector *image)
     m_data.push_back(std::shared_ptr<ComplexVector>(image));
 }
 
-ComplexVector *ImageData::getChannelImage(int channel)
-{
-    if (channel < channels())
-        return m_data[channel].get();
-    else
-        return nullptr;
-}
-
-const ComplexVector *ImageData::getChannelImage(int channel) const
+ComplexVector *ImageData::getChannelImage(int channel) const
 {
     if (channel < channels())
         return m_data[channel].get();
@@ -40,11 +32,20 @@ ImageSize ImageData::size() const
 
 int ImageData::length() const
 {
-    return m_size.x * m_size.y * m_size.z;
+    if (m_dim == 3)
+        return m_size.x * m_size.y * m_size.z;
+    else
+        return m_size.x * m_size.y;
 }
 
 int ImageData::channels() const
 {
     return m_data.size();
+}
+
+
+int ImageData::dim() const
+{
+    return m_dim;
 }
 

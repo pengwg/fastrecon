@@ -7,21 +7,17 @@
 class FFT
 {
 public:
-    FFT(int dims, int channels, int size, int sign = FFTW_BACKWARD);
+    FFT(int dims, ImageSize size, int sign = FFTW_BACKWARD);
     ~FFT();
 
-    void plan(int threads, int xSize, int ySize, int zSize = 1);
+    void plan(int threads);
     
     void excute(ImageData &imgData);
     void fftShift(ImageData &imgData);
 
 private:
-    int m_n0;
-    int m_n1;
-    int m_n2;
     int m_dims;
-    int m_channels;
-    int m_size;
+    ImageSize m_size;
     bool m_sign;
 
     std::vector<fftwf_plan> m_plan;
