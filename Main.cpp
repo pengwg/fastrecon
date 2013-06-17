@@ -161,6 +161,9 @@ int main(int argc, char *argv[])
     // Load multi-channel data
     ReconData reconData = loadReconData(params);
 
+    QElapsedTimer timer0;
+    timer0.start();
+
     // Gridding kernel
     int kWidth = 3;
     float overGridFactor = params.overgridding_factor;
@@ -200,6 +203,8 @@ int main(int argc, char *argv[])
     ImageData finalData = sos.execute(imgData);
 
     std::cout << "SOS total time " << timer.elapsed() << " ms" << std::endl;
+
+    std::cout << "\nProgram total time excluding I/O: " << timer0.elapsed() / 1000.0 << " s" << std::endl;
 
     // Save result
     /*QFile file(params.result_filename);
