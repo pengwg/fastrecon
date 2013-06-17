@@ -15,6 +15,7 @@
 #include "ConvKernel.h"
 #include "GridLut.h"
 #include "FFT.h"
+#include "SOS.h"
 
 #ifdef CUDA_CAPABLE
 #include "FFTGpu.h"
@@ -182,7 +183,15 @@ int main(int argc, char *argv[])
     fft.excute(imgData);
     fft.fftShift(imgData);
 
-    std::cout << "FFT total time " << timer.elapsed() << " ms" << std::endl;
+    std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
+
+    // SOS
+    std::cout << "\nCPU SOS... " << std::endl;
+    SOS sos;
+
+    ImageData finalData = sos.execute(imgData);
+
+    std::cout << "SOS total time " << timer.elapsed() << " ms" << std::endl;
 
     // Save result
     /*QFile file(params.result_filename);
@@ -198,7 +207,7 @@ int main(int argc, char *argv[])
     if (options.isDisplay())
     {
         QApplication app(argc, argv);
-        for (auto &data : imgData)
+        for (auto &data : finalData)
             displayData(*data.get(), gridSize, gridSize, zSize, QString("channel ") + QString::number(i++));
         return app.exec();
     }
