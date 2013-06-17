@@ -1,3 +1,5 @@
+#include <iostream>
+#include <omp.h>
 #include "SOS.h"
 
 SOS::SOS()
@@ -12,11 +14,13 @@ ImageData SOS::execute(const ImageData &imgData)
     for (const auto &input : imgData)
     {
         auto itOut = out.get()->begin();
+        auto itInput = input.get()->begin();
 
 #pragma omp parallel for
-        for (auto itData = input.get()->cbegin(); itData < input.get()->cend(); itData++)
+        for (int i = 0; i < input.get()->size(); i++)
         {
-            *itOut++ += *itData * *itData;
+            auto data = *(itInput + i);
+            *(itOut+i) += data * data;
         }
     }
 
