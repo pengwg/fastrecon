@@ -27,8 +27,10 @@ void displayData(const ComplexVector& data, int n0, int n1, int n2, const QStrin
     std::vector<float> dataValue;
     if (n2 == 0) n2 = 2;
 
-    int start = (n0 * n1) * (n2 / 2 - 1);
-    int end = (n0 * n1) * (n2 / 2);
+    int nImages = 6;
+
+    int start = (n0 * n1) * (n2 / 2 - 3);
+    int end = (n0 * n1) * (n2 / 2 - 3 + nImages);
 
     for (auto it = data.begin() + start; it < data.begin() + end; it++) {
         float value = std::abs(*it);
@@ -38,7 +40,7 @@ void displayData(const ComplexVector& data, int n0, int n1, int n2, const QStrin
     float max = *std::max_element(dataValue.begin(), dataValue.end());
     float min = *std::min_element(dataValue.begin(), dataValue.end());
 
-    QImage dataImage(n1, n0, QImage::Format_Indexed8);
+    QImage dataImage(n1 * nImages, n0, QImage::Format_Indexed8);
     for (int i = 0; i < 256; i++) {
         dataImage.setColor(i, qRgb(i, i, i));
     }
@@ -46,15 +48,21 @@ void displayData(const ComplexVector& data, int n0, int n1, int n2, const QStrin
     int i = 0;
     for (int y = 0; y < n0; y++) {
         auto imageLine = dataImage.scanLine(y);
+        i = y * n1;
+        for (int j = 0; j < nImages; j++)
+        {
+            for (int x = j * n0; x < j * n0 + n1; x++)
+            {
 
-        for (int x = 0; x < n1; x++) {
-            uint idx;
-            if (max == min)
-                idx = 127;
-            else
-                idx = (dataValue[i] - min) / (max - min) * 255;
-            imageLine[x] = idx;
-            i++;
+                uint idx;
+                if (max == min)
+                    idx = 127;
+                else
+                    idx = (dataValue[i] - min) / (max - min) * 255;
+                imageLine[x] = idx;
+                i++;
+            }
+            i += n0 * n1;
         }
     }
 
