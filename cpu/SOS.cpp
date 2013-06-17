@@ -12,9 +12,11 @@ ImageData SOS::execute(const ImageData &imgData)
     for (const auto &input : imgData)
     {
         auto itOut = out.get()->begin();
-        for (const auto &data : *input.get())
+
+#pragma omp parallel for
+        for (auto itData = input.get()->cbegin(); itData < input.get()->cend(); itData++)
         {
-            *itOut++ += data * data;
+            *itOut++ += *itData * *itData;
         }
     }
 
