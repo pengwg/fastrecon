@@ -20,7 +20,7 @@ ImageData SOS::execute(const ImageData &imgData)
         for (int i = 0; i < input.get()->size(); i++)
         {
             auto data = *(itInput + i);
-            *(itOut+i) += data * data;
+            *(itOut+i) += data * std::conj(data);
         }
     }
 
