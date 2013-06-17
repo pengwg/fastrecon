@@ -5,10 +5,9 @@
 
 #include "FFT.h"
 
-FFT::FFT(int channels)
-    : m_channels(channels)
+FFT::FFT(int dims, int channels, int size, int sign)
+    : m_dims(dims), m_channels(channels), m_size(size), m_sign(sign)
 {
-
 }
 
 FFT::~FFT()
@@ -24,40 +23,24 @@ FFT::~FFT()
     }
 }
 
-void FFT::plan(int xSize, int ySize, bool forward)
-{
-    m_n0 = xSize;
-    m_n1 = ySize;
-    m_n2 = 1;
-    int sign = forward ? FFTW_FORWARD : FFTW_BACKWARD;
-
-    m_in.clear();
-    m_plan.clear();
-    for (int i = 0; i < m_channels; i++)
-    {
-        auto in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * xSize * ySize);
-        fftwf_plan plan = fftwf_plan_dft_2d(ySize, xSize, in, in, sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
-
-        m_in.push_back(in);
-        m_plan.push_back(plan);
-    }
-}
-
-void FFT::plan(int xSize, int ySize, int zSize, bool forward)
+void FFT::plan(int threads, int xSize, int ySize, int zSize)
 {
     m_n0 = xSize;
     m_n1 = ySize;
     m_n2 = zSize;
-    int sign = forward ? FFTW_FORWARD : FFTW_BACKWARD;
 
     m_in.clear();
     m_plan.clear();
 
-    // Create plan for each channel used by multi-thread
-    for (int i = 0; i < m_channels; i++)
+    // Create plans used by each threads
+    for (int i = 0; i < threads; i++)
     {
         auto in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * xSize * ySize * zSize);
-        fftwf_plan plan = fftwf_plan_dft_3d(ySize, xSize, zSize, in, in, sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
+        fftwf_plan plan;
+        if (m_dims == 2)
+            plan = fftwf_plan_dft_2d(ySize, xSize, in, in, m_sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
+        else if (m_dims ==3)
+            plan = fftwf_plan_dft_3d(ySize, xSize, zSize, in, in, m_sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
 
         m_in.push_back(in);
         m_plan.push_back(plan);
@@ -66,6 +49,13 @@ void FFT::plan(int xSize, int ySize, int zSize, bool forward)
 
 void FFT::excute(ImageData &imgData)
 {
+    int threads = omp_get_max_threads();
+    if (m_plan.size() < threads)
+    {
+        std::cout << "Create plans for " << threads << " threads" << std::endl;
+        plan(threads, m_size, m_size, m_size);
+    }
+
 #pragma omp parallel shared(imgData)
     {
         int id = omp_get_thread_num();
@@ -82,8 +72,8 @@ void FFT::excute(ImageData &imgData)
                 exit(1);
             }
 
-            auto in = m_in[i];
-            auto plan = m_plan[i];
+            auto in = m_in[id];
+            auto plan = m_plan[id];
             memcpy(in, data->data(), m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
             fftwf_execute(plan);
             memcpy(data->data(), in, m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
@@ -105,7 +95,7 @@ void FFT::fftShift(ImageData &imgData)
             exit(1);
         }
 
-        if (m_n2 > 1)
+        if (m_dims == 3)
             fftShift3(data);
         else
             fftShift2(data);

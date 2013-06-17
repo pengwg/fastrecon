@@ -174,14 +174,7 @@ int main(int argc, char *argv[])
 
     // CPU FFT
     std::cout << "\nCPU FFT... " << std::endl;
-    FFT fft(imgData.size());
-
-    if (params.rczres > 1)
-    {
-        fft.plan(gridSize, gridSize, gridSize, false);
-    }
-    else
-        fft.plan(gridSize, gridSize, false);
+    FFT fft(reconData.rcDim(), imgData.size(), gridSize);
 
     timer.restart();
 
