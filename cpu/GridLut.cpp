@@ -18,7 +18,7 @@ GridLut::~GridLut()
 
 ImageData GridLut::gridding(const ReconData &reconData)
 {
-    ImageData img;
+    ImageData img({m_gridSize, m_gridSize, m_gridSize});
 
 #pragma omp parallel shared(img, reconData)
     {
@@ -31,7 +31,7 @@ ImageData GridLut::gridding(const ReconData &reconData)
             auto out = griddingChannel(reconData, i);
 #pragma omp ordered
             {
-                img.push_back(out);
+                img.addChannelImage(out);
                 std::cout << "Thread " << id << " gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
             }
         }
@@ -39,7 +39,7 @@ ImageData GridLut::gridding(const ReconData &reconData)
     return img;
 }
 
-std::shared_ptr<ComplexVector> GridLut::griddingChannel(const ReconData &reconData, int channel)
+ComplexVector *GridLut::griddingChannel(const ReconData &reconData, int channel)
 {
     const ComplexVector *kData = reconData.getChannelData(channel);
     auto itDcf = reconData.getDcf()->cbegin();
@@ -108,6 +108,6 @@ std::shared_ptr<ComplexVector> GridLut::griddingChannel(const ReconData &reconDa
             itOut += di2;
         }
     }
-    return std::shared_ptr<ComplexVector>(out);
+    return out;
 }
 

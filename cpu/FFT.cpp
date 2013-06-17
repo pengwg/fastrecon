@@ -55,6 +55,11 @@ void FFT::excute(ImageData &imgData)
         std::cout << "Create plans for " << threads << " threads" << std::endl;
         plan(threads, m_size, m_size, m_size);
     }
+    if (imgData.length() != m_n0 * m_n1 * m_n2)
+    {
+        std::cerr << "Error: FFT wrong data size" << std::endl;
+        exit(1);
+    }
 
 #pragma omp parallel shared(imgData)
     {
@@ -65,15 +70,10 @@ void FFT::excute(ImageData &imgData)
 #pragma omp for schedule(dynamic)
         for (int i = 0; i < m_channels; i++)
         {
-            auto data = imgData[i].get();
-            if (data->size() != m_n0 * m_n1 * m_n2)
-            {
-                std::cerr << "Error: FFT wrong data size" << std::endl;
-                exit(1);
-            }
-
+            auto data = imgData.getChannelImage(i);
             auto in = m_in[id];
             auto plan = m_plan[id];
+
             memcpy(in, data->data(), m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
             fftwf_execute(plan);
             memcpy(data->data(), in, m_n0 * m_n1 * m_n2 * sizeof(fftwf_complex));
@@ -88,7 +88,7 @@ void FFT::fftShift(ImageData &imgData)
 {
     for (int n = 0; n < m_channels; n++)
     {
-        auto data = imgData[n].get();
+        auto data = imgData.getChannelImage(n);
         if (data->size() != m_n0 * m_n1 * m_n2)
         {
             std::cerr << "Error: FFTSHIFT wrong data size" << std::endl;

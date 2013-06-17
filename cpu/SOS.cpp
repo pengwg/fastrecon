@@ -8,27 +8,27 @@ SOS::SOS()
 
 ImageData SOS::execute(const ImageData &imgData)
 {
-    ImageData img;
-    auto out = std::make_shared<ComplexVector>(imgData[0].get()->size());
+    ImageData img(imgData.size());
+    auto out = new ComplexVector(imgData.length());
 
-    for (const auto &input : imgData)
+    for (int n = 0; n < imgData.channels(); n++)
     {
-        auto itOut = out.get()->begin();
-        auto itInput = input.get()->begin();
+        auto itOut = out->begin();
+        auto itInput = imgData.getChannelImage(n)->cbegin();
 
 #pragma omp parallel for
-        for (int i = 0; i < input.get()->size(); i++)
+        for (int i = 0; i < imgData.length(); i++)
         {
             auto data = *(itInput + i);
             *(itOut+i) += data * std::conj(data);
         }
     }
 
-    for (auto &data : *out.get())
+    for (auto &data : *out)
     {
         data = std::sqrt(data);
     }
 
-    img.push_back(out);
+    img.addChannelImage(out);
     return img;
 }

@@ -21,7 +21,7 @@ protected:
     std::vector<int> m_start[3];
     std::vector<int> m_end[3];
 
-    std::shared_ptr<ComplexVector> griddingChannel(const ReconData &reconData, int channel);
+    ComplexVector *griddingChannel(const ReconData &reconData, int channel);
 };
 
 #endif // GRIDLUT_H

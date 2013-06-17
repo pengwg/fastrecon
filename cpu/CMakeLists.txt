@@ -7,6 +7,7 @@ set(GRID_CPU_SRC_FILES
     FFT.cpp
     SOS.cpp
     ../common/ConvKernel.cpp
+    ../common/ImageData.cpp
     ../common/ReconData.cpp
 )
 

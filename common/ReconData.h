@@ -4,10 +4,7 @@
 #include <memory>
 #include <complex>
 #include <vector>
-
-typedef std::vector<std::complex<float> > ComplexVector;
-typedef std::vector<float> FloatVector;
-typedef std::vector<std::shared_ptr<ComplexVector>> ImageData;
+#include "ImageData.h"
 
 class ReconData
 {

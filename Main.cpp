@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 
     // CPU FFT
     std::cout << "\nCPU FFT... " << std::endl;
-    FFT fft(reconData.rcDim(), imgData.size(), gridSize);
+    FFT fft(reconData.rcDim(), imgData.channels(), gridSize);
 
     timer.restart();
 
@@ -213,15 +213,17 @@ int main(int argc, char *argv[])
     file.close();*/
 
     // Display data
-    int i = 0;
     int zSize = 0;
     if (params.rczres > 1) zSize = gridSize;
 
     if (options.isDisplay())
     {
         QApplication app(argc, argv);
-        for (auto &data : finalData)
-            displayData(*data.get(), gridSize, gridSize, zSize, QString("channel ") + QString::number(i++));
+        for (int i = 0; i < finalData.channels(); i++)
+        {
+            auto data = finalData.getChannelImage(i);
+            displayData(*data, gridSize, gridSize, zSize, QString("channel ") + QString::number(i++));
+        }
         return app.exec();
     }
     else
