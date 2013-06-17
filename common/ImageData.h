@@ -28,6 +28,8 @@ public:
     int dim() const;
 
     void fftShift();
+    ImageData crop_sos(ImageSize size) const;
+
 private:
     int m_dim;
     ImageSize m_size;

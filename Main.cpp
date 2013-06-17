@@ -15,7 +15,6 @@
 #include "ConvKernel.h"
 #include "GridLut.h"
 #include "FFT.h"
-#include "SOS.h"
 
 #ifdef CUDA_CAPABLE
 #include "FFTGpu.h"
@@ -202,9 +201,8 @@ int main(int argc, char *argv[])
 
     // SOS
     std::cout << "\nCPU SOS... " << std::endl;
-    SOS sos;
 
-    ImageData finalData = sos.execute(imgData);
+    ImageData finalData = imgData.crop_sos({192, 192, 192});
 
     std::cout << "SOS total time " << timer.elapsed() << " ms" << std::endl;
 

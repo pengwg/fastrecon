@@ -62,6 +62,33 @@ void ImageData::fftShift()
     }
 }
 
+ImageData ImageData::crop_sos(ImageSize size) const
+{
+    ImageData img(m_dim, m_size);
+    auto out = new ComplexVector(length());
+
+    for (int n = 0; n < channels(); n++)
+    {
+        auto itOut = out->begin();
+        auto itInput = getChannelImage(n)->cbegin();
+
+#pragma omp parallel for
+        for (int i = 0; i < length(); i++)
+        {
+            auto data = *(itInput + i);
+            *(itOut+i) += data * std::conj(data);
+        }
+    }
+
+    for (auto &data : *out)
+    {
+        data = std::sqrt(data);
+    }
+
+    img.addChannelImage(out);
+    return img;
+}
+
 void ImageData::fftShift2(ComplexVector *data)
 {
     int n0h = m_size.x / 2;
