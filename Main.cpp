@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 
     // fft.fftShift(data);
     fft.excute(imgData);
-    fft.fftShift(imgData);
+    imgData.fftShift();
 
     std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 

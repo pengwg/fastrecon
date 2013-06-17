@@ -27,10 +27,14 @@ public:
     int length() const;
     int dim() const;
 
+    void fftShift();
 private:
     int m_dim;
     ImageSize m_size;
     std::vector<std::shared_ptr<ComplexVector>> m_data;
+
+    void fftShift2(ComplexVector *data);
+    void fftShift3(ComplexVector *data);
 };
 
 #endif // IMAGEDATA_H

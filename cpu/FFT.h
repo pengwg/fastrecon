@@ -22,9 +22,6 @@ private:
 
     std::vector<fftwf_plan> m_plan;
     std::vector<fftwf_complex *> m_in;
-
-    void fftShift2(ComplexVector *data);
-    void fftShift3(ComplexVector *data);
 };
 
 #endif // FFT_H
