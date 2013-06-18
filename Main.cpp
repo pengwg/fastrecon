@@ -183,9 +183,11 @@ int main(int argc, char *argv[])
     timer.start();
 
     ImageData imgData = gridCpu.gridding(reconData);
-    std::cout << "Gridding total time " << timer.restart() << " ms" << std::endl;
+    std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
     ImageData imgMap = imgData.makeCopy();
+
+    timer.restart();
     imgMap.lowFilter(8);
     std::cout << "Low filtering " << timer.restart() << " ms" << std::endl;
 

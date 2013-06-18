@@ -134,7 +134,13 @@ void ImageData::lowFilter(int res)
     int x0 = m_size.x / 2;
     int y0 = m_size.y / 2;
     int z0 = m_size.z / 2;
-    float att = 2.0 * res * res / 4.0;
+    float att = 2.0 * res * res / 4.0 / 10.0;
+
+    FloatVector coeff;
+    for (float r = 0; r < 140 * 140; r += 0.1)
+    {
+        coeff.push_back(expf(-r));
+    }
 
 #pragma omp parallel for
     for (int n = 0; n < channels(); n++)
@@ -150,7 +156,10 @@ void ImageData::lowFilter(int res)
                 for (int x = 0; x < m_size.x; x++)
                 {
                     int r = (x - x0) * (x - x0) + r2;
-                    *itData++ *= expf(-r / att);
+                    if (r > 3 * res)
+                        *itData++ = 0;
+                    else
+                        *itData++ *= coeff[(int)(r/att)];
                 }
             }
         }
