@@ -18,18 +18,17 @@ typedef std::vector<std::complex<float> > ComplexVector;
 class ImageData
 {
 public:
-    ImageData(const int dim, const ImageSize &size);
+    ImageData(const int dim, const ImageSize &imageSize);
 
     void addChannelImage(ComplexVector *image);
     const ComplexVector *getChannelImage(int channel) const;
     ComplexVector *getChannelImage(int channel);
     int channels() const;
-    ImageSize size() const;
+    ImageSize imageSize() const;
     int length() const;
     int dim() const;
 
     void fftShift();
-    ImageData crop_sos(ImageSize size) const;
 
 private:
     int m_dim;

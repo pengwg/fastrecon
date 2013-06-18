@@ -11,7 +11,7 @@
 
 #include "ProgramOptions.h"
 #include "ReconData.h"
-
+#include "ImageRecon.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
 #include "FFT.h"
@@ -202,7 +202,8 @@ int main(int argc, char *argv[])
     // SOS
     std::cout << "\nCPU SOS... " << std::endl;
 
-    ImageData finalData = imgData.crop_sos({params.rcxres, params.rcyres, params.rczres});
+    ImageRecon recon(imgData, {params.rcxres, params.rcyres, params.rczres});
+    ImageData finalData = recon.SOS();
 
     std::cout << "SOS total time " << timer.elapsed() << " ms" << std::endl;
 
@@ -223,7 +224,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < finalData.channels(); i++)
         {
             auto data = finalData.getChannelImage(i);
-            displayData(*data, finalData.size(), QString("channel ") + QString::number(n++));
+            displayData(*data, finalData.imageSize(), QString("channel ") + QString::number(n++));
         }
         return app.exec();
     }

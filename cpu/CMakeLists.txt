@@ -5,9 +5,11 @@ find_package(FFTW3 COMPONENTS single REQUIRED)
 set(CPU_SRC_FILES
     GridLut.cpp
     FFT.cpp
+    ImageRecon.cpp
     ../common/ConvKernel.cpp
     ../common/ImageData.cpp
     ../common/ReconData.cpp
+
 )
 
 include_directories(
