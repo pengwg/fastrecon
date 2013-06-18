@@ -20,6 +20,11 @@ class ImageData
 public:
     ImageData(const int dim, const ImageSize &imageSize, ComplexVector *image = nullptr);
 
+    // Shallow copy by default
+    ImageData &operator=(const ImageData &imageData) = default;
+    // Deep copy
+    ImageData makeCopy() const;
+
     void addChannelImage(ComplexVector *image);
     const ComplexVector *getChannelImage(int channel) const;
     ComplexVector *getChannelImage(int channel);
@@ -29,6 +34,7 @@ public:
     int dim() const;
 
     void fftShift();
+    void lowFilter(int res);
 
 private:
     int m_dim;

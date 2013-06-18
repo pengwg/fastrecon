@@ -30,7 +30,7 @@ void displayData(const ComplexVector& data, ImageSize size, const QString& title
 
     if (n2 < 2) n2 = 2;
 
-    int nImages = 8;
+    int nImages = 4;
 
     int start = (n0 * n1) * (n2 / 2 - 3);
     int end = (n0 * n1) * (n2 / 2 - 3 + nImages);
@@ -183,9 +183,11 @@ int main(int argc, char *argv[])
     timer.start();
 
     ImageData imgData = gridCpu.gridding(reconData);
+    std::cout << "Gridding total time " << timer.restart() << " ms" << std::endl;
 
-    std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
-
+    ImageData imgMap = imgData.makeCopy();
+    imgMap.lowFilter(8);
+    std::cout << "Low filtering " << timer.restart() << " ms" << std::endl;
 
     // CPU FFT
     std::cout << "\nCPU FFT... " << std::endl;
@@ -197,13 +199,16 @@ int main(int argc, char *argv[])
     fft.excute(imgData);
     imgData.fftShift();
 
+    std::cout << "\nFFT low res image... " << std::endl;
+    fft.excute(imgMap);
+    imgMap.fftShift();
     std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
     // SOS
     std::cout << "\nCPU SOS... " << std::endl;
 
     ImageRecon recon(imgData, {params.rcxres, params.rcyres, params.rczres});
-    ImageData finalData = recon.SOS();
+    ImageData finalData = recon.SOS(imgMap);
 
     std::cout << "SOS total time " << timer.elapsed() << " ms" << std::endl;
 

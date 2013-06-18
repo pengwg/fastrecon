@@ -1,4 +1,6 @@
 #include <iostream>
+#include <math.h>
+
 #include "ImageData.h"
 
 ImageData::ImageData(const int dim, const ImageSize &size, ComplexVector *image)
@@ -64,6 +66,7 @@ int ImageData::dim() const
 
 void ImageData::fftShift()
 {
+#pragma omp parallel for
     for (int n = 0; n < channels(); n++)
     {
         auto data = getChannelImage(n);
@@ -124,4 +127,45 @@ void ImageData::fftShift3(ComplexVector *data)
             }
         }
     }
+}
+
+void ImageData::lowFilter(int res)
+{
+    int x0 = m_size.x / 2;
+    int y0 = m_size.y / 2;
+    int z0 = m_size.z / 2;
+    float att = 2.0 * res * res / 4.0;
+
+#pragma omp parallel for
+    for (int n = 0; n < channels(); n++)
+    {
+        auto itData = getChannelImage(n)->begin();
+
+        for (int z = 0; z < m_size.z; z++)
+        {
+            int r1 = (z - z0) * (z - z0);
+            for (int y = 0; y < m_size.y; y++)
+            {
+                int r2 = (y - y0) * (y - y0) + r1;
+                for (int x = 0; x < m_size.x; x++)
+                {
+                    int r = (x - x0) * (x - x0) + r2;
+                    *itData++ *= expf(-r / att);
+                }
+            }
+        }
+    }
+}
+
+ImageData ImageData::makeCopy() const
+{
+    ImageData image(m_dim, m_size);
+
+    for (const auto &data : m_data)
+    {
+        auto out = new ComplexVector(*data.get());
+        image.addChannelImage(out);
+    }
+
+    return image;
 }
