@@ -9,13 +9,12 @@ ImageRecon::ImageRecon(ImageData &imageData, const ImageSize &reconSize)
 
 ImageData ImageRecon::SOS() const
 {
-    ImageData img(m_imageData.dim(), m_reconSize);
-    auto out = new ComplexVector(m_reconSize.x * m_reconSize.y * m_reconSize.z);
-
     auto imageSize = m_imageData.imageSize();
     auto x0 = (imageSize.x - m_reconSize.x) / 2;
     auto y0 = (imageSize.y - m_reconSize.y) / 2;
     auto z0 = (imageSize.z - m_reconSize.z) / 2;
+
+    auto out = new ComplexVector(m_reconSize.x * m_reconSize.y * m_reconSize.z);
 
     for (int n = 0; n < m_imageData.channels(); n++)
     {
@@ -48,6 +47,5 @@ ImageData ImageRecon::SOS() const
         data = std::sqrt(data);
     }
 
-    img.addChannelImage(out);
-    return img;
+    return ImageData(m_imageData.dim(), m_reconSize, out);;
 }

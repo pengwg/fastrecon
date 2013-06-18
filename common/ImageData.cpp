@@ -1,15 +1,19 @@
 #include <iostream>
 #include "ImageData.h"
 
-ImageData::ImageData(const int dim, const ImageSize &size)
+ImageData::ImageData(const int dim, const ImageSize &size, ComplexVector *image)
     : m_dim(dim), m_size(size)
 {
     if (dim == 2)
         m_size.z = 1;
+
+    addChannelImage(image);
 }
 
 void ImageData::addChannelImage(ComplexVector *image)
 {
+    if (image == nullptr) return;
+
     if (image->size() != length())
     {
         std::cerr << "Error: ImageData wrong size!" << std::endl;

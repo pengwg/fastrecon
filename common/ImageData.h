@@ -18,7 +18,7 @@ typedef std::vector<std::complex<float> > ComplexVector;
 class ImageData
 {
 public:
-    ImageData(const int dim, const ImageSize &imageSize);
+    ImageData(const int dim, const ImageSize &imageSize, ComplexVector *image = nullptr);
 
     void addChannelImage(ComplexVector *image);
     const ComplexVector *getChannelImage(int channel) const;
