@@ -30,7 +30,7 @@ void displayData(const ComplexVector& data, ImageSize size, const QString& title
 
     if (n2 < 2) n2 = 2;
 
-    int nImages = 6;
+    int nImages = 8;
 
     int start = (n0 * n1) * (n2 / 2 - 3);
     int end = (n0 * n1) * (n2 / 2 - 3 + nImages);
@@ -56,7 +56,7 @@ void displayData(const ComplexVector& data, ImageSize size, const QString& title
         {
             for (int x = j * n0; x < j * n0 + n1; x++)
             {
-
+                Q_ASSERT(i < dataValue.size());
                 uint idx;
                 if (max == min)
                     idx = 127;
@@ -65,7 +65,7 @@ void displayData(const ComplexVector& data, ImageSize size, const QString& title
                 imageLine[x] = idx;
                 i++;
             }
-            i += n0 * n1;
+            i += n0 * (n1 - 1);
         }
     }
 
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
     // SOS
     std::cout << "\nCPU SOS... " << std::endl;
 
-    ImageData finalData = imgData.crop_sos({params.rcxres, params.rcyres, params.rcyres});
+    ImageData finalData = imgData.crop_sos({params.rcxres, params.rcyres, params.rczres});
 
     std::cout << "SOS total time " << timer.elapsed() << " ms" << std::endl;
 

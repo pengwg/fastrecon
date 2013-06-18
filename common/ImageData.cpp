@@ -73,18 +73,35 @@ void ImageData::fftShift()
 
 ImageData ImageData::crop_sos(ImageSize size) const
 {
-    ImageData img(m_dim, m_size);
-    auto out = new ComplexVector(length());
+    ImageData img(m_dim, size);
+    auto out = new ComplexVector(size.x * size.y * size.z);
+    auto x0 = (m_size.x - size.x) / 2;
+    auto y0 = (m_size.y - size.y) / 2;
+    auto z0 = (m_size.z - size.z) / 2;
 
     for (int n = 0; n < channels(); n++)
     {
         auto itOut = out->begin();
         auto itInput = getChannelImage(n)->cbegin();
+
 #pragma omp parallel for
-        for (int i = 0; i < length(); i++)
+        for (int z = 0; z < size.z; z++)
         {
-            auto data = *(itInput + i);
-            *(itOut+i) += data * std::conj(data);
+            auto in1 = (z + z0) * (m_size.x * m_size.y) + y0 * m_size.x;
+            auto out1 = z * (size.x * size.y);
+            for (int y = 0; y < size.y; y++)
+            {
+                auto in2 = y * m_size.x + in1 + x0;
+                auto out2 = y * size.x + out1;
+                for (int x = 0; x < size.x; x++)
+                {
+                    auto in3 = x + in2;
+                    auto out3 = x + out2;
+
+                    auto data = *(itInput + in3);
+                    *(itOut+out3) += data * std::conj(data);
+                }
+            }
         }
     }
 
