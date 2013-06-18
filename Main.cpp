@@ -188,8 +188,8 @@ int main(int argc, char *argv[])
     ImageData imgMap = imgData.makeCopy();
 
     timer.restart();
-    imgMap.lowFilter(8);
-    std::cout << "Low filtering " << timer.restart() << " ms" << std::endl;
+    imgMap.lowFilter(16);
+    std::cout << "Low pass filtering " << timer.restart() << " ms" << std::endl;
 
     // CPU FFT
     std::cout << "\nCPU FFT... " << std::endl;
