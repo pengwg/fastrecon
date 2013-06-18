@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
     // SOS
     std::cout << "\nCPU SOS... " << std::endl;
 
-    ImageData finalData = imgData.crop_sos({192, 192, 192});
+    ImageData finalData = imgData.crop_sos({params.rcxres, params.rcyres, params.rcyres});
 
     std::cout << "SOS total time " << timer.elapsed() << " ms" << std::endl;
 

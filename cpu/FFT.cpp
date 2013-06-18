@@ -6,7 +6,7 @@
 #include "FFT.h"
 
 FFT::FFT(int dims, ImageSize size, int sign)
-    : m_dims(dims), m_size(size), m_sign(sign)
+    : m_dim(dims), m_size(size), m_sign(sign)
 {
     if (dims == 2)
         m_size.z = 1;
@@ -35,9 +35,9 @@ void FFT::plan(int threads)
     {
         auto in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * m_size.x * m_size.y * m_size.z);
         fftwf_plan plan;
-        if (m_dims == 2)
+        if (m_dim == 2)
             plan = fftwf_plan_dft_2d(m_size.y, m_size.x, in, in, m_sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
-        else if (m_dims ==3)
+        else if (m_dim ==3)
             plan = fftwf_plan_dft_3d(m_size.z, m_size.y, m_size.x, in, in, m_sign, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
 
         m_in.push_back(in);

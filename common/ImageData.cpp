@@ -4,7 +4,8 @@
 ImageData::ImageData(const int dim, const ImageSize &size)
     : m_dim(dim), m_size(size)
 {
-
+    if (dim == 2)
+        m_size.z = 1;
 }
 
 void ImageData::addChannelImage(ComplexVector *image)
@@ -17,7 +18,15 @@ void ImageData::addChannelImage(ComplexVector *image)
     m_data.push_back(std::shared_ptr<ComplexVector>(image));
 }
 
-ComplexVector *ImageData::getChannelImage(int channel) const
+const ComplexVector *ImageData::getChannelImage(int channel) const
+{
+    if (channel < channels())
+        return m_data[channel].get();
+    else
+        return nullptr;
+}
+
+ComplexVector *ImageData::getChannelImage(int channel)
 {
     if (channel < channels())
         return m_data[channel].get();
@@ -71,7 +80,6 @@ ImageData ImageData::crop_sos(ImageSize size) const
     {
         auto itOut = out->begin();
         auto itInput = getChannelImage(n)->cbegin();
-
 #pragma omp parallel for
         for (int i = 0; i < length(); i++)
         {

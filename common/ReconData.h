@@ -2,8 +2,6 @@
 #define RECONDATA_H
 
 #include <memory>
-#include <complex>
-#include <vector>
 #include "ImageData.h"
 
 class ReconData

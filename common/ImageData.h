@@ -21,7 +21,8 @@ public:
     ImageData(const int dim, const ImageSize &size);
 
     void addChannelImage(ComplexVector *image);
-    ComplexVector *getChannelImage(int channel) const;
+    const ComplexVector *getChannelImage(int channel) const;
+    ComplexVector *getChannelImage(int channel);
     int channels() const;
     ImageSize size() const;
     int length() const;

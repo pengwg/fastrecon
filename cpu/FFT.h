@@ -16,7 +16,7 @@ public:
     void fftShift(ImageData &imgData);
 
 private:
-    int m_dims;
+    int m_dim;
     ImageSize m_size;
     bool m_sign;
 
