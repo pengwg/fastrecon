@@ -18,6 +18,7 @@ typedef std::vector<std::complex<float> > ComplexVector;
 class ImageData
 {
 public:
+    ImageData();
     ImageData(const int dim, const ImageSize &imageSize, ComplexVector *image = nullptr);
 
     // Shallow copy by default

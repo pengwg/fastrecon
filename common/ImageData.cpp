@@ -3,6 +3,11 @@
 
 #include "ImageData.h"
 
+ImageData::ImageData()
+    : m_dim(0), m_size({0})
+{
+}
+
 ImageData::ImageData(const int dim, const ImageSize &size, ComplexVector *image)
     : m_dim(dim), m_size(size)
 {
