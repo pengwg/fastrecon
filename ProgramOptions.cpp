@@ -50,8 +50,10 @@ error_t ProgramOptions::commandLineOptions(int argc, char *argv[])
     {
         { 0, 0, 0, 0, "Recon parameters:", 1},
         { 0, 'g', "FACTOR", 0, "Define over-gridding factor"},
+        { 0, 0, 0, 0, "Recon options:", 2},
+        { "pils", 888, 0, 0, "PILS method"},
 
-        { 0, 0, 0, 0, "Miscellaneous:", 2},
+        { 0, 0, 0, 0, "Miscellaneous:", 3},
         { "show", 777, 0, 0, "Display reconstruction in a window"},
 
         { 0, 0, 0, 0, "Help options:", -1},
@@ -79,6 +81,9 @@ error_t ProgramOptions::parse_opt(int key, char *arg, struct argp_state *state)
     {
     case 777:
         parent->display = true;
+        break;
+    case 888:
+        parent->reconParameters.pils = true;
         break;
     case 'g':
         parent->reconParameters.overgridding_factor = atof(arg);

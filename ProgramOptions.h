@@ -14,6 +14,7 @@ struct ReconParameters
     int samples;
     int projections;
     float overgridding_factor = 0;
+    bool pils = false;
 
     int rcxres;
     int rcyres;
