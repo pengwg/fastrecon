@@ -161,77 +161,85 @@ int main(int argc, char *argv[])
     options.showParameters();
     ReconParameters params = options.getReconParameters();
 
-    // Load multi-channel data
+    // -------------- Load multi-channel data -----------------
     ReconData reconData = loadReconData(params);
 
-    QElapsedTimer timer0;
+    omp_set_num_threads(std::min(reconData.channels(), omp_get_num_procs()));
+
+    QElapsedTimer timer0, timer;
     timer0.start();
 
-    // Gridding kernel
+    // -------------- Gridding kernel ------------------------
     int kWidth = 3;
     float overGridFactor = params.overgridding_factor;
     ConvKernel kernel(kWidth, overGridFactor, 256);
 
-    omp_set_num_threads(std::min(reconData.channels(), omp_get_num_procs()));
-
-    // CPU gridding
+    // -------------- Gridding -------------------------------
+    std::cout << "\nCPU gridding... " << std::endl;
     int gridSize = params.rcxres * overGridFactor;
     GridLut gridCpu(gridSize, kernel);
 
-    std::cout << "\nCPU gridding... " << std::endl;
-    QElapsedTimer timer;
     timer.start();
-
     ImageData imgData = gridCpu.gridding(reconData);
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
-    ImageData imgMap = imgData.makeCopy();
+    ImageData imgMap;
+    if (params.pils)
+        imgMap = imgData.makeCopy();
 
-    timer.restart();
-    imgMap.lowFilter(16);
-    std::cout << "Low pass filtering " << timer.restart() << " ms" << std::endl;
-
-    // CPU FFT
+    // --------------- FFT ----------------------------------
     std::cout << "\nCPU FFT... " << std::endl;
     FFT fft(reconData.rcDim(), {gridSize, gridSize, gridSize});
 
     timer.restart();
-
     // fft.fftShift(data);
     fft.excute(imgData);
     imgData.fftShift();
-
-    std::cout << "\nFFT low res image... " << std::endl;
-    fft.excute(imgMap);
-    imgMap.fftShift();
     std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
-    // SOS
-    std::cout << "\nCPU SOS... " << std::endl;
-
+    // -------------- Recon Methods -----------------------------------
     ImageRecon recon(imgData, {params.rcxres, params.rcyres, params.rczres});
-    ImageData finalData = recon.SOS(imgMap);
+    ImageData finalImage;
 
-    std::cout << "SOS total time " << timer.elapsed() << " ms" << std::endl;
+    timer.restart();
+    if (params.pils) {
+        std::cout << "\nRecon PILS... " << std::endl;
+        imgMap.lowFilter(16);
+        std::cout << "\nLow pass filtering " << timer.restart() << " ms" << std::endl;
+
+        std::cout << "\nFFT low res image... " << std::endl;
+        fft.excute(imgMap);
+        imgMap.fftShift();
+        std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
+
+        std::cout << "\nSum of Square Field Map..." << std::flush;
+        finalImage = recon.SOS(imgMap);
+        std::cout << " | " << timer.elapsed() << " ms" << std::endl;
+    }
+    else
+    {
+        std::cout << "\nRecon SOS... " << std::flush;
+        finalImage = recon.SOS();
+        std::cout << " | " << timer.elapsed() << " ms" << std::endl;
+    }
 
     std::cout << "\nProgram total time excluding I/O: " << timer0.elapsed() / 1000.0 << " s" << std::endl;
 
-    // Save result
+    // -------------------------- Save Data ---------------------------
     /*QFile file(params.result_filename);
     file.open(QIODevice::WriteOnly);
     auto count = file.write((const char *)data.data(), data.size() * sizeof(typename KData::value_type));
     file.close();*/
 
-    // Display data
+    // -------------------------- Display Data -----------------------
     int n = 0;
-
     if (options.isDisplay())
     {
         QApplication app(argc, argv);
-        for (int i = 0; i < finalData.channels(); i++)
+        for (int i = 0; i < finalImage.channels(); i++)
         {
-            auto data = finalData.getChannelImage(i);
-            displayData(*data, finalData.imageSize(), QString("channel ") + QString::number(n++));
+            auto data = finalImage.getChannelImage(i);
+            displayData(*data, finalImage.imageSize(), QString("channel ") + QString::number(n++));
         }
         return app.exec();
     }
