@@ -205,12 +205,14 @@ int main(int argc, char *argv[])
     if (params.pils) {
         std::cout << "\nRecon PILS... " << std::endl;
         imgMap.lowFilter(16);
-        std::cout << "\nLow pass filtering " << timer.restart() << " ms" << std::endl;
+        std::cout << "\nLow pass filtering | " << timer.restart() << " ms" << std::endl;
 
         std::cout << "\nFFT low res image... " << std::endl;
         fft.excute(imgMap);
         imgMap.fftShift();
         std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
+
+        imgMap.normalize();
 
         std::cout << "\nSum of Square Field Map..." << std::flush;
         finalImage = recon.SOS(imgMap);

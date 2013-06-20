@@ -53,7 +53,7 @@ void FFT::excute(ImageData &imgData)
         std::cout << "Create plans for " << threads << " threads" << std::endl;
         plan(threads);
     }
-    if (imgData.length() != m_size.x * m_size.y * m_size.z)
+    if (imgData.dataSize() != m_size.x * m_size.y * m_size.z)
     {
         std::cerr << "Error: FFT wrong image size" << std::endl;
         exit(1);
@@ -72,9 +72,9 @@ void FFT::excute(ImageData &imgData)
             auto in = m_in[id];
             auto plan = m_plan[id];
 
-            memcpy(in, data->data(), imgData.length() * sizeof(fftwf_complex));
+            memcpy(in, data->data(), imgData.dataSize() * sizeof(fftwf_complex));
             fftwf_execute(plan);
-            memcpy(data->data(), in, imgData.length() * sizeof(fftwf_complex));
+            memcpy(data->data(), in, imgData.dataSize() * sizeof(fftwf_complex));
 
 #pragma omp critical
             std::cout << "Thread " << id << " FFT channel " << i << " | " << timer.restart() << " ms" << std::endl;

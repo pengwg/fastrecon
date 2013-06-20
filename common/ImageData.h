@@ -31,11 +31,12 @@ public:
     ComplexVector *getChannelImage(int channel);
     int channels() const;
     ImageSize imageSize() const;
-    int length() const;
+    int dataSize() const;
     int dim() const;
 
     void fftShift();
     void lowFilter(int res);
+    void normalize();
 
 private:
     int m_dim;

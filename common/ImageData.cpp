@@ -21,7 +21,7 @@ void ImageData::addChannelImage(ComplexVector *image)
 {
     if (image == nullptr) return;
 
-    if (image->size() != length())
+    if (image->size() != dataSize())
     {
         std::cerr << "Error: ImageData wrong size!" << std::endl;
         exit(1);
@@ -50,7 +50,7 @@ ImageSize ImageData::imageSize() const
     return m_size;
 }
 
-int ImageData::length() const
+int ImageData::dataSize() const
 {
     if (m_dim == 3)
         return m_size.x * m_size.y * m_size.z;
@@ -167,6 +167,29 @@ void ImageData::lowFilter(int res)
                         *itData++ *= coeff[(int)(r/att)];
                 }
             }
+        }
+    }
+}
+
+void ImageData::normalize()
+{
+    FloatVector mag(dataSize());
+
+    for (const auto &data : m_data)
+    {
+        auto itMag = mag.begin();
+        for (const auto &value : *data)
+        {
+            *itMag++ += std::real(value * std::conj(value));
+        }
+    }
+
+    for (auto &data : m_data)
+    {
+        auto itMag = mag.begin();
+        for (auto &value : *data)
+        {
+            value /= sqrtf(*itMag++);
         }
     }
 }
