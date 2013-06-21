@@ -170,9 +170,9 @@ int main(int argc, char *argv[])
     timer0.start();
 
     // -------------- Gridding kernel ------------------------
-    int kWidth = 3;
+    int kWidth = 5;
     float overGridFactor = params.overgridding_factor;
-    ConvKernel kernel(kWidth, overGridFactor, 256);
+    ConvKernel kernel(kWidth, overGridFactor, 512);
 
     // -------------- Gridding -------------------------------
     std::cout << "\nCPU gridding... " << std::endl;
