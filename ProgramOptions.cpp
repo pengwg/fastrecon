@@ -49,7 +49,8 @@ error_t ProgramOptions::commandLineOptions(int argc, char *argv[])
     struct argp_option options[] =
     {
         { 0, 0, 0, 0, "Recon parameters:", 1},
-        { 0, 'g', "FACTOR", 0, "Define over-gridding factor"},
+        { 0, 'g', "FACTOR", 0, "Over-gridding factor"},
+        { 0, 'w', "WIDTH", 0, "Kernel full width"},
         { 0, 0, 0, 0, "Recon options:", 2},
         { "pils", 888, 0, 0, "PILS method"},
 
@@ -88,6 +89,9 @@ error_t ProgramOptions::parse_opt(int key, char *arg, struct argp_state *state)
     case 'g':
         parent->reconParameters.overgridding_factor = atof(arg);
         break;
+    case 'w':
+        parent->reconParameters.kernel_width = atof(arg);
+        break;
     case 'h':
         argp_usage(state);
         break;
@@ -112,6 +116,7 @@ void ProgramOptions::showParameters() const
               << std::setw(22) << "Samples:" << reconParameters.samples << std::endl
               << std::setw(22) << "Projections:" << reconParameters.projections << std::endl
               << std::setw(22) << "Overgridding factor:" << reconParameters.overgridding_factor << std::endl
+              << std::setw(22) << "Kernel width:" << reconParameters.kernel_width << std::endl
               << std::setw(22) << "rcxres:" << reconParameters.rcxres << std::endl
               << std::setw(22) << "rcyres:" << reconParameters.rcyres << std::endl
               << std::setw(22) << "rczres:" << reconParameters.rczres << std::endl;

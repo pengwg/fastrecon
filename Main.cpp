@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
     timer0.start();
 
     // -------------- Gridding kernel ------------------------
-    int kWidth = 5;
+    int kWidth = params.kernel_width;
     float overGridFactor = params.overgridding_factor;
     ConvKernel kernel(kWidth, overGridFactor, 512);
 
