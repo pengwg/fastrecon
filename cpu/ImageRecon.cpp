@@ -86,11 +86,5 @@ ImageData ImageRecon::SOS(ImageData &map) const
             }
         }
     }
-
-    for (auto &data : *out)
-    {
-        data = std::sqrt(data);
-    }
-
     return ImageData(m_imageData.dim(), m_reconSize, out);;
 }
