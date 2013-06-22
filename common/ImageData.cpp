@@ -142,9 +142,9 @@ void ImageData::lowFilter(int res)
     float att = 2.0 * res * res / 4.0;
 
     FloatVector coeff;
-    for (int r = 0; r < 100; r++)
+    for (int r = 0; r < 2000; r++)
     {
-        coeff.push_back(expf(-r / 10.0));
+        coeff.push_back(expf(-r / 100.0));
     }
 
 #pragma omp parallel for
@@ -161,8 +161,8 @@ void ImageData::lowFilter(int res)
                 for (int x = 0; x < m_size.x; x++)
                 {
                     int r = (x - x0) * (x - x0) + r2;
-                    int idx = (int)(r / att) * 10;
-                    if (idx >= 100)
+                    int idx = (int)(r / att * 100.0);
+                    if (idx >= 2000)
                         *itData++ = 0;
                     else
                         *itData++ *= coeff[idx];
@@ -174,20 +174,20 @@ void ImageData::lowFilter(int res)
 
 void ImageData::normalize()
 {
-    FloatVector mag(dataSize());
+    FloatVector mag(dataSize(), 0);
 
     for (const auto &data : m_data)
     {
         auto itMag = mag.begin();
         for (const auto &value : *data)
         {
-            *itMag++ += std::real(value * std::conj(value));
+            *itMag++ += std::norm(value);
         }
     }
 
     for (auto &data : m_data)
     {
-        auto itMag = mag.begin();
+        auto itMag = mag.cbegin();
         for (auto &value : *data)
         {
             value /= sqrtf(*itMag++);

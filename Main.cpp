@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
     timer.restart();
     if (params.pils) {
         std::cout << "\nRecon PILS... " << std::endl;
-        imgMap.lowFilter(16);
+        imgMap.lowFilter(22);
         std::cout << "\nLow pass filtering | " << timer.restart() << " ms" << std::endl;
 
         std::cout << "\nFFT low res image... " << std::endl;
