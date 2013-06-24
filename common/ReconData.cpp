@@ -26,7 +26,17 @@ void ReconData::addTrajComponent(FloatVector *trajComp)
         exit(1);
     }
 
+    if (rcDim() == 3)
+    {
+        std::cout << "3 trajectories have been loaded, ignoring additional data." << std::endl;
+        return;
+    }
     m_traj.push_back(std::shared_ptr<FloatVector>(trajComp));
+
+    auto bound = std::minmax_element(trajComp->begin(), trajComp->end());
+    m_bounds.push_back(std::make_pair(*bound.first, *bound.second));
+
+    std::cout << "Range: " << '(' << *bound.first << ", " << *bound.second << ')' << std::endl;
 }
 
 void ReconData::setDcf(FloatVector *dcf)
@@ -38,6 +48,10 @@ void ReconData::setDcf(FloatVector *dcf)
     }
 
     m_dcf.reset(dcf);
+}
+
+void ReconData::scaleTrajComponent(float lbound, float ubound, int comp)
+{
 }
 
 void ReconData::loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName)
@@ -107,4 +121,5 @@ void ReconData::clear()
     m_traj.clear();
     m_dcf.reset();
     m_kDataMultiChannel.clear();
+    m_bounds.clear();
 }
