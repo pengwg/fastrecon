@@ -50,8 +50,21 @@ void ReconData::setDcf(FloatVector *dcf)
     m_dcf.reset(dcf);
 }
 
-void ReconData::scaleTrajComponent(float lbound, float ubound, int comp)
+void ReconData::transformTrajComponent(float translation, float scale, int comp)
 {
+    if (comp > rcDim())
+    {
+        std::cout << "Scale component not exists" << std::endl;
+        return;
+    }
+
+    for (auto &sample : *m_traj[comp])
+    {
+        sample = (sample + translation) * scale;
+    }
+
+    m_bounds[comp].first = (m_bounds[comp].first + translation) * scale;
+    m_bounds[comp].second = (m_bounds[comp].second + translation) * scale;
 }
 
 void ReconData::loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName)

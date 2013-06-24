@@ -16,8 +16,16 @@ GridLut::~GridLut()
 
 }
 
-ImageData GridLut::gridding(const ReconData &reconData)
+ImageData GridLut::gridding(ReconData &reconData)
 {
+    auto bounds = reconData.getCompBounds(0);
+    auto tr = -bounds.first;
+    auto scale = (m_gridSize - 1) / (bounds.second - bounds.first);
+    for (int i = 0; i < reconData.rcDim(); i++)
+    {
+        reconData.transformTrajComponent(tr, scale, i);
+    }
+
     ImageData img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
 #pragma omp parallel shared(img, reconData)
@@ -63,7 +71,7 @@ ComplexVector *GridLut::griddingChannel(const ReconData &reconData, int channel)
     {
         for (int i = 0; i < rcDim; i++)
         {
-            center[i] = (0.5 + *itTrajComp[i]++) * (m_gridSize - 1); // kspace in (-0.5, 0.5)
+            center[i] = *itTrajComp[i]++; //(0.5 + *itTrajComp[i]++) * (m_gridSize - 1); // kspace in (-0.5, 0.5)
             start[i] = ceil(center[i] - kHW);
             end[i] = floor(center[i] + kHW);
 

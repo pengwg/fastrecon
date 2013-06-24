@@ -12,7 +12,7 @@ public:
     GridLut(int gridSize, ConvKernel &kernel);
     virtual ~GridLut();
 
-    ImageData gridding(const ReconData &reconData);
+    ImageData gridding(ReconData &reconData);
 
 protected:
     int m_gridSize;

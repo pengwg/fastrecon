@@ -201,7 +201,7 @@ ImageData ImageData::makeCopy() const
 
     for (const auto &data : m_data)
     {
-        auto out = new ComplexVector(*data.get());
+        auto out = new ComplexVector(*data);
         image.addChannelImage(out);
     }
 

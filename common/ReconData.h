@@ -14,7 +14,7 @@ public:
     void addChannelData(const ComplexVector *data);
     void addTrajComponent(FloatVector *trajComp);
     void setDcf(FloatVector *dcf);
-    void scaleTrajComponent(float lbound, float ubound, int comp);
+    void transformTrajComponent(float translation, float scale, int comp);
     void loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName);
 
     const FloatVector *getTrajComponent(int comp) const
