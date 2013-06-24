@@ -79,78 +79,26 @@ void displayData(const ComplexVector& data, ImageSize size, const QString& title
 
 ReconData loadReconData(const ReconParameters &params)
 {
-    ReconData reconData;
-    // Load trajectory
     int size = params.samples * params.projections;
+    ReconData reconData(size);
 
     QDir dir(params.path, QString(params.trajFiles), QDir::Name);
-    QStringList fileList = dir.entryList();
-
-    std::cout << std::endl << "Read trajectory:" << std::endl;
-    for (const QString &name : fileList)
+    QStringList trajFileList = dir.entryList();
+    for (QString &name : trajFileList)
     {
-        FloatVector *traj = new FloatVector(size);
-
-        QString fileName = params.path + '/' + name;
-        std::cout << fileName.toStdString() << std::endl;
-
-        QFile file(fileName);
-        file.open(QIODevice::ReadOnly);
-        auto count = file.read((char *)traj->data(), size * sizeof(FloatVector::value_type));
-        file.close();
-
-        if (count != size * sizeof(FloatVector::value_type))
-        {
-            std::cout << "Error: wrong data size in " << fileName.toStdString() << std::endl;
-            std::exit(1);
-        }
-
-        reconData.addTrajComponent(traj);
+        name = params.path + '/' + name;
     }
 
-    // Load dcf
-    std::cout << std::endl << "Read dcf:" << std::endl;
-    FloatVector *dcf = new FloatVector(size);
-
-    QString fileName = params.path + '/' + params.dcfFile;
-    std::cout << fileName.toStdString() << std::endl;
-
-    QFile file(fileName);
-    file.open(QIODevice::ReadOnly);
-    auto count = file.read((char *)dcf->data(), size * sizeof(FloatVector::value_type));
-    file.close();
-
-    if (count != size * sizeof(FloatVector::value_type))
-    {
-        std::cout << "Error: wrong data size in " << params.trajFiles.toStdString() << std::endl;
-        std::exit(1);
-    }
-    reconData.setDcf(dcf);
-
-    // Load data
     dir.setNameFilters(QStringList(params.dataFiles));
-    fileList = dir.entryList();
-
-    std::cout << std::endl << "Read data:" << std::endl;
-    for (const QString &name : fileList)
+    QStringList dataFileList = dir.entryList();
+    for (QString &name : dataFileList)
     {
-        ComplexVector *kdata = new ComplexVector(size);
-        QString fileName = params.path + '/' + name;
-        std::cout << fileName.toStdString() << std::endl;
-
-        QFile file(fileName);
-        file.open(QIODevice::ReadOnly);
-        auto count = file.read((char *)kdata->data(), size * sizeof(ComplexVector::value_type));
-        file.close();
-
-        if (count != size * sizeof(ComplexVector::value_type))
-        {
-            std::cout << "Error: wrong data size in " << params.trajFiles.toStdString() << std::endl;
-            std::exit(1);
-        }
-
-        reconData.addChannelData(kdata);
+        name = params.path + '/' + name;
     }
+
+    QString dcfFileName = params.path + '/' + params.dcfFile;
+
+    reconData.loadFromFiles(dataFileList, trajFileList, dcfFileName);
     return reconData;
 }
 
