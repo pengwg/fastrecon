@@ -1,5 +1,5 @@
 Author: Peng Wang
 Email: pwang6@wisc.edu
 
-2D and 3D MR gridding reconstruction using cpu and gpu.
+High performance 2D and 3D MR reconstruction for non-cartesian trajectory.
 
