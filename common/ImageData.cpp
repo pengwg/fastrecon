@@ -8,6 +8,19 @@ ImageData::ImageData()
 {
 }
 
+// Deep copy
+ImageData::ImageData(const ImageData &imageData)
+{
+    copy(imageData);
+}
+
+
+// Move data
+ImageData::ImageData(ImageData &&imageData)
+{
+    move(imageData);
+}
+
 ImageData::ImageData(const int dim, const ImageSize &size, ComplexVector *image)
     : m_dim(dim), m_size(size)
 {
@@ -15,6 +28,19 @@ ImageData::ImageData(const int dim, const ImageSize &size, ComplexVector *image)
         m_size.z = 1;
 
     addChannelImage(image);
+}
+
+
+ImageData &ImageData::operator=(const ImageData &imageData)
+{
+    copy(imageData);
+    return *this;
+}
+
+ImageData &ImageData::operator=(ImageData &&imageData)
+{
+    move(imageData);
+    return *this;
 }
 
 void ImageData::addChannelImage(ComplexVector *image)
@@ -45,28 +71,12 @@ ComplexVector *ImageData::getChannelImage(int channel)
         return nullptr;
 }
 
-ImageSize ImageData::imageSize() const
-{
-    return m_size;
-}
-
 int ImageData::dataSize() const
 {
     if (m_dim == 3)
         return m_size.x * m_size.y * m_size.z;
     else
         return m_size.x * m_size.y;
-}
-
-int ImageData::channels() const
-{
-    return m_data.size();
-}
-
-
-int ImageData::dim() const
-{
-    return m_dim;
 }
 
 void ImageData::fftShift()
@@ -195,15 +205,32 @@ void ImageData::normalize()
     }
 }
 
-ImageData ImageData::makeCopy() const
+void ImageData::copy(const ImageData &imageData)
 {
-    ImageData image(m_dim, m_size);
+    m_dim = imageData.m_dim;
+    m_size = imageData.m_size;
+    m_data.clear();
 
-    for (const auto &data : m_data)
+    for (const auto &data : imageData.m_data)
     {
-        auto out = new ComplexVector(*data);
-        image.addChannelImage(out);
+        auto data_copy = new ComplexVector(*data);
+        addChannelImage(data_copy);
     }
 
-    return image;
+    // std::cout << "Copy called" << std::endl;
 }
+
+void ImageData::move(ImageData &imageData)
+{
+    m_dim = imageData.m_dim;
+    m_size = imageData.m_size;
+    m_data = imageData.m_data;
+
+    imageData.m_dim = 0;
+    imageData.m_size = {0};
+    imageData.m_data.clear();
+
+    // std::cout << "Move called" << std::endl;
+}
+
+

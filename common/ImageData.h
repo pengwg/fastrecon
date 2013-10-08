@@ -19,20 +19,23 @@ class ImageData
 {
 public:
     ImageData();
+    // Deep copy
+    ImageData(const ImageData &imageData);
+    // Move data
+    ImageData(ImageData &&imageData);
     ImageData(const int dim, const ImageSize &imageSize, ComplexVector *image = nullptr);
 
-    // Shallow copy by default
-    ImageData &operator=(const ImageData &imageData) = default;
-    // Deep copy
-    ImageData makeCopy() const;
+    ImageData &operator=(const ImageData &imageData);
+    ImageData &operator=(ImageData &&imageData);
+
 
     void addChannelImage(ComplexVector *image);
     const ComplexVector *getChannelImage(int channel) const;
     ComplexVector *getChannelImage(int channel);
-    int channels() const;
-    ImageSize imageSize() const;
+    int channels() const { return m_data.size(); }
+    ImageSize imageSize() const { return m_size; }
     int dataSize() const;
-    int dim() const;
+    int dim() const { return m_dim; }
 
     void fftShift();
     void lowFilter(int res);
@@ -42,6 +45,9 @@ private:
     int m_dim;
     ImageSize m_size;
     std::vector<std::shared_ptr<ComplexVector>> m_data;
+
+    void copy(const ImageData &imageData);
+    void move(ImageData &imageData);
 
     void fftShift2(ComplexVector *data);
     void fftShift3(ComplexVector *data);

@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 
     ImageData imgMap;
     if (params.pils)
-        imgMap = imgData.makeCopy();
+        imgMap = imgData;
 
     // --------------- FFT ----------------------------------
     std::cout << "\nCPU FFT... " << std::endl;

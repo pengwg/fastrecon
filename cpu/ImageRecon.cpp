@@ -1,6 +1,6 @@
 #include "ImageRecon.h"
 
-ImageRecon::ImageRecon(ImageData &imageData, const ImageSize &reconSize)
+ImageRecon::ImageRecon(const ImageData &imageData, const ImageSize &reconSize)
     : m_imageData(imageData), m_reconSize(reconSize)
 {
 }
