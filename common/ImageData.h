@@ -44,7 +44,7 @@ public:
 private:
     int m_dim;
     ImageSize m_size;
-    std::vector<std::shared_ptr<ComplexVector>> m_data;
+    std::vector<std::unique_ptr<ComplexVector>> m_data;
 
     void copy(const ImageData &imageData);
     void move(ImageData &imageData);

@@ -38,9 +38,9 @@ private:
     int m_size;
     std::vector<std::pair<float, float>> m_bounds;
 
-    std::vector<std::shared_ptr<const ComplexVector> > m_kDataMultiChannel;
-    std::vector<std::shared_ptr<FloatVector> > m_traj;
-    std::shared_ptr<FloatVector> m_dcf;
+    std::vector<std::unique_ptr<const ComplexVector> > m_kDataMultiChannel;
+    std::vector<std::unique_ptr<FloatVector> > m_traj;
+    std::unique_ptr<FloatVector> m_dcf;
 };
 
 #endif // RECONDATA_H

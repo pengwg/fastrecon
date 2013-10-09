@@ -15,7 +15,7 @@ void ReconData::addChannelData(const ComplexVector *data)
         exit(1);
     }
 
-    m_kDataMultiChannel.push_back(std::shared_ptr<const ComplexVector>(data));
+    m_kDataMultiChannel.push_back(std::unique_ptr<const ComplexVector>(data));
 }
 
 void ReconData::addTrajComponent(FloatVector *trajComp)
@@ -31,7 +31,7 @@ void ReconData::addTrajComponent(FloatVector *trajComp)
         std::cout << "3 trajectories have been loaded, ignoring additional data." << std::endl;
         return;
     }
-    m_traj.push_back(std::shared_ptr<FloatVector>(trajComp));
+    m_traj.push_back(std::unique_ptr<FloatVector>(trajComp));
 
     auto bound = std::minmax_element(trajComp->begin(), trajComp->end());
     m_bounds.push_back(std::make_pair(*bound.first, *bound.second));

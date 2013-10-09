@@ -52,7 +52,7 @@ void ImageData::addChannelImage(ComplexVector *image)
         std::cerr << "Error: ImageData wrong size!" << std::endl;
         exit(1);
     }
-    m_data.push_back(std::shared_ptr<ComplexVector>(image));
+    m_data.push_back(std::unique_ptr<ComplexVector>(image));
 }
 
 const ComplexVector *ImageData::getChannelImage(int channel) const
@@ -224,11 +224,10 @@ void ImageData::move(ImageData &imageData)
 {
     m_dim = imageData.m_dim;
     m_size = imageData.m_size;
-    m_data = imageData.m_data;
+    m_data = std::move(imageData.m_data);
 
     imageData.m_dim = 0;
     imageData.m_size = {0};
-    imageData.m_data.clear();
 
     // std::cout << "Move called" << std::endl;
 }
