@@ -25,11 +25,6 @@ set(MAIN_SRC_FILES
 )
 
 find_package(CUDA)
-if(CUDA_FOUND)
-    set(CUDA_HOST_COMPILER /usr/bin/gcc-4.6)
-#    add_definitions(-DCUDA_CAPABLE)
-#    add_subdirectory(gpu)
-endif(CUDA_FOUND)
 
 add_subdirectory(cpu)
 
