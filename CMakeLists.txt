@@ -17,6 +17,7 @@ endif(OPENMP_FOUND)
 include_directories(
     common/
     cpu/
+    gpu/
 )
 
 set(MAIN_SRC_FILES
@@ -27,6 +28,7 @@ set(MAIN_SRC_FILES
 find_package(CUDA)
 
 add_subdirectory(cpu)
+add_subdirectory(gpu)
 
 add_executable(fastrecon ${MAIN_SRC_FILES})
 target_link_libraries(fastrecon recon)
