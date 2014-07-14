@@ -11,6 +11,7 @@
 
 #include "ProgramOptions.h"
 #include "ReconData.h"
+#include "cuReconData.h"
 #include "ImageRecon.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
@@ -109,6 +110,10 @@ int main(int argc, char *argv[])
     int size = params.samples * params.projections;
     ReconData *reconData = new ReconData(size);
     loadReconData(params, reconData);
+
+    // GPU Testing
+    cuReconData *d_reconData = new cuReconData(size);
+    loadReconData(params, d_reconData);
 
     omp_set_num_threads(std::min(reconData->channels(), omp_get_num_procs()));
 
