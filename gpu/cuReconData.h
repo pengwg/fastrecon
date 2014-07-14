@@ -11,6 +11,7 @@ typedef struct __align__(8) {
 } cuComplexFloat;
 
 typedef thrust::device_vector<cuComplexFloat> cuComplexVector;
+typedef thrust::device_vector<float> cuFloatVector;
 
 class cuReconData : public basicReconData
 {
@@ -22,10 +23,10 @@ public:
     virtual void setDcf(FloatVector *dcf) override;
     void transformTrajComponent(float translation, float scale, int comp);
 
-    const FloatVector *getTrajComponent(int comp) const
+    const cuFloatVector *getTrajComponent(int comp) const
     { return m_traj[comp].get(); }
 
-    const FloatVector *getDcf() const
+    const cuFloatVector *getDcf() const
     { return m_dcf.get(); }
 
     const cuComplexVector *getChannelData(int channel) const
@@ -41,8 +42,18 @@ public:
 private:
     std::vector<std::pair<float, float>> m_bounds;
     std::vector<std::unique_ptr<const cuComplexVector>> m_kDataMultiChannel;
-    std::vector<std::unique_ptr<FloatVector>> m_traj;
-    std::unique_ptr<FloatVector> m_dcf;
+    std::vector<std::unique_ptr<cuFloatVector>> m_traj;
+    std::unique_ptr<cuFloatVector> m_dcf;
+};
+
+struct scale_functor
+{
+    const float a, b;
+    scale_functor(float _a, float _b) : a(_a), b(_b) {}
+    __host__ __device__
+        float operator() (const float& x) const {
+            return (x + a) * b;
+        }
 };
 
 #endif // CURECONDATA_H
