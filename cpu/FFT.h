@@ -3,6 +3,7 @@
 
 #include <fftw3.h>
 #include "ReconData.h"
+#include "ImageData.h"
 
 class FFT
 {

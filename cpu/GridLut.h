@@ -1,10 +1,9 @@
 #ifndef GRIDLUT_H
 #define GRIDLUT_H
 
-#include <complex>
-
 #include "ConvKernel.h"
 #include "ReconData.h"
+#include "ImageData.h"
 
 class GridLut
 {

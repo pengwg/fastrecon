@@ -2,8 +2,7 @@
 #define CONVKERNEL_H
 
 #include <memory>
-#include <vector>
-#include "ReconData.h"
+#include "basicReconData.h"
 
 class ConvKernel
 {

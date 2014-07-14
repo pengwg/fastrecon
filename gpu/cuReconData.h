@@ -2,11 +2,8 @@
 #define CURECONDATA_H
 
 #include <memory>
-#include <QStringList>
-#include <QFile>
-#include "ImageData.h"
-#include "basicReconData.h"
 #include <thrust/device_vector.h>
+#include "basicReconData.h"
 
 class cuReconData : public basicReconData
 {
@@ -37,8 +34,8 @@ public:
 private:
     std::vector<std::pair<float, float>> m_bounds;
 
-    std::vector<std::unique_ptr<const ComplexVector> > m_kDataMultiChannel;
-    std::vector<std::unique_ptr<FloatVector> > m_traj;
+    std::vector<std::unique_ptr<const ComplexVector>> m_kDataMultiChannel;
+    std::vector<std::unique_ptr<FloatVector>> m_traj;
     std::unique_ptr<FloatVector> m_dcf;
 };
 
