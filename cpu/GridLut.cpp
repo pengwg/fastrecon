@@ -15,6 +15,20 @@ GridLut::~GridLut()
 {
 
 }
+// ----------CUDA Testing-----------------
+ImageData GridLut::gridding(basicReconData &reconData)
+{
+    auto bounds = reconData.getCompBounds(0);
+    auto tr = -bounds.first;
+    auto scale = (m_gridSize - 1) / (bounds.second - bounds.first);
+    for (int i = 0; i < reconData.rcDim(); i++)
+    {
+        reconData.transformTrajComponent(tr, scale, i);
+    }
+
+    ImageData img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+    return img;
+}
 
 ImageData GridLut::gridding(ReconData &reconData)
 {

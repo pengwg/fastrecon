@@ -12,6 +12,7 @@ public:
     virtual ~GridLut();
 
     ImageData gridding(ReconData &reconData);
+    ImageData gridding(basicReconData &reconData);
 
 protected:
     int m_gridSize;
