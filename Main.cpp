@@ -77,11 +77,8 @@ void displayData(const ComplexVector& data, ImageSize size, const QString& title
     imgWnd->show();
 }
 
-ReconData loadReconData(const ReconParameters &params)
+void loadReconData(const ReconParameters &params, basicReconData *reconData)
 {
-    int size = params.samples * params.projections;
-    ReconData reconData(size);
-
     QDir dir(params.path, QString(params.trajFiles), QDir::Name);
     QStringList trajFileList = dir.entryList();
     for (QString &name : trajFileList)
@@ -98,8 +95,7 @@ ReconData loadReconData(const ReconParameters &params)
 
     QString dcfFileName = params.path + '/' + params.dcfFile;
 
-    reconData.loadFromFiles(dataFileList, trajFileList, dcfFileName);
-    return reconData;
+    reconData->loadFromFiles(dataFileList, trajFileList, dcfFileName);
 }
 
 
@@ -110,9 +106,11 @@ int main(int argc, char *argv[])
     ReconParameters params = options.getReconParameters();
 
     // -------------- Load multi-channel data -----------------
-    ReconData reconData = loadReconData(params);
+    int size = params.samples * params.projections;
+    ReconData *reconData = new ReconData(size);
+    loadReconData(params, reconData);
 
-    omp_set_num_threads(std::min(reconData.channels(), omp_get_num_procs()));
+    omp_set_num_threads(std::min(reconData->channels(), omp_get_num_procs()));
 
     QElapsedTimer timer0, timer;
     timer0.start();
@@ -128,7 +126,7 @@ int main(int argc, char *argv[])
     GridLut gridCpu(gridSize, kernel);
 
     timer.start();
-    ImageData imgData = gridCpu.gridding(reconData);
+    ImageData imgData = gridCpu.gridding(*reconData);
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
     ImageData imgMap;
@@ -137,7 +135,7 @@ int main(int argc, char *argv[])
 
     // --------------- FFT ----------------------------------
     std::cout << "\nCPU FFT... " << std::endl;
-    FFT fft(reconData.rcDim(), {gridSize, gridSize, gridSize});
+    FFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
 
     timer.restart();
     // fft.fftShift(data);
