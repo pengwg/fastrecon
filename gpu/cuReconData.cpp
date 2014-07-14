@@ -14,8 +14,9 @@ void cuReconData::addChannelData(const ComplexVector *data)
         std::cerr << "Error: trajectory and data have different size!" << std::endl;
         exit(1);
     }
-
-    m_kDataMultiChannel.push_back(std::unique_ptr<const ComplexVector>(data));
+    const std::vector<cuComplexFloat> *h_data = reinterpret_cast<const std::vector<cuComplexFloat> *>(data);
+    cuComplexVector *d_data = new cuComplexVector(*h_data);
+    m_kDataMultiChannel.push_back(std::unique_ptr<const cuComplexVector>(d_data));
 }
 
 void cuReconData::addTrajComponent(FloatVector *trajComp)
