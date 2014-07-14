@@ -1,6 +1,7 @@
 #include <QElapsedTimer>
 #include <iostream>
 #include <omp.h>
+#include <cuda_runtime.h>
 
 #include "GridLut.h"
 
@@ -25,7 +26,7 @@ ImageData GridLut::gridding(basicReconData &reconData)
     {
         reconData.transformTrajComponent(tr, scale, i);
     }
-
+    cudaDeviceSynchronize();
     ImageData img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
     return img;
 }
@@ -41,7 +42,7 @@ ImageData GridLut::gridding(ReconData &reconData)
     }
 
     ImageData img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
-
+/*
 #pragma omp parallel shared(img, reconData)
     {
         int id = omp_get_thread_num();
@@ -57,7 +58,7 @@ ImageData GridLut::gridding(ReconData &reconData)
                 std::cout << "Thread " << id << " gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
             }
         }
-    }
+    }*/
     return img;
 }
 

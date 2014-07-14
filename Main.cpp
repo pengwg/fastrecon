@@ -131,9 +131,9 @@ int main(int argc, char *argv[])
     GridLut gridCpu(gridSize, kernel);
 
     timer.start();
-    ImageData imgData = gridCpu.gridding(*reconData);
+    //ImageData imgData = gridCpu.gridding(*reconData);
     // CUDA testing
-    // ImageData imgData = gridCpu.gridding(*d_reconData);
+    ImageData imgData = gridCpu.gridding(*d_reconData);
 
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
