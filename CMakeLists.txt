@@ -17,6 +17,7 @@ endif(OPENMP_FOUND)
 include_directories(
     common/
     cpu/
+    gpu/
 )
 
 set(MAIN_SRC_FILES
