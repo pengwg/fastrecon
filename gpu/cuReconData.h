@@ -8,6 +8,13 @@
 #include "basicReconData.h"
 #include <thrust/device_vector.h>
 
+typedef struct __align__(8) {
+    float real;
+    float imag;
+} cuComplexFloat;
+
+typedef thrust::device_vector<cuComplexFloat> cuComplexVector;
+
 class cuReconData : public basicReconData
 {
 public:
@@ -24,7 +31,7 @@ public:
     const FloatVector *getDcf() const
     { return m_dcf.get(); }
 
-    const ComplexVector *getChannelData(int channel) const
+    const cuComplexVector *getChannelData(int channel) const
     { return m_kDataMultiChannel[channel].get(); }
 
     std::pair<float, float> getCompBounds(int comp) const
@@ -36,9 +43,8 @@ public:
 
 private:
     std::vector<std::pair<float, float>> m_bounds;
-
-    std::vector<std::unique_ptr<const ComplexVector> > m_kDataMultiChannel;
-    std::vector<std::unique_ptr<FloatVector> > m_traj;
+    std::vector<std::unique_ptr<const cuComplexVector>> m_kDataMultiChannel;
+    std::vector<std::unique_ptr<FloatVector>> m_traj;
     std::unique_ptr<FloatVector> m_dcf;
 };
 
