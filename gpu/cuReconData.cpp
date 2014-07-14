@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <thrust/transform.h>
 #include "cuReconData.h"
 
 cuReconData::cuReconData(int size)
@@ -63,12 +63,7 @@ void cuReconData::transformTrajComponent(float translation, float scale, int com
         return;
     }
 
-    for (auto sample : *m_traj[comp])
-    {
-        sample = (sample + translation) * scale;
-    }
-
-    //thrust::transform(m_traj[comp]->begin(), m_traj[comp]->end(), m_traj[comp]->begin(), scale_functor(translation, scale));
+    thrust_scale(m_traj[comp].get(), translation, scale);
 
     m_bounds[comp].first = (m_bounds[comp].first + translation) * scale;
     m_bounds[comp].second = (m_bounds[comp].second + translation) * scale;

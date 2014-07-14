@@ -13,6 +13,8 @@ typedef struct __align__(8) {
 typedef thrust::device_vector<cuComplexFloat> cuComplexVector;
 typedef thrust::device_vector<float> cuFloatVector;
 
+void thrust_scale(cuFloatVector *traj, float translation, float scale);
+
 class cuReconData : public basicReconData
 {
 public:
@@ -43,16 +45,6 @@ private:
     std::vector<std::unique_ptr<const cuComplexVector>> m_kDataMultiChannel;
     std::vector<std::unique_ptr<cuFloatVector>> m_traj;
     std::unique_ptr<cuFloatVector> m_dcf;
-};
-
-struct scale_functor
-{
-    const float a, b;
-    scale_functor(float _a, float _b) : a(_a), b(_b) {}
-    __host__ __device__
-        float operator() (const float& x) const {
-            return (x + a) * b;
-        }
 };
 
 #endif // CURECONDATA_H
