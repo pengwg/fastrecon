@@ -31,8 +31,6 @@ public:
     void clear();
 
 private:
-    std::vector<std::pair<float, float>> m_bounds;
-
     std::vector<std::unique_ptr<const ComplexVector> > m_kDataMultiChannel;
     std::vector<std::unique_ptr<FloatVector> > m_traj;
     std::unique_ptr<FloatVector> m_dcf;
