@@ -1,10 +1,14 @@
 #ifndef BASICRECONDATA_H
 #define BASICRECONDATA_H
 
-#include <memory>
+#include <complex>
+#include <vector>
+
 #include <QStringList>
 #include <QFile>
-#include "ImageData.h"
+
+typedef std::vector<float> FloatVector;
+typedef std::vector<std::complex<float> > ComplexVector;
 
 class basicReconData
 {

@@ -2,9 +2,6 @@
 #define RECONDATA_H
 
 #include <memory>
-#include <QStringList>
-#include <QFile>
-#include "ImageData.h"
 #include "basicReconData.h"
 
 class ReconData : public basicReconData

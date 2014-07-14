@@ -2,11 +2,8 @@
 #define CURECONDATA_H
 
 #include <memory>
-#include <QStringList>
-#include <QFile>
-#include "ImageData.h"
-#include "basicReconData.h"
 #include <thrust/device_vector.h>
+#include "basicReconData.h"
 
 typedef struct __align__(8) {
     float real;

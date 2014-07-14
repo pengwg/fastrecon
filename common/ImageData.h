@@ -2,8 +2,7 @@
 #define IMAGEDATA_H
 
 #include <memory>
-#include <complex>
-#include <vector>
+#include "basicReconData.h"
 
 typedef struct
 {
@@ -11,9 +10,6 @@ typedef struct
     int y;
     int z;
 } ImageSize;
-
-typedef std::vector<float> FloatVector;
-typedef std::vector<std::complex<float> > ComplexVector;
 
 class ImageData
 {
