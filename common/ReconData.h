@@ -5,17 +5,17 @@
 #include <QStringList>
 #include <QFile>
 #include "ImageData.h"
+#include "basicReconData.h"
 
-class ReconData
+class ReconData : public basicReconData
 {
 public:
     ReconData(int size);
 
-    void addChannelData(const ComplexVector *data);
-    void addTrajComponent(FloatVector *trajComp);
-    void setDcf(FloatVector *dcf);
+    virtual void addChannelData(const ComplexVector *data) override;
+    virtual void addTrajComponent(FloatVector *trajComp) override;
+    virtual void setDcf(FloatVector *dcf) override;
     void transformTrajComponent(float translation, float scale, int comp);
-    void loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName);
 
     const FloatVector *getTrajComponent(int comp) const
     { return m_traj[comp].get(); }
@@ -29,13 +29,11 @@ public:
     std::pair<float, float> getCompBounds(int comp) const
     { return m_bounds[comp]; }
 
-    int dataSize() const {return m_size;}
     int channels() const {return m_kDataMultiChannel.size();}
     int rcDim() const { return m_traj.size(); }
     void clear();
 
 private:
-    int m_size;
     std::vector<std::pair<float, float>> m_bounds;
 
     std::vector<std::unique_ptr<const ComplexVector> > m_kDataMultiChannel;
