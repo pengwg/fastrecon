@@ -86,17 +86,17 @@ ReconData loadReconData(const ReconParameters &params)
     QStringList trajFileList = dir.entryList();
     for (QString &name : trajFileList)
     {
-        name = params.path + '/' + name;
+        name = params.path + name;
     }
 
     dir.setNameFilters(QStringList(params.dataFiles));
     QStringList dataFileList = dir.entryList();
     for (QString &name : dataFileList)
     {
-        name = params.path + '/' + name;
+        name = params.path + name;
     }
 
-    QString dcfFileName = params.path + '/' + params.dcfFile;
+    QString dcfFileName = params.path + params.dcfFile;
 
     reconData.loadFromFiles(dataFileList, trajFileList, dcfFileName);
     return reconData;

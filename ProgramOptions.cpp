@@ -23,6 +23,8 @@ error_t ProgramOptions::loadIniOptions()
 
     QDir dir;
     QString path = dir.relativeFilePath(fileInfo.canonicalPath());
+    if (!path.isEmpty())
+        path += '/';
 
     QSettings settings(iniFileName, QSettings::IniFormat);
 
