@@ -7,20 +7,20 @@ ReconData::ReconData(int size)
 {
 }
 
-void ReconData::addChannelData(const ComplexVector *data)
+void ReconData::addChannelData(ComplexVector &data)
 {
-    if (m_size != data->size())
+    if (m_size != data.size())
     {
         std::cerr << "Error: trajectory and data have different size!" << std::endl;
         exit(1);
     }
-
-    m_kDataMultiChannel.push_back(std::unique_ptr<const ComplexVector>(data));
+    ComplexVector *store_data = new ComplexVector(std::move(data));
+    m_kDataMultiChannel.push_back(std::unique_ptr<const ComplexVector>(store_data));
 }
 
-void ReconData::addTrajComponent(FloatVector *trajComp)
+void ReconData::addTrajComponent(FloatVector &trajComp)
 {
-    if (m_size != trajComp->size())
+    if (m_size != trajComp.size())
     {
         std::cerr << "Error: data size does not match!" << std::endl;
         exit(1);
@@ -31,23 +31,24 @@ void ReconData::addTrajComponent(FloatVector *trajComp)
         std::cout << "3 trajectories have been loaded, ignoring additional data." << std::endl;
         return;
     }
-    m_traj.push_back(std::unique_ptr<FloatVector>(trajComp));
+    FloatVector *store_traj = new FloatVector(std::move(trajComp));
+    m_traj.push_back(std::unique_ptr<FloatVector>(store_traj));
 
-    auto bound = std::minmax_element(trajComp->begin(), trajComp->end());
+    auto bound = std::minmax_element(store_traj->begin(), store_traj->end());
     m_bounds.push_back(std::make_pair(*bound.first, *bound.second));
 
     std::cout << "Range: " << '(' << *bound.first << ", " << *bound.second << ')' << std::endl;
 }
 
-void ReconData::setDcf(FloatVector *dcf)
+void ReconData::setDcf(FloatVector &dcf)
 {
-    if (m_size != dcf->size())
+    if (m_size != dcf.size())
     {
         std::cerr << "Error: data size does not match!" << std::endl;
         exit(1);
     }
-
-    m_dcf.reset(dcf);
+    FloatVector *store_dcf = new FloatVector(std::move(dcf));
+    m_dcf.reset(store_dcf);
 }
 
 void ReconData::transformTrajComponent(float translation, float scale, int comp)

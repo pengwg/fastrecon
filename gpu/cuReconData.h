@@ -18,9 +18,9 @@ class cuReconData : public basicReconData
 public:
     cuReconData(int size);
 
-    virtual void addChannelData(const ComplexVector *data) override;
-    virtual void addTrajComponent(FloatVector *trajComp) override;
-    virtual void setDcf(FloatVector *dcf) override;
+    virtual void addChannelData(ComplexVector &data) override;
+    virtual void addTrajComponent(FloatVector &trajComp) override;
+    virtual void setDcf(FloatVector &dcf) override;
     void transformTrajComponent(float translation, float scale, int comp);
 
     const cuFloatVector *getTrajComponent(int comp) const

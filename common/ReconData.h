@@ -9,9 +9,9 @@ class ReconData : public basicReconData
 public:
     ReconData(int size);
 
-    virtual void addChannelData(const ComplexVector *data) override;
-    virtual void addTrajComponent(FloatVector *trajComp) override;
-    virtual void setDcf(FloatVector *dcf) override;
+    virtual void addChannelData(ComplexVector &data) override;
+    virtual void addTrajComponent(FloatVector &trajComp) override;
+    virtual void setDcf(FloatVector &dcf) override;
     void transformTrajComponent(float translation, float scale, int comp);
 
     const FloatVector *getTrajComponent(int comp) const

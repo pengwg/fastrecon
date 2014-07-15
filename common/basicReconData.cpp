@@ -13,11 +13,11 @@ void basicReconData::loadFromFiles(const QStringList &dataFileList, const QStrin
     for (const QString &name : trajFileList)
     {
         std::cout << name.toStdString() << std::endl;
-        FloatVector *traj = new FloatVector(m_size);
+        FloatVector traj(m_size);
 
         QFile file(name);
         file.open(QIODevice::ReadOnly);
-        auto count = file.read((char *)traj->data(), m_size * sizeof(FloatVector::value_type));
+        auto count = file.read((char *)traj.data(), m_size * sizeof(FloatVector::value_type));
         file.close();
 
         if (count != m_size * sizeof(FloatVector::value_type))
@@ -31,11 +31,11 @@ void basicReconData::loadFromFiles(const QStringList &dataFileList, const QStrin
 
     std::cout << std::endl << "Read dcf:" << std::endl;
     std::cout << dcfFileName.toStdString() << std::endl;
-    FloatVector *dcf = new FloatVector(m_size);
+    FloatVector dcf(m_size);
 
     QFile file(dcfFileName);
     file.open(QIODevice::ReadOnly);
-    auto count = file.read((char *)dcf->data(), m_size * sizeof(FloatVector::value_type));
+    auto count = file.read((char *)dcf.data(), m_size * sizeof(FloatVector::value_type));
     file.close();
 
     if (count != m_size * sizeof(FloatVector::value_type))
@@ -49,12 +49,12 @@ void basicReconData::loadFromFiles(const QStringList &dataFileList, const QStrin
     std::cout << std::endl << "Read data:" << std::endl;
     for (const QString &name : dataFileList)
     {
-        ComplexVector *kdata = new ComplexVector(m_size);
+        ComplexVector kdata(m_size);
         std::cout << name.toStdString() << std::endl;
 
         QFile file(name);
         file.open(QIODevice::ReadOnly);
-        auto count = file.read((char *)kdata->data(), m_size * sizeof(ComplexVector::value_type));
+        auto count = file.read((char *)kdata.data(), m_size * sizeof(ComplexVector::value_type));
         file.close();
 
         if (count != m_size * sizeof(ComplexVector::value_type))
