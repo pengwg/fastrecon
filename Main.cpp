@@ -78,7 +78,7 @@ void displayData(const ComplexVector& data, ImageSize size, const QString& title
     imgWnd->show();
 }
 
-void loadReconData(const ReconParameters &params, basicReconData *reconData)
+void loadReconData(const ReconParameters &params, basicReconData<float> *reconData)
 {
     QDir dir(params.path, QString(params.trajFiles), QDir::Name);
     QStringList trajFileList = dir.entryList();
@@ -108,11 +108,11 @@ int main(int argc, char *argv[])
 
     // -------------- Load multi-channel data -----------------
     int size = params.samples * params.projections;
-    ReconData *reconData = new ReconData(size);
+    ReconData<float> *reconData = new ReconData<float>(size);
     loadReconData(params, reconData);
 
     // GPU Testing
-    cuReconData *d_reconData = new cuReconData(size);
+    cuReconData<float> *d_reconData = new cuReconData<float>(size);
     loadReconData(params, d_reconData);
 
     omp_set_num_threads(std::min(reconData->channels(), omp_get_num_procs()));

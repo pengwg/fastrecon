@@ -7,17 +7,18 @@
 #include <QStringList>
 #include <QFile>
 
-typedef std::vector<float> FloatVector;
-typedef std::vector<std::complex<float> > ComplexVector;
-
+template<typename T>
 class basicReconData
 {
 public:
+    typedef std::vector<T> Vector;
+    typedef std::vector<std::complex<T>> ComplexVector;
+
     basicReconData(int size);
 
     void addChannelData(ComplexVector &data);
-    void addTrajComponent(FloatVector &trajComp);
-    void setDcf(FloatVector &dcf);
+    void addTrajComponent(Vector &trajComp);
+    void setDcf(Vector &dcf);
 
     virtual void transformTrajComponent(float translation, float scale, int comp) = 0;
     void loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName);
@@ -30,7 +31,7 @@ public:
 //  const ComplexVector *getChannelData(int channel) const
 //   { return m_kDataMultiChannel[channel].get(); }
 
-    std::pair<float, float> getCompBounds(int comp) const {
+    std::pair<T, T> getCompBounds(int comp) const {
         return m_bounds[comp];
     }
 
@@ -42,12 +43,12 @@ public:
     virtual void clear() = 0;
 
 protected:
-    virtual void addData(ComplexVector &kData) = 0;
-    virtual void addTraj(FloatVector &traj) = 0;
-    virtual void addDcf(FloatVector &traj) = 0;
+    virtual void addData(ComplexVector &data) = 0;
+    virtual void addTraj(Vector &traj) = 0;
+    virtual void addDcf(Vector &dcf) = 0;
 
     int m_size;
-    std::vector<std::pair<float, float>> m_bounds;
+    std::vector<std::pair<T, T>> m_bounds;
 };
 
 #endif // BASICRECONDATA_H

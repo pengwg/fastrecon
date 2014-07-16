@@ -2,12 +2,14 @@
 
 #include "basicReconData.h"
 
-basicReconData::basicReconData(int size)
+template<typename T>
+basicReconData<T>::basicReconData(int size)
     :m_size(size)
 {
 }
 
-void basicReconData::addChannelData(ComplexVector &data)
+template<typename T>
+void basicReconData<T>::addChannelData(ComplexVector &data)
 {
     if (m_size != data.size())
     {
@@ -18,7 +20,8 @@ void basicReconData::addChannelData(ComplexVector &data)
     addData(data);
 }
 
-void basicReconData::addTrajComponent(FloatVector &trajComp)
+template<typename T>
+void basicReconData<T>::addTrajComponent(Vector &trajComp)
 {
     if (m_size != trajComp.size())
     {
@@ -39,7 +42,8 @@ void basicReconData::addTrajComponent(FloatVector &trajComp)
     addTraj(trajComp);
 }
 
-void basicReconData::setDcf(FloatVector &dcf)
+template<typename T>
+void basicReconData<T>::setDcf(Vector &dcf)
 {
     if (m_size != dcf.size())
     {
@@ -50,20 +54,21 @@ void basicReconData::setDcf(FloatVector &dcf)
     addDcf(dcf);
 }
 
-void basicReconData::loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName)
+template<typename T>
+void basicReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName)
 {
     std::cout << std::endl << "Read trajectory:" << std::endl;
     for (const QString &name : trajFileList)
     {
         std::cout << name.toStdString() << std::endl;
-        FloatVector traj(m_size);
+        Vector traj(m_size);
 
         QFile file(name);
         file.open(QIODevice::ReadOnly);
-        auto count = file.read((char *)traj.data(), m_size * sizeof(FloatVector::value_type));
+        auto count = file.read((char *)traj.data(), m_size * sizeof(typename Vector::value_type));
         file.close();
 
-        if (count != m_size * sizeof(FloatVector::value_type))
+        if (count != m_size * sizeof(typename Vector::value_type))
         {
             std::cout << "Error: wrong data size in " << name.toStdString() << std::endl;
             std::exit(1);
@@ -74,14 +79,14 @@ void basicReconData::loadFromFiles(const QStringList &dataFileList, const QStrin
 
     std::cout << std::endl << "Read dcf:" << std::endl;
     std::cout << dcfFileName.toStdString() << std::endl;
-    FloatVector dcf(m_size);
+    Vector dcf(m_size);
 
     QFile file(dcfFileName);
     file.open(QIODevice::ReadOnly);
-    auto count = file.read((char *)dcf.data(), m_size * sizeof(FloatVector::value_type));
+    auto count = file.read((char *)dcf.data(), m_size * sizeof(typename Vector::value_type));
     file.close();
 
-    if (count != m_size * sizeof(FloatVector::value_type))
+    if (count != m_size * sizeof(typename Vector::value_type))
     {
         std::cout << "Error: wrong data size in " << dcfFileName.toStdString() << std::endl;
         std::exit(1);
@@ -97,10 +102,10 @@ void basicReconData::loadFromFiles(const QStringList &dataFileList, const QStrin
 
         QFile file(name);
         file.open(QIODevice::ReadOnly);
-        auto count = file.read((char *)kdata.data(), m_size * sizeof(ComplexVector::value_type));
+        auto count = file.read((char *)kdata.data(), m_size * sizeof(typename ComplexVector::value_type));
         file.close();
 
-        if (count != m_size * sizeof(ComplexVector::value_type))
+        if (count != m_size * sizeof(typename ComplexVector::value_type))
         {
             std::cout << "Error: wrong data size in " << name.toStdString() << std::endl;
             std::exit(1);
@@ -109,3 +114,5 @@ void basicReconData::loadFromFiles(const QStringList &dataFileList, const QStrin
         addChannelData(kdata);
     }
 }
+
+template class basicReconData<float>;

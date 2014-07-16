@@ -2,12 +2,14 @@
 #include <thrust/transform.h>
 #include "cuReconData.h"
 
-cuReconData::cuReconData(int size)
-    : basicReconData(size)
+template<typename T>
+cuReconData<T>::cuReconData(int size)
+    : basicReconData<T>(size)
 {
 }
 
-void cuReconData::addData(ComplexVector &data)
+template<typename T>
+void cuReconData<T>::addData(ComplexVector &data)
 {
     ComplexVector *store_data = new ComplexVector(std::move(data));
     auto h_data = reinterpret_cast<const std::vector<cuComplexFloat> *>(store_data);
@@ -15,21 +17,24 @@ void cuReconData::addData(ComplexVector &data)
     m_kDataMultiChannel.push_back(std::unique_ptr<const cuComplexVector>(d_data));
 }
 
-void cuReconData::addTraj(FloatVector &traj)
+template<typename T>
+void cuReconData<T>::addTraj(Vector &traj)
 {
-    FloatVector *store_traj = new FloatVector(std::move(traj));
+    Vector *store_traj = new Vector(std::move(traj));
     auto d_traj = new cuFloatVector(*store_traj);
     m_traj.push_back(std::unique_ptr<cuFloatVector>(d_traj));
 }
 
-void cuReconData::addDcf(FloatVector &dcf)
+template<typename T>
+void cuReconData<T>::addDcf(Vector &dcf)
 {
-    FloatVector *store_dcf = new FloatVector(std::move(dcf));
+    Vector *store_dcf = new Vector(std::move(dcf));
     auto d_dcf = new cuFloatVector(*store_dcf);
     m_dcf.reset(d_dcf);
 }
 
-void cuReconData::transformTrajComponent(float translation, float scale, int comp)
+template<typename T>
+void cuReconData<T>::transformTrajComponent(float translation, float scale, int comp)
 {
     if (comp > rcDim())
     {
@@ -43,7 +48,8 @@ void cuReconData::transformTrajComponent(float translation, float scale, int com
     m_bounds[comp].second = (m_bounds[comp].second + translation) * scale;
 }
 
-void cuReconData::clear()
+template<typename T>
+void cuReconData<T>::clear()
 {
     m_size = 0;
 
@@ -52,3 +58,5 @@ void cuReconData::clear()
     m_kDataMultiChannel.clear();
     m_bounds.clear();
 }
+
+template class cuReconData<float>;

@@ -11,6 +11,9 @@ typedef struct
     int z;
 } ImageSize;
 
+typedef std::vector<float> FloatVector;
+typedef std::vector<std::complex<float>> ComplexVector;
+
 class ImageData
 {
 public:

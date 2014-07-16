@@ -15,9 +15,13 @@ typedef thrust::device_vector<float> cuFloatVector;
 
 void thrust_scale(cuFloatVector *traj, float translation, float scale);
 
-class cuReconData : public basicReconData
+template<typename T>
+class cuReconData : public basicReconData<T>
 {
 public:
+    using typename basicReconData<T>::Vector;
+    using typename basicReconData<T>::ComplexVector;
+
     cuReconData(int size);
 
     void transformTrajComponent(float translation, float scale, int comp);
@@ -31,17 +35,17 @@ public:
     const cuComplexVector *getChannelData(int channel) const
     { return m_kDataMultiChannel[channel].get(); }
 
-    std::pair<float, float> getCompBounds(int comp) const
-    { return m_bounds[comp]; }
-
     int channels() const {return m_kDataMultiChannel.size();}
     int rcDim() const { return m_traj.size(); }
     void clear();
 
 private:
+    using basicReconData<T>::m_bounds;
+    using basicReconData<T>::m_size;
+
     virtual void addData(ComplexVector &data);
-    virtual void addTraj(FloatVector &traj);
-    virtual void addDcf(FloatVector &dcf);
+    virtual void addTraj(Vector &traj);
+    virtual void addDcf(Vector &dcf);
 
     std::vector<std::unique_ptr<const cuComplexVector>> m_kDataMultiChannel;
     std::vector<std::unique_ptr<cuFloatVector>> m_traj;

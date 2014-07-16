@@ -2,8 +2,8 @@ set(GRID_GPU_SRC_FILES
 #    GridGpu.cpp
 #    GridGpu.cu
 #    FFTGpu.cpp
-    cuReconData.cpp
-    cuReconData.cu
+     cuReconData.cpp
+     cuReconData.cu
 )
 
 include_directories(

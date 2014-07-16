@@ -11,8 +11,8 @@ public:
     GridLut(int gridSize, ConvKernel &kernel);
     virtual ~GridLut();
 
-    ImageData gridding(ReconData &reconData);
-    ImageData gridding(basicReconData &reconData);
+    ImageData gridding(ReconData<float> &reconData);
+    ImageData gridding(basicReconData<float> &reconData);
 
 protected:
     int m_gridSize;
@@ -21,7 +21,7 @@ protected:
     std::vector<int> m_start[3];
     std::vector<int> m_end[3];
 
-    ComplexVector *griddingChannel(const ReconData &reconData, int channel);
+    ComplexVector *griddingChannel(const ReconData<float> &reconData, int channel);
 };
 
 #endif // GRIDLUT_H

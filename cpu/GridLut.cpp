@@ -17,7 +17,7 @@ GridLut::~GridLut()
 
 }
 // ----------CUDA Testing-----------------
-ImageData GridLut::gridding(basicReconData &reconData)
+ImageData GridLut::gridding(basicReconData<float> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -31,7 +31,7 @@ ImageData GridLut::gridding(basicReconData &reconData)
     return img;
 }
 
-ImageData GridLut::gridding(ReconData &reconData)
+ImageData GridLut::gridding(ReconData<float> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -62,7 +62,7 @@ ImageData GridLut::gridding(ReconData &reconData)
     return img;
 }
 
-ComplexVector *GridLut::griddingChannel(const ReconData &reconData, int channel)
+ComplexVector *GridLut::griddingChannel(const ReconData<float> &reconData, int channel)
 {
     const ComplexVector *kData = reconData.getChannelData(channel);
     auto itDcf = reconData.getDcf()->cbegin();

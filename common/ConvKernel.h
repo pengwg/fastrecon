@@ -4,6 +4,9 @@
 #include <memory>
 #include "basicReconData.h"
 
+typedef std::vector<float> FloatVector;
+typedef std::vector<std::complex<float>> ComplexVector;
+
 class ConvKernel
 {
 public:
