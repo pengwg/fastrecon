@@ -31,7 +31,7 @@ ImageData GridLut::gridding(basicReconData<float> &reconData)
     return img;
 }
 
-ImageData GridLut::gridding(ReconData<float> &reconData)
+ImageData GridLut::gridding(ReconData<std::vector, float> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -42,7 +42,7 @@ ImageData GridLut::gridding(ReconData<float> &reconData)
     }
 
     ImageData img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
-/*
+
 #pragma omp parallel shared(img, reconData)
     {
         int id = omp_get_thread_num();
@@ -58,11 +58,11 @@ ImageData GridLut::gridding(ReconData<float> &reconData)
                 std::cout << "Thread " << id << " gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
             }
         }
-    }*/
+    }
     return img;
 }
 
-ComplexVector *GridLut::griddingChannel(const ReconData<float> &reconData, int channel)
+ComplexVector *GridLut::griddingChannel(const ReconData<std::vector, float> &reconData, int channel)
 {
     const ComplexVector *kData = reconData.getChannelData(channel);
     auto itDcf = reconData.getDcf()->cbegin();

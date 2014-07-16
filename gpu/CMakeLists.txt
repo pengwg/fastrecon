@@ -2,7 +2,7 @@ set(GRID_GPU_SRC_FILES
 #    GridGpu.cpp
 #    GridGpu.cu
 #    FFTGpu.cpp
-     cuReconData.cpp
+#    cuReconData.cpp
      cuReconData.cu
 )
 

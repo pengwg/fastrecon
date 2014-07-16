@@ -25,12 +25,6 @@ public:
 
 //  virtual const FloatVector *getTrajComponent(int comp) const = 0;
 
-//  virtual const FloatVector *getDcf() const
-//    { return m_dcf.get(); }
-
-//  const ComplexVector *getChannelData(int channel) const
-//   { return m_kDataMultiChannel[channel].get(); }
-
     std::pair<T, T> getCompBounds(int comp) const {
         return m_bounds[comp];
     }

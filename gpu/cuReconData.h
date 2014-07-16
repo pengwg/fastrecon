@@ -10,8 +10,43 @@ typedef struct __align__(8) {
     float imag;
 } cuComplexFloat;
 
+
+
 typedef thrust::device_vector<cuComplexFloat> cuComplexVector;
 typedef thrust::device_vector<float> cuFloatVector;
+
+template<template<typename, typename> class V, typename T, typename... A>
+class TReconData
+{
+    typedef struct __align__(8)
+    {
+        T real;
+        T imag;
+    } Complex;
+
+    typedef V<T, A...> FloatVector;
+    typedef V<Complex, A...> ComplexVector;
+
+    /*template<template<typename, typename> class V, typename T, typename A>
+    struct FloatVector
+    {
+        typedef V<T, A> type;
+    };
+
+    template<template<typename, typename> class V, typename T, typename A>
+    struct ComplexVector
+    {
+        typedef V<std::complex<T>, A> type;
+    };*/
+
+    /*template<typename T>
+    struct DeviceComplex<thrust::device_malloc_allocator<T>, T>
+    {
+        typedef thrust::device_vector<cuComplex<T>> type;
+    };*/
+};
+
+TReconData<std::vector, float> trecon;
 
 void thrust_scale(cuFloatVector *traj, float translation, float scale);
 

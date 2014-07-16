@@ -13,7 +13,7 @@ struct scale_functor
         }
 };
 
-void thrust_scale(cuFloatVector *traj, float translation, float scale)
+void thrust_scale(cuFloatVector &traj, float translation, float scale)
 {
-    thrust::transform(traj->begin(), traj->end(), traj->begin(), scale_functor(translation, scale));
+    thrust::transform(traj.begin(), traj.end(), traj.begin(), scale_functor(translation, scale));
 }

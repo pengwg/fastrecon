@@ -108,11 +108,11 @@ int main(int argc, char *argv[])
 
     // -------------- Load multi-channel data -----------------
     int size = params.samples * params.projections;
-    ReconData<float> *reconData = new ReconData<float>(size);
+    ReconData<std::vector, float> *reconData = new ReconData<std::vector, float>(size);
     loadReconData(params, reconData);
 
     // GPU Testing
-    cuReconData<float> *d_reconData = new cuReconData<float>(size);
+    auto *d_reconData = new ReconData<thrust::device_vector, float>(size);
     loadReconData(params, d_reconData);
 
     omp_set_num_threads(std::min(reconData->channels(), omp_get_num_procs()));
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 
     timer.start();
     //ImageData imgData = gridCpu.gridding(*reconData);
-    // CUDA testing
+    //CUDA testing
     ImageData imgData = gridCpu.gridding(*d_reconData);
 
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
