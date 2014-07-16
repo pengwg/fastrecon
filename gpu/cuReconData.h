@@ -20,9 +20,6 @@ class cuReconData : public basicReconData
 public:
     cuReconData(int size);
 
-    virtual void addChannelData(ComplexVector &data) override;
-    virtual void addTrajComponent(FloatVector &trajComp) override;
-    virtual void setDcf(FloatVector &dcf) override;
     void transformTrajComponent(float translation, float scale, int comp);
 
     const cuFloatVector *getTrajComponent(int comp) const
@@ -42,6 +39,10 @@ public:
     void clear();
 
 private:
+    virtual void addData(ComplexVector &data);
+    virtual void addTraj(FloatVector &traj);
+    virtual void addDcf(FloatVector &dcf);
+
     std::vector<std::unique_ptr<const cuComplexVector>> m_kDataMultiChannel;
     std::vector<std::unique_ptr<cuFloatVector>> m_traj;
     std::unique_ptr<cuFloatVector> m_dcf;

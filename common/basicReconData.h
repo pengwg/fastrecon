@@ -15,9 +15,10 @@ class basicReconData
 public:
     basicReconData(int size);
 
-    virtual void addChannelData(ComplexVector &data) = 0;
-    virtual void addTrajComponent(FloatVector &trajComp) = 0;
-    virtual void setDcf(FloatVector &dcf) = 0;
+    void addChannelData(ComplexVector &data);
+    void addTrajComponent(FloatVector &trajComp);
+    void setDcf(FloatVector &dcf);
+
     virtual void transformTrajComponent(float translation, float scale, int comp) = 0;
     void loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName);
 
@@ -41,6 +42,10 @@ public:
     virtual void clear() = 0;
 
 protected:
+    virtual void addData(ComplexVector &kData) = 0;
+    virtual void addTraj(FloatVector &traj) = 0;
+    virtual void addDcf(FloatVector &traj) = 0;
+
     int m_size;
     std::vector<std::pair<float, float>> m_bounds;
 };

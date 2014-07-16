@@ -8,10 +8,6 @@ class ReconData : public basicReconData
 {
 public:
     ReconData(int size);
-
-    virtual void addChannelData(ComplexVector &data) override;
-    virtual void addTrajComponent(FloatVector &trajComp) override;
-    virtual void setDcf(FloatVector &dcf) override;
     void transformTrajComponent(float translation, float scale, int comp);
 
     const FloatVector *getTrajComponent(int comp) const
@@ -31,6 +27,10 @@ public:
     void clear();
 
 private:
+    virtual void addData(ComplexVector &data);
+    virtual void addTraj(FloatVector &traj);
+    virtual void addDcf(FloatVector &dcf);
+
     std::vector<std::unique_ptr<const ComplexVector> > m_kDataMultiChannel;
     std::vector<std::unique_ptr<FloatVector> > m_traj;
     std::unique_ptr<FloatVector> m_dcf;

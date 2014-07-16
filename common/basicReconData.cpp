@@ -7,6 +7,49 @@ basicReconData::basicReconData(int size)
 {
 }
 
+void basicReconData::addChannelData(ComplexVector &data)
+{
+    if (m_size != data.size())
+    {
+        std::cerr << "Error: trajectory and data have different size!" << std::endl;
+        exit(1);
+    }
+
+    addData(data);
+}
+
+void basicReconData::addTrajComponent(FloatVector &trajComp)
+{
+    if (m_size != trajComp.size())
+    {
+        std::cerr << "Error: data size does not match!" << std::endl;
+        exit(1);
+    }
+
+    if (rcDim() == 3)
+    {
+        std::cout << "3 trajectories have been loaded, ignoring additional data." << std::endl;
+        return;
+    }
+
+    auto bound = std::minmax_element(trajComp.begin(), trajComp.end());
+    m_bounds.push_back(std::make_pair(*bound.first, *bound.second));
+    std::cout << "Range: " << '(' << *bound.first << ", " << *bound.second << ')' << std::endl;
+
+    addTraj(trajComp);
+}
+
+void basicReconData::setDcf(FloatVector &dcf)
+{
+    if (m_size != dcf.size())
+    {
+        std::cerr << "Error: data size does not match!" << std::endl;
+        exit(1);
+    }
+
+    addDcf(dcf);
+}
+
 void basicReconData::loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName)
 {
     std::cout << std::endl << "Read trajectory:" << std::endl;
