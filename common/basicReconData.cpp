@@ -115,4 +115,19 @@ void basicReconData<T>::loadFromFiles(const QStringList &dataFileList, const QSt
     }
 }
 
+template<typename T>
+void basicReconData<T>::transformTrajComponent(float translation, float scale, int comp)
+{
+    if (comp > rcDim())
+    {
+        std::cout << "Scale component not exists" << std::endl;
+        return;
+    }
+
+    transformLocalTrajComp(translation, scale, comp);
+
+    m_bounds[comp].first = (m_bounds[comp].first + translation) * scale;
+    m_bounds[comp].second = (m_bounds[comp].second + translation) * scale;
+}
+
 template class basicReconData<float>;

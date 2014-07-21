@@ -34,18 +34,9 @@ void ReconData<C, T>::addDcf(Vector &dcf)
 }
 
 template<template<typename, typename> class C, typename T>
-void ReconData<C, T>::transformTrajComponent(float translation, float scale, int comp)
+void ReconData<C, T>::transformLocalTrajComp(float translation, float scale, int comp)
 {
-    if (comp > rcDim())
-    {
-        std::cout << "Scale component not exists" << std::endl;
-        return;
-    }
-
-    Scale(*m_traj[comp], translation, scale);
-
-    m_bounds[comp].first = (m_bounds[comp].first + translation) * scale;
-    m_bounds[comp].second = (m_bounds[comp].second + translation) * scale;
+    transformTraj(*m_traj[comp], translation, scale);
 }
 
 template<template<typename, typename> class C, typename T>
@@ -60,7 +51,7 @@ void ReconData<C, T>::clear()
 }
 
 template<template<typename, typename> class C, typename T>
-void ReconData<C, T>::Scale(std::vector<T> &traj, float translation, float scale)
+void ReconData<C, T>::transformTraj(std::vector<T> &traj, float translation, float scale)
 {
     for (auto &sample : traj)
     {
@@ -69,7 +60,7 @@ void ReconData<C, T>::Scale(std::vector<T> &traj, float translation, float scale
 }
 
 template<template<typename, typename> class C, typename T>
-void ReconData<C, T>::Scale(thrust::device_vector<T> &traj, float translation, float scale)
+void ReconData<C, T>::transformTraj(thrust::device_vector<T> &traj, float translation, float scale)
 {
     thrust_scale(traj, translation, scale);
 }

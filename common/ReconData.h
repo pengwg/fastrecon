@@ -15,7 +15,6 @@ public:
     typedef typename LocalComplexVectorType<C, T>::type LocalComplexVector;
 
     ReconData(int size);
-    void transformTrajComponent(float translation, float scale, int comp);
 
     const LocalVector *getTrajComponent(int comp) const {
         return m_traj[comp].get();
@@ -40,11 +39,12 @@ private:
     virtual void addData(ComplexVector &data) override;
     virtual void addTraj(Vector &traj) override;
     virtual void addDcf(Vector &dcf) override;
+    virtual void transformLocalTrajComp(float translation, float scale, int comp) override;
 
     template<typename V, typename LV>
     LV *toLocalVector(V &v) const;
-    void Scale(std::vector<T> &traj, float translation, float scale);
-    void Scale(thrust::device_vector<T> &traj, float translation, float scale);
+    void transformTraj(std::vector<T> &traj, float translation, float scale);
+    void transformTraj(thrust::device_vector<T> &traj, float translation, float scale);
 
     std::vector<std::unique_ptr<const LocalComplexVector>> m_kDataMultiChannel;
     std::vector<std::unique_ptr<LocalVector>> m_traj;

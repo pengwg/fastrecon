@@ -20,7 +20,7 @@ public:
     void addTrajComponent(Vector &trajComp);
     void setDcf(Vector &dcf);
 
-    virtual void transformTrajComponent(float translation, float scale, int comp) = 0;
+    void transformTrajComponent(float translation, float scale, int comp);
     void loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName);
 
 //  virtual const FloatVector *getTrajComponent(int comp) const = 0;
@@ -40,6 +40,7 @@ protected:
     virtual void addData(ComplexVector &data) = 0;
     virtual void addTraj(Vector &traj) = 0;
     virtual void addDcf(Vector &dcf) = 0;
+    virtual void transformLocalTrajComp(float translation, float scale, int comp) = 0;
 
     int m_size;
     std::vector<std::pair<T, T>> m_bounds;
