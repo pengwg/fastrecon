@@ -15,6 +15,7 @@ public:
     typedef typename LocalComplexVectorType<C, T>::type LocalComplexVector;
 
     ReconData(int size);
+    virtual ~ReconData() {}
 
     const LocalVector *getTrajComponent(int comp) const {
         return m_traj[comp].get();

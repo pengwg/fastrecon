@@ -14,6 +14,7 @@ public:
 
     ImageData();
     ImageData(const int dim, const ImageSize &imageSize, LocalComplexVector *image = nullptr);
+    virtual ~ImageData() {}
 
     // Copy
     ImageData(const basicImageData &imageData);

@@ -13,6 +13,8 @@ class basicImageData
 public:
     basicImageData();
     basicImageData(int dim, const ImageSize &size);
+    virtual ~basicImageData() {}
+
 
     int channels() const {
         return m_channels;
