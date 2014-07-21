@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "ReconData.h"
+#include "cudaFunctions.h"
 
 template<template<typename, typename> class C, typename T>
 ReconData<C, T>::ReconData(int size)

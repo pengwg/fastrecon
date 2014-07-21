@@ -11,7 +11,6 @@
 
 #include "ProgramOptions.h"
 #include "ReconData.h"
-#include "cuReconData.h"
 #include "ImageRecon.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
