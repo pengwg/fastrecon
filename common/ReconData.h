@@ -2,32 +2,8 @@
 #define RECONDATA_H
 
 #include <memory>
-#include <thrust/device_vector.h>
+#include "common.h"
 #include "basicReconData.h"
-
-template<template<typename, typename> class C, typename T, typename... A>
-struct LocalVectorType {
-    typedef C<T, A...> type;
-};
-
-template<typename T>
-struct cuComplex
-{
-    T real;
-    T imag;
-};
-
-template<template<typename, typename> class C, typename T, typename... A>
-struct LocalComplexVectorType {
-    typedef C<std::complex<T>, A...> type;
-};
-
-template<typename T, typename... A>
-struct LocalComplexVectorType<thrust::device_vector, T, A...> {
-    typedef thrust::device_vector<cuComplex<T>> type;
-};
-
-void thrust_scale(thrust::device_vector<float> &traj, float translation, float scale);
 
 template<template<typename, typename> class C, typename T>
 class ReconData : public basicReconData<T>

@@ -10,7 +10,7 @@ set(CPU_SRC_FILES
     ../common/ImageData.cpp
     ../common/basicReconData.cpp
     ../common/ReconData.cpp
-
+    ../common/common.h
 )
 
 include_directories(
