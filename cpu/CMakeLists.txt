@@ -7,6 +7,7 @@ set(CPU_SRC_FILES
     FFT.cpp
     ImageRecon.cpp
     ../common/ConvKernel.cpp
+    ../common/basicImageData.cpp
     ../common/ImageData.cpp
     ../common/basicReconData.cpp
     ../common/ReconData.cpp

@@ -4,7 +4,6 @@
 #include "ImageData.h"
 
 ImageData::ImageData()
-    : m_dim(0), m_size({0})
 {
 }
 
@@ -22,14 +21,13 @@ ImageData::ImageData(ImageData &&imageData)
 }
 
 ImageData::ImageData(const int dim, const ImageSize &size, ComplexVector *image)
-    : m_dim(dim), m_size(size)
+    : basicImageData(dim, size)
 {
     if (dim == 2)
         m_size.z = 1;
 
     addChannelImage(image);
 }
-
 
 ImageData &ImageData::operator=(const ImageData &imageData)
 {
@@ -53,6 +51,7 @@ void ImageData::addChannelImage(ComplexVector *image)
         exit(1);
     }
     m_data.push_back(std::unique_ptr<ComplexVector>(image));
+    m_channels = m_data.size();
 }
 
 const ComplexVector *ImageData::getChannelImage(int channel) const
@@ -69,14 +68,6 @@ ComplexVector *ImageData::getChannelImage(int channel)
         return m_data[channel].get();
     else
         return nullptr;
-}
-
-int ImageData::dataSize() const
-{
-    if (m_dim == 3)
-        return m_size.x * m_size.y * m_size.z;
-    else
-        return m_size.x * m_size.y;
 }
 
 void ImageData::fftShift()
@@ -225,10 +216,11 @@ void ImageData::move(ImageData &imageData)
     m_dim = imageData.m_dim;
     m_size = imageData.m_size;
     m_data = std::move(imageData.m_data);
+    m_channels = imageData.m_channels;
 
     imageData.m_dim = 0;
     imageData.m_size = {0};
-
+    imageData.m_channels = 0;
     // std::cout << "Move called" << std::endl;
 }
 

@@ -2,19 +2,13 @@
 #define IMAGEDATA_H
 
 #include <memory>
-#include "basicReconData.h"
-
-typedef struct
-{
-    int x;
-    int y;
-    int z;
-} ImageSize;
+#include "basicImageData.h"
+#include "common.h"
 
 typedef std::vector<float> FloatVector;
 typedef std::vector<std::complex<float>> ComplexVector;
 
-class ImageData
+class ImageData : public basicImageData
 {
 public:
     ImageData();
@@ -23,30 +17,22 @@ public:
     // Move data
     ImageData(ImageData &&imageData);
     ImageData(const int dim, const ImageSize &imageSize, ComplexVector *image = nullptr);
-
-    ImageData &operator=(const ImageData &imageData);
-    ImageData &operator=(ImageData &&imageData);
-
+    ImageData &operator=(const ImageData &ImageData);
+    ImageData &operator=(ImageData &&ImageData);
 
     void addChannelImage(ComplexVector *image);
     const ComplexVector *getChannelImage(int channel) const;
     ComplexVector *getChannelImage(int channel);
-    int channels() const { return m_data.size(); }
-    ImageSize imageSize() const { return m_size; }
-    int dataSize() const;
-    int dim() const { return m_dim; }
 
-    void fftShift();
-    void lowFilter(int res);
-    void normalize();
+    virtual void fftShift() override;
+    virtual void lowFilter(int res) override;
+    virtual void normalize() override;
 
 private:
-    int m_dim;
-    ImageSize m_size;
     std::vector<std::unique_ptr<ComplexVector>> m_data;
 
-    void copy(const ImageData &imageData);
-    void move(ImageData &imageData);
+    virtual void copy(const ImageData &imageData);
+    virtual void move(ImageData &imageData);
 
     void fftShift2(ComplexVector *data);
     void fftShift3(ComplexVector *data);
