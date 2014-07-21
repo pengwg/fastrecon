@@ -13,6 +13,21 @@ basicImageData::basicImageData(int dim, const ImageSize &size)
 
 }
 
+// Copy
+basicImageData &basicImageData::operator=(const basicImageData &imageData)
+{
+    copy(imageData);
+    return *this;
+}
+
+// Move
+basicImageData &basicImageData::operator=(basicImageData &&imageData)
+{
+    move(imageData);
+    return *this;
+}
+
+
 int basicImageData::dataSize() const
 {
     if (m_dim == 3)

@@ -25,19 +25,7 @@ ImageData<C, T>::ImageData(const ImageData &imageData)
     copy(imageData);
 }
 
-template<template<typename, typename> class C, typename T>
-ImageData<C, T>::ImageData(const basicImageData &imageData)
-{
-    copy(imageData);
-}
-
 // Move data
-template<template<typename, typename> class C, typename T>
-ImageData<C, T>::ImageData(basicImageData &&imageData)
-{
-    move(imageData);
-}
-
 template<template<typename, typename> class C, typename T>
 ImageData<C, T>::ImageData(ImageData &&imageData)
 {
@@ -52,21 +40,7 @@ ImageData<C, T> &ImageData<C, T>::operator=(const ImageData &imageData)
     return *this;
 }
 
-template<template<typename, typename> class C, typename T>
-ImageData<C, T> &ImageData<C, T>::operator=(const basicImageData &imageData)
-{
-    copy(imageData);
-    return *this;
-}
-
 // Move
-template<template<typename, typename> class C, typename T>
-ImageData<C, T> &ImageData<C, T>::operator=(basicImageData &&imageData)
-{
-    move(imageData);
-    return *this;
-}
-
 template<template<typename, typename> class C, typename T>
 ImageData<C, T> &ImageData<C, T>::operator=(ImageData &&imageData)
 {
@@ -122,7 +96,7 @@ void ImageData<C, T>::fftShift()
 }
 
 template<template<typename, typename> class C, typename T>
-void ImageData<C, T>::fftShift2(LocalComplexVector *data)
+void ImageData<C, T>::fftShift2(std::vector<std::complex<T>> *data)
 {
     int n0h = m_size.x / 2;
     int n1h = m_size.y / 2;
@@ -145,7 +119,7 @@ void ImageData<C, T>::fftShift2(LocalComplexVector *data)
 }
 
 template<template<typename, typename> class C, typename T>
-void ImageData<C, T>::fftShift3(LocalComplexVector *data)
+void ImageData<C, T>::fftShift3(std::vector<std::complex<T>> *data)
 {
     int n0h = m_size.x / 2;
     int n1h = m_size.y / 2;

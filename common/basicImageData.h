@@ -15,6 +15,10 @@ public:
     basicImageData(int dim, const ImageSize &size);
     virtual ~basicImageData() {}
 
+    // Copy
+    basicImageData &operator=(const basicImageData &ImageData);
+    // Move
+    basicImageData &operator=(basicImageData &&ImageData);
 
     int channels() const {
         return m_channels;
@@ -38,6 +42,9 @@ protected:
     int m_dim = 0;
     ImageSize m_size = {0, 0, 0};
     int m_channels = 0;
+
+    virtual void copy(const basicImageData &imageData) = 0;
+    virtual void move(basicImageData &imageData) = 0;
 };
 
 #endif // BASICIMAGEDATA_H

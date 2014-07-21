@@ -17,17 +17,12 @@ public:
     virtual ~ImageData() {}
 
     // Copy
-    ImageData(const basicImageData &imageData);
     ImageData(const ImageData &imageData);
     // Move
-    ImageData(basicImageData &&imageData);
     ImageData(ImageData &&imageData);
-
     // Copy
-    ImageData &operator=(const basicImageData &ImageData);
     ImageData &operator=(const ImageData &ImageData);
     // Move
-    ImageData &operator=(basicImageData &&ImageData);
     ImageData &operator=(ImageData &&ImageData);
 
     void addChannelImage(LocalComplexVector *image);
@@ -41,11 +36,13 @@ public:
 private:
     std::vector<std::unique_ptr<LocalComplexVector>> m_data;
 
-    void copy(const basicImageData &imageData);
-    void move(basicImageData &imageData);
+    virtual void copy(const basicImageData &imageData) override;
+    virtual void move(basicImageData &imageData) override;
 
-    void fftShift2(LocalComplexVector *data);
-    void fftShift3(LocalComplexVector *data);
+    void fftShift2(std::vector<std::complex<T>> *data);
+    void fftShift3(std::vector<std::complex<T>> *data);
+    void fftShift2(thrust::device_vector<cuComplex<T>> *data) {}
+    void fftShift3(thrust::device_vector<cuComplex<T>> *data) {}
 };
 
 #endif // IMAGEDATA_H
