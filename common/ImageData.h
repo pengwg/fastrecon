@@ -12,12 +12,20 @@ class ImageData : public basicImageData
 {
 public:
     ImageData();
-    // Deep copy
-    ImageData(const ImageData &imageData);
-    // Move data
-    ImageData(ImageData &&imageData);
     ImageData(const int dim, const ImageSize &imageSize, ComplexVector *image = nullptr);
+
+    // Copy
+    ImageData(const basicImageData &imageData);
+    ImageData(const ImageData &imageData);
+    // Move
+    ImageData(basicImageData &&imageData);
+    ImageData(ImageData &&imageData);
+
+    // Copy
+    ImageData &operator=(const basicImageData &ImageData);
     ImageData &operator=(const ImageData &ImageData);
+    // Move
+    ImageData &operator=(basicImageData &&ImageData);
     ImageData &operator=(ImageData &&ImageData);
 
     void addChannelImage(ComplexVector *image);
@@ -31,8 +39,8 @@ public:
 private:
     std::vector<std::unique_ptr<ComplexVector>> m_data;
 
-    virtual void copy(const ImageData &imageData);
-    virtual void move(ImageData &imageData);
+    void copy(const basicImageData &imageData);
+    void move(basicImageData &imageData);
 
     void fftShift2(ComplexVector *data);
     void fftShift3(ComplexVector *data);

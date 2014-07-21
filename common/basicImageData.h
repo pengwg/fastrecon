@@ -36,9 +36,6 @@ protected:
     int m_dim = 0;
     ImageSize m_size = {0, 0, 0};
     int m_channels = 0;
-
-    //virtual void copy(const basicImageData &basicImageData) = 0;
-    //virtual void move(basicImageData &basicImageData) = 0;
 };
 
 #endif // BASICIMAGEDATA_H

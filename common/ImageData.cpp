@@ -7,19 +7,6 @@ ImageData::ImageData()
 {
 }
 
-// Deep copy
-ImageData::ImageData(const ImageData &imageData)
-{
-    copy(imageData);
-}
-
-
-// Move data
-ImageData::ImageData(ImageData &&imageData)
-{
-    move(imageData);
-}
-
 ImageData::ImageData(const int dim, const ImageSize &size, ComplexVector *image)
     : basicImageData(dim, size)
 {
@@ -29,9 +16,45 @@ ImageData::ImageData(const int dim, const ImageSize &size, ComplexVector *image)
     addChannelImage(image);
 }
 
+// Deep copy
+ImageData::ImageData(const ImageData &imageData)
+{
+    copy(imageData);
+}
+
+ImageData::ImageData(const basicImageData &imageData)
+{
+    copy(imageData);
+}
+
+// Move data
+ImageData::ImageData(basicImageData &&imageData)
+{
+    move(imageData);
+}
+
+ImageData::ImageData(ImageData &&imageData)
+{
+    move(imageData);
+}
+
+// Copy
 ImageData &ImageData::operator=(const ImageData &imageData)
 {
     copy(imageData);
+    return *this;
+}
+
+ImageData &ImageData::operator=(const basicImageData &imageData)
+{
+    copy(imageData);
+    return *this;
+}
+
+// Move
+ImageData &ImageData::operator=(basicImageData &&imageData)
+{
+    move(imageData);
     return *this;
 }
 
@@ -196,13 +219,14 @@ void ImageData::normalize()
     }
 }
 
-void ImageData::copy(const ImageData &imageData)
+void ImageData::copy(const basicImageData &imageData)
 {
-    m_dim = imageData.m_dim;
-    m_size = imageData.m_size;
+    const ImageData &im = dynamic_cast<const ImageData &>(imageData);
+    m_dim = im.m_dim;
+    m_size = im.m_size;
     m_data.clear();
 
-    for (const auto &data : imageData.m_data)
+    for (const auto &data : im.m_data)
     {
         auto data_copy = new ComplexVector(*data);
         addChannelImage(data_copy);
@@ -211,16 +235,18 @@ void ImageData::copy(const ImageData &imageData)
     // std::cout << "Copy called" << std::endl;
 }
 
-void ImageData::move(ImageData &imageData)
+void ImageData::move(basicImageData &imageData)
 {
-    m_dim = imageData.m_dim;
-    m_size = imageData.m_size;
-    m_data = std::move(imageData.m_data);
-    m_channels = imageData.m_channels;
+    ImageData &im = dynamic_cast<ImageData &>(imageData);
+    m_dim = im.m_dim;
+    m_size = im.m_size;
+    m_channels = im.m_channels;
 
-    imageData.m_dim = 0;
-    imageData.m_size = {0};
-    imageData.m_channels = 0;
+    m_data = std::move(im.m_data);
+
+    im.m_dim = 0;
+    im.m_size = {0};
+    im.m_channels = 0;
     // std::cout << "Move called" << std::endl;
 }
 
