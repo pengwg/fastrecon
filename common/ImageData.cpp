@@ -3,11 +3,13 @@
 
 #include "ImageData.h"
 
-ImageData::ImageData()
+template<template<typename, typename> class C, typename T>
+ImageData<C, T>::ImageData()
 {
 }
 
-ImageData::ImageData(const int dim, const ImageSize &size, ComplexVector *image)
+template<template<typename, typename> class C, typename T>
+ImageData<C, T>::ImageData(const int dim, const ImageSize &size, LocalComplexVector *image)
     : basicImageData(dim, size)
 {
     if (dim == 2)
@@ -17,54 +19,63 @@ ImageData::ImageData(const int dim, const ImageSize &size, ComplexVector *image)
 }
 
 // Deep copy
-ImageData::ImageData(const ImageData &imageData)
+template<template<typename, typename> class C, typename T>
+ImageData<C, T>::ImageData(const ImageData &imageData)
 {
     copy(imageData);
 }
 
-ImageData::ImageData(const basicImageData &imageData)
+template<template<typename, typename> class C, typename T>
+ImageData<C, T>::ImageData(const basicImageData &imageData)
 {
     copy(imageData);
 }
 
 // Move data
-ImageData::ImageData(basicImageData &&imageData)
+template<template<typename, typename> class C, typename T>
+ImageData<C, T>::ImageData(basicImageData &&imageData)
 {
     move(imageData);
 }
 
-ImageData::ImageData(ImageData &&imageData)
+template<template<typename, typename> class C, typename T>
+ImageData<C, T>::ImageData(ImageData &&imageData)
 {
     move(imageData);
 }
 
 // Copy
-ImageData &ImageData::operator=(const ImageData &imageData)
+template<template<typename, typename> class C, typename T>
+ImageData<C, T> &ImageData<C, T>::operator=(const ImageData &imageData)
 {
     copy(imageData);
     return *this;
 }
 
-ImageData &ImageData::operator=(const basicImageData &imageData)
+template<template<typename, typename> class C, typename T>
+ImageData<C, T> &ImageData<C, T>::operator=(const basicImageData &imageData)
 {
     copy(imageData);
     return *this;
 }
 
 // Move
-ImageData &ImageData::operator=(basicImageData &&imageData)
+template<template<typename, typename> class C, typename T>
+ImageData<C, T> &ImageData<C, T>::operator=(basicImageData &&imageData)
 {
     move(imageData);
     return *this;
 }
 
-ImageData &ImageData::operator=(ImageData &&imageData)
+template<template<typename, typename> class C, typename T>
+ImageData<C, T> &ImageData<C, T>::operator=(ImageData &&imageData)
 {
     move(imageData);
     return *this;
 }
 
-void ImageData::addChannelImage(ComplexVector *image)
+template<template<typename, typename> class C, typename T>
+void ImageData<C, T>::addChannelImage(LocalComplexVector *image)
 {
     if (image == nullptr) return;
 
@@ -73,11 +84,12 @@ void ImageData::addChannelImage(ComplexVector *image)
         std::cerr << "Error: ImageData wrong size!" << std::endl;
         exit(1);
     }
-    m_data.push_back(std::unique_ptr<ComplexVector>(image));
+    m_data.push_back(std::unique_ptr<LocalComplexVector>(image));
     m_channels = m_data.size();
 }
 
-const ComplexVector *ImageData::getChannelImage(int channel) const
+template<template<typename, typename> class C, typename T>
+const typename ImageData<C, T>::LocalComplexVector *ImageData<C, T>::getChannelImage(int channel) const
 {
     if (channel < channels())
         return m_data[channel].get();
@@ -85,7 +97,8 @@ const ComplexVector *ImageData::getChannelImage(int channel) const
         return nullptr;
 }
 
-ComplexVector *ImageData::getChannelImage(int channel)
+template<template<typename, typename> class C, typename T>
+typename ImageData<C, T>::LocalComplexVector *ImageData<C, T>::getChannelImage(int channel)
 {
     if (channel < channels())
         return m_data[channel].get();
@@ -93,7 +106,8 @@ ComplexVector *ImageData::getChannelImage(int channel)
         return nullptr;
 }
 
-void ImageData::fftShift()
+template<template<typename, typename> class C, typename T>
+void ImageData<C, T>::fftShift()
 {
 #pragma omp parallel for
     for (int n = 0; n < channels(); n++)
@@ -107,7 +121,8 @@ void ImageData::fftShift()
     }
 }
 
-void ImageData::fftShift2(ComplexVector *data)
+template<template<typename, typename> class C, typename T>
+void ImageData<C, T>::fftShift2(LocalComplexVector *data)
 {
     int n0h = m_size.x / 2;
     int n1h = m_size.y / 2;
@@ -129,7 +144,8 @@ void ImageData::fftShift2(ComplexVector *data)
     }
 }
 
-void ImageData::fftShift3(ComplexVector *data)
+template<template<typename, typename> class C, typename T>
+void ImageData<C, T>::fftShift3(LocalComplexVector *data)
 {
     int n0h = m_size.x / 2;
     int n1h = m_size.y / 2;
@@ -158,14 +174,15 @@ void ImageData::fftShift3(ComplexVector *data)
     }
 }
 
-void ImageData::lowFilter(int res)
+template<template<typename, typename> class C, typename T>
+void ImageData<C, T>::lowFilter(int res)
 {
     int x0 = m_size.x / 2;
     int y0 = m_size.y / 2;
     int z0 = m_size.z / 2;
     float att = 2.0 * res * res / 4.0;
 
-    FloatVector coeff;
+    LocalVector coeff;
     for (int r = 0; r < 2000; r++)
     {
         coeff.push_back(expf(-r / 100.0));
@@ -196,9 +213,10 @@ void ImageData::lowFilter(int res)
     }
 }
 
-void ImageData::normalize()
+template<template<typename, typename> class C, typename T>
+void ImageData<C, T>::normalize()
 {
-    FloatVector mag(dataSize(), 0);
+    LocalVector mag(dataSize(), 0);
 
     for (const auto &data : m_data)
     {
@@ -219,7 +237,8 @@ void ImageData::normalize()
     }
 }
 
-void ImageData::copy(const basicImageData &imageData)
+template<template<typename, typename> class C, typename T>
+void ImageData<C, T>::copy(const basicImageData &imageData)
 {
     const ImageData &im = dynamic_cast<const ImageData &>(imageData);
     m_dim = im.m_dim;
@@ -228,14 +247,15 @@ void ImageData::copy(const basicImageData &imageData)
 
     for (const auto &data : im.m_data)
     {
-        auto data_copy = new ComplexVector(*data);
+        auto data_copy = new LocalComplexVector(*data);
         addChannelImage(data_copy);
     }
 
     // std::cout << "Copy called" << std::endl;
 }
 
-void ImageData::move(basicImageData &imageData)
+template<template<typename, typename> class C, typename T>
+void ImageData<C, T>::move(basicImageData &imageData)
 {
     ImageData &im = dynamic_cast<ImageData &>(imageData);
     m_dim = im.m_dim;
@@ -250,4 +270,5 @@ void ImageData::move(basicImageData &imageData)
     // std::cout << "Move called" << std::endl;
 }
 
-
+template class ImageData<std::vector, float>;
+//template class ImageData<thrust::device_vector, float>;

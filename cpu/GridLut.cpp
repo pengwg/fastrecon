@@ -17,7 +17,7 @@ GridLut::~GridLut()
 
 }
 // ----------CUDA Testing-----------------
-ImageData GridLut::gridding(basicReconData<float> &reconData)
+ImageData<std::vector, float> GridLut::gridding(basicReconData<float> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -27,11 +27,11 @@ ImageData GridLut::gridding(basicReconData<float> &reconData)
         reconData.transformTrajComponent(tr, scale, i);
     }
     cudaDeviceSynchronize();
-    ImageData img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+    ImageData<std::vector, float> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
     return img;
 }
 
-ImageData GridLut::gridding(ReconData<std::vector, float> &reconData)
+ImageData<std::vector, float> GridLut::gridding(ReconData<std::vector, float> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -41,7 +41,7 @@ ImageData GridLut::gridding(ReconData<std::vector, float> &reconData)
         reconData.transformTrajComponent(tr, scale, i);
     }
 
-    ImageData img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+    ImageData<std::vector, float> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
 #pragma omp parallel shared(img, reconData)
     {

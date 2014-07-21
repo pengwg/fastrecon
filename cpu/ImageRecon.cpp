@@ -1,13 +1,13 @@
 #include "ImageRecon.h"
 
-ImageRecon::ImageRecon(const ImageData &imageData, const ImageSize &reconSize)
+ImageRecon::ImageRecon(const ImageData<std::vector, float> &imageData, const ImageSize &reconSize)
     : m_imageData(imageData), m_reconSize(reconSize)
 {
 }
 
-ImageData ImageRecon::SOS() const
+ImageData<std::vector, float> ImageRecon::SOS() const
 {
-    ImageData img = SOS(m_imageData);
+    ImageData<std::vector, float> img = SOS(m_imageData);
 
     for (auto &data : *img.getChannelImage(0))
     {
@@ -17,7 +17,7 @@ ImageData ImageRecon::SOS() const
     return img;
 }
 
-ImageData ImageRecon::SOS(const ImageData &map) const
+ImageData<std::vector, float> ImageRecon::SOS(const ImageData<std::vector, float> &map) const
 {
     auto imageSize = m_imageData.imageSize();
     auto x0 = (imageSize.x - m_reconSize.x) / 2;
@@ -53,5 +53,5 @@ ImageData ImageRecon::SOS(const ImageData &map) const
             }
         }
     }
-    return ImageData(m_imageData.dim(), m_reconSize, out);;
+    return ImageData<std::vector, float>(m_imageData.dim(), m_reconSize, out);;
 }

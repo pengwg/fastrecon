@@ -11,8 +11,8 @@ public:
     GridLut(int gridSize, ConvKernel &kernel);
     virtual ~GridLut();
 
-    ImageData gridding(ReconData<std::vector, float> &reconData);
-    ImageData gridding(basicReconData<float> &reconData);
+    ImageData<std::vector, float> gridding(ReconData<std::vector, float> &reconData);
+    ImageData<std::vector, float> gridding(basicReconData<float> &reconData);
 
 protected:
     int m_gridSize;

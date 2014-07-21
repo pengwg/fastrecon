@@ -27,4 +27,6 @@ struct LocalComplexVectorType<thrust::device_vector, T, A...> {
     typedef thrust::device_vector<cuComplex<T>> type;
 };
 
+typedef std::vector<std::complex<float>> ComplexVector;
+
 #endif // COMMON_H

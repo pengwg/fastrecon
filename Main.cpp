@@ -130,13 +130,13 @@ int main(int argc, char *argv[])
     GridLut gridCpu(gridSize, kernel);
 
     timer.start();
-    ImageData imgData = gridCpu.gridding(*reconData);
+    ImageData<std::vector, float> imgData = gridCpu.gridding(*reconData);
     //CUDA testing
     //ImageData imgData = gridCpu.gridding(*d_reconData);
 
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
-    ImageData imgMap;
+    ImageData<std::vector, float> imgMap;
     if (params.pils)
         imgMap = imgData;
 
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
 
     // -------------- Recon Methods -----------------------------------
     ImageRecon recon(imgData, {params.rcxres, params.rcyres, params.rczres});
-    ImageData finalImage;
+    ImageData<std::vector, float> finalImage;
 
     timer.restart();
     if (params.pils) {

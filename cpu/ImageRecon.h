@@ -6,12 +6,12 @@
 class ImageRecon
 {
 public:
-    ImageRecon(const ImageData &imageData, const ImageSize &reconSize);
-    ImageData SOS() const;
-    ImageData SOS(const ImageData &map) const;
+    ImageRecon(const ImageData<std::vector, float> &imageData, const ImageSize &reconSize);
+    ImageData<std::vector, float> SOS() const;
+    ImageData<std::vector, float> SOS(const ImageData<std::vector, float> &map) const;
 
 private:
-    const ImageData &m_imageData;
+    const ImageData<std::vector, float> &m_imageData;
     ImageSize m_reconSize;
 };
 

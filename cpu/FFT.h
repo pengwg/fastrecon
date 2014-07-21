@@ -13,8 +13,8 @@ public:
 
     void plan(int threads);
     
-    void excute(ImageData &imgData);
-    void fftShift(ImageData &imgData);
+    void excute(ImageData<std::vector, float> &imgData);
+    void fftShift(ImageData<std::vector, float> &imgData);
 
 private:
     int m_dim;
