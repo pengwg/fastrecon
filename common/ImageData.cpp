@@ -96,7 +96,7 @@ void ImageData<C, T>::fftShift()
 }
 
 template<template<typename, typename> class C, typename T>
-void ImageData<C, T>::fftShift2(std::vector<std::complex<T>> *data)
+void ImageData<C, T>::fftShift2(hostComplexVector<T>  *data)
 {
     int n0h = m_size.x / 2;
     int n1h = m_size.y / 2;
@@ -119,7 +119,7 @@ void ImageData<C, T>::fftShift2(std::vector<std::complex<T>> *data)
 }
 
 template<template<typename, typename> class C, typename T>
-void ImageData<C, T>::fftShift3(std::vector<std::complex<T>> *data)
+void ImageData<C, T>::fftShift3(hostComplexVector<T>  *data)
 {
     int n0h = m_size.x / 2;
     int n1h = m_size.y / 2;

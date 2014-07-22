@@ -39,10 +39,10 @@ private:
     virtual void copy(const basicImageData &imageData) override;
     virtual void move(basicImageData &imageData) override;
 
-    void fftShift2(std::vector<std::complex<T>> *data);
-    void fftShift3(std::vector<std::complex<T>> *data);
-    //void fftShift2(thrust::device_vector<cuComplex<T>> *data) {}
-    //void fftShift3(thrust::device_vector<cuComplex<T>> *data) {}
+    void fftShift2(hostComplexVector<T> *data);
+    void fftShift3(hostComplexVector<T> *data);
+    void fftShift2(cuComplexVector<T> *data) {}
+    void fftShift3(cuComplexVector<T> *data) {}
 };
 
 #endif // IMAGEDATA_H
