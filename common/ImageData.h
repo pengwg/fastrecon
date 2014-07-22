@@ -41,8 +41,8 @@ private:
 
     void fftShift2(std::vector<std::complex<T>> *data);
     void fftShift3(std::vector<std::complex<T>> *data);
-    void fftShift2(thrust::device_vector<cuComplex<T>> *data) {}
-    void fftShift3(thrust::device_vector<cuComplex<T>> *data) {}
+    //void fftShift2(thrust::device_vector<cuComplex<T>> *data) {}
+    //void fftShift3(thrust::device_vector<cuComplex<T>> *data) {}
 };
 
 #endif // IMAGEDATA_H
