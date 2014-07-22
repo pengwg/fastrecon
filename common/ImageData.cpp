@@ -149,14 +149,14 @@ void ImageData<C, T>::fftShift3(hostComplexVector<T>  *data)
 }
 
 template<template<typename, typename> class C, typename T>
-void ImageData<C, T>::lowFilter(int res)
+void ImageData<C, T>::hostLowFilter(int res)
 {
     int x0 = m_size.x / 2;
     int y0 = m_size.y / 2;
     int z0 = m_size.z / 2;
     float att = 2.0 * res * res / 4.0;
 
-    LocalVector coeff;
+    std::vector<T> coeff;
     for (int r = 0; r < 2000; r++)
     {
         coeff.push_back(expf(-r / 100.0));
@@ -165,7 +165,7 @@ void ImageData<C, T>::lowFilter(int res)
 #pragma omp parallel for
     for (int n = 0; n < channels(); n++)
     {
-        auto itData = getChannelImage(n)->begin();
+        auto itData = ((hostComplexVector<T> *)getChannelImage(n))->begin();
 
         for (int z = 0; z < m_size.z; z++)
         {
@@ -188,14 +188,14 @@ void ImageData<C, T>::lowFilter(int res)
 }
 
 template<template<typename, typename> class C, typename T>
-void ImageData<C, T>::normalize()
+void ImageData<C, T>::hostNormalize()
 {
-    LocalVector mag(dataSize(), 0);
+    std::vector<T> mag(dataSize(), 0);
 
     for (const auto &data : m_data)
     {
         auto itMag = mag.begin();
-        for (const auto &value : *data)
+        for (const auto &value : (hostComplexVector<T> &)(*data))
         {
             *itMag++ += std::norm(value);
         }
@@ -204,7 +204,7 @@ void ImageData<C, T>::normalize()
     for (auto &data : m_data)
     {
         auto itMag = mag.cbegin();
-        for (auto &value : *data)
+        for (auto &value : (hostComplexVector<T> &)(*data))
         {
             value /= sqrtf(*itMag++);
         }
@@ -245,4 +245,4 @@ void ImageData<C, T>::move(basicImageData &imageData)
 }
 
 template class ImageData<std::vector, float>;
-//template class ImageData<thrust::device_vector, float>;
+template class ImageData<thrust::device_vector, float>;

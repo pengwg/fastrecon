@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
     timer.restart();
     if (params.pils) {
         std::cout << "\nRecon PILS... " << std::endl;
-        imgMap.lowFilter(22);
+        imgMap.hostLowFilter(22);
         std::cout << "\nLow pass filtering | " << timer.restart() << " ms" << std::endl;
 
         std::cout << "\nFFT low res image... " << std::endl;
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
         imgMap.fftShift();
         std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
-        imgMap.normalize();
+        imgMap.hostNormalize();
 
         std::cout << "\nSum of Square Field Map..." << std::flush;
         finalImage = recon.SOS(imgMap);

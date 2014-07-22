@@ -30,8 +30,8 @@ public:
     LocalComplexVector *getChannelImage(int channel);
 
     virtual void fftShift() override;
-    virtual void lowFilter(int res) override;
-    virtual void normalize() override;
+    virtual void hostLowFilter(int res) override;
+    virtual void hostNormalize() override;
 
 private:
     std::vector<std::unique_ptr<LocalComplexVector>> m_data;
