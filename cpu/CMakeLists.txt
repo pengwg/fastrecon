@@ -6,6 +6,8 @@ set(CPU_SRC_FILES
     GridLut.cpp
     FFT.cpp
     ImageRecon.cpp
+    hostImageData.h
+    hostImageData.inl
     ../common/ConvKernel.cpp
     ../common/basicImageData.cpp
     ../common/ImageData.cpp

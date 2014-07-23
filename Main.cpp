@@ -12,6 +12,7 @@
 #include "ProgramOptions.h"
 #include "ReconData.h"
 #include "ImageRecon.h"
+#include "hostImageData.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
 #include "FFT.h"
@@ -130,13 +131,13 @@ int main(int argc, char *argv[])
     GridLut gridCpu(gridSize, kernel);
 
     timer.start();
-    ImageData<std::vector, float> imgData = gridCpu.gridding(*reconData);
+    hostImageData<float> imgData = gridCpu.gridding(*reconData);
     //CUDA testing
     //ImageData imgData = gridCpu.gridding(*d_reconData);
 
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
-    ImageData<std::vector, float> imgMap;
+    hostImageData<float> imgMap;
     if (params.pils)
         imgMap = imgData;
 
@@ -152,12 +153,12 @@ int main(int argc, char *argv[])
 
     // -------------- Recon Methods -----------------------------------
     ImageRecon recon(imgData, {params.rcxres, params.rcyres, params.rczres});
-    ImageData<std::vector, float> finalImage;
+    hostImageData<float> finalImage;
 
     timer.restart();
     if (params.pils) {
         std::cout << "\nRecon PILS... " << std::endl;
-        imgMap.hostLowFilter(22);
+        imgMap.lowFilter(22);
         std::cout << "\nLow pass filtering | " << timer.restart() << " ms" << std::endl;
 
         std::cout << "\nFFT low res image... " << std::endl;
@@ -165,7 +166,7 @@ int main(int argc, char *argv[])
         imgMap.fftShift();
         std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
-        imgMap.hostNormalize();
+        imgMap.normalize();
 
         std::cout << "\nSum of Square Field Map..." << std::flush;
         finalImage = recon.SOS(imgMap);

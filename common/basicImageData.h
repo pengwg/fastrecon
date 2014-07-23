@@ -35,8 +35,8 @@ public:
     int dataSize() const;
 
     virtual void fftShift() = 0;
-    virtual void hostLowFilter(int res) = 0;
-    virtual void hostNormalize() = 0;
+    virtual void lowFilter(int res) = 0;
+    virtual void normalize() = 0;
 
 protected:
     int m_dim = 0;

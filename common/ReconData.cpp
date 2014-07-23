@@ -43,7 +43,6 @@ template<template<typename, typename> class C, typename T>
 void ReconData<C, T>::clear()
 {
     m_size = 0;
-
     m_traj.clear();
     m_dcf.reset();
     m_kDataMultiChannel.clear();

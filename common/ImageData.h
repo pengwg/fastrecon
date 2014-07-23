@@ -12,37 +12,29 @@ public:
     typedef typename LocalVectorType<C, T>::type LocalVector;
     typedef typename LocalComplexVectorType<C, T>::type LocalComplexVector;
 
-    ImageData();
-    ImageData(const int dim, const ImageSize &imageSize, LocalComplexVector *image = nullptr);
-    virtual ~ImageData() {}
-
+public:
     // Copy
     ImageData(const ImageData &imageData);
     // Move
     ImageData(ImageData &&imageData);
     // Copy
-    ImageData &operator=(const ImageData &ImageData);
+    ImageData &operator=(const ImageData &imageData);
     // Move
-    ImageData &operator=(ImageData &&ImageData);
+    ImageData &operator=(ImageData &&imageData);
 
     void addChannelImage(LocalComplexVector *image);
     const LocalComplexVector *getChannelImage(int channel) const;
     LocalComplexVector *getChannelImage(int channel);
 
-    virtual void fftShift() override;
-    virtual void hostLowFilter(int res) override;
-    virtual void hostNormalize() override;
+protected:
+    ImageData() {}
+    ImageData(const int dim, const ImageSize &imageSize, LocalComplexVector *image = nullptr);
 
-private:
+    virtual void copy(const basicImageData &imageData) override final;
+    virtual void move(basicImageData &imageData) override final;
+    virtual ~ImageData() {}
+
     std::vector<std::unique_ptr<LocalComplexVector>> m_data;
-
-    virtual void copy(const basicImageData &imageData) override;
-    virtual void move(basicImageData &imageData) override;
-
-    void fftShift2(hostComplexVector<T> *data);
-    void fftShift3(hostComplexVector<T> *data);
-    void fftShift2(cuComplexVector<T> *data) {}
-    void fftShift3(cuComplexVector<T> *data) {}
 };
 
 #endif // IMAGEDATA_H

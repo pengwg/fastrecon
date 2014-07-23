@@ -3,7 +3,7 @@
 
 #include "ConvKernel.h"
 #include "ReconData.h"
-#include "ImageData.h"
+#include "hostImageData.h"
 
 class GridLut
 {
@@ -11,8 +11,8 @@ public:
     GridLut(int gridSize, ConvKernel &kernel);
     virtual ~GridLut();
 
-    ImageData<std::vector, float> gridding(ReconData<std::vector, float> &reconData);
-    ImageData<std::vector, float> gridding(basicReconData<float> &reconData);
+    hostImageData<float> gridding(ReconData<std::vector, float> &reconData);
+    hostImageData<float> gridding(basicReconData<float> &reconData);
 
 protected:
     int m_gridSize;
