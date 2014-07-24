@@ -11,10 +11,6 @@ typedef struct
 class basicImageData
 {
 public:
-    basicImageData();
-    basicImageData(int dim, const ImageSize &size);
-    virtual ~basicImageData() {}
-
     // Copy
     basicImageData &operator=(const basicImageData &ImageData);
     // Move
@@ -39,12 +35,16 @@ public:
     virtual void normalize() = 0;
 
 protected:
-    int m_dim = 0;
-    ImageSize m_size = {0, 0, 0};
-    int m_channels = 0;
+    basicImageData();
+    basicImageData(int dim, const ImageSize &size);
+    virtual ~basicImageData() {}
 
     virtual void copy(const basicImageData &imageData) = 0;
     virtual void move(basicImageData &imageData) = 0;
+
+    int m_dim = 0;
+    ImageSize m_size = {0, 0, 0};
+    int m_channels = 0;
 };
 
 #endif // BASICIMAGEDATA_H
