@@ -1,20 +1,18 @@
 set(GRID_GPU_SRC_FILES
     cudaFunctions.h
     cudaFunctions.cu
-    cuImageData.h
-    cuImageData.inl
-    cuReconData.h
-    cuReconData.inl
 )
 
 include_directories(
     #${CUDA_INCLUDE_DIRS}
 )
 
+cuda_include_directories(gridGpu ${Qt5Core_INCLUDE_DIRS})
+
 set(CUDA_NVCC_FLAGS
     -gencode;arch=compute_20,code=sm_21;
     -gencode;arch=compute_30,code=sm_30;
-    --ptxas-options=-v
+    --ptxas-options=-v;--compiler-options;-Wno-attributes,-Wall
 )
 
 #add_library(gridGPU SHARED ${GRID_GPU_SRC_FILES})

@@ -23,11 +23,21 @@ include_directories(
 set(MAIN_SRC_FILES
     Main.cpp
     ProgramOptions.cpp
+# Include the following files to show them in QtCreator project
+    cpu/hostImageData.h
+    cpu/hostImageData.inl
+    cpu/hostReconData.h
+    cpu/hostReconData.inl
+    gpu/cuImageData.h
+    gpu/cuImageData.inl
+    gpu/cuReconData.h
+    gpu/cuReconData.inl
 )
 
+add_subdirectory(common)
 add_subdirectory(cpu)
 add_subdirectory(gpu)
 
 add_executable(fastrecon ${MAIN_SRC_FILES})
-target_link_libraries(fastrecon recon gridGPU)
+target_link_libraries(fastrecon common recon gridGPU)
 qt5_use_modules(fastrecon Core Widgets)
