@@ -14,9 +14,6 @@ public:
     typedef typename LocalVectorType<C, T>::type LocalVector;
     typedef typename LocalComplexVectorType<C, T>::type LocalComplexVector;
 
-    ReconData(int size);
-    virtual ~ReconData() {}
-
     const LocalVector *getTrajComponent(int comp) const {
         return m_traj[comp].get();
     }
@@ -33,22 +30,24 @@ public:
     int rcDim() const { return m_traj.size(); }
     void clear();
 
-private:
+protected:
+    ReconData(int size);
+    virtual ~ReconData() {}
+
     using basicReconData<T>::m_bounds;
     using basicReconData<T>::m_size;
 
-    virtual void addData(ComplexVector &data) override;
-    virtual void addTraj(Vector &traj) override;
-    virtual void addDcf(Vector &dcf) override;
-    virtual void transformLocalTrajComp(float translation, float scale, int comp) override;
+    virtual void addData(ComplexVector &data) override final;
+    virtual void addTraj(Vector &traj) override final;
+    virtual void addDcf(Vector &dcf) override final;
 
     template<typename V, typename LV>
     LV *toLocalVector(V &v) const;
-    void transformTraj(std::vector<T> &traj, float translation, float scale);
+
     void transformTraj(thrust::device_vector<T> &traj, float translation, float scale);
 
-    std::vector<std::unique_ptr<const LocalComplexVector>> m_kDataMultiChannel;
     std::vector<std::unique_ptr<LocalVector>> m_traj;
+    std::vector<std::unique_ptr<const LocalComplexVector>> m_kDataMultiChannel;
     std::unique_ptr<LocalVector> m_dcf;
 };
 #endif // RECONDATA_H

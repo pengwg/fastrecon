@@ -14,9 +14,6 @@ public:
     typedef std::vector<T> Vector;
     typedef std::vector<std::complex<T>> ComplexVector;
 
-    basicReconData(int size);
-    virtual ~basicReconData() {}
-
     void addChannelData(ComplexVector &data);
     void addTrajComponent(Vector &trajComp);
     void setDcf(Vector &dcf);
@@ -38,6 +35,9 @@ public:
     virtual void clear() = 0;
 
 protected:
+    basicReconData(int size);
+    virtual ~basicReconData() {}
+
     virtual void addData(ComplexVector &data) = 0;
     virtual void addTraj(Vector &traj) = 0;
     virtual void addDcf(Vector &dcf) = 0;

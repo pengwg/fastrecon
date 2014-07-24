@@ -10,7 +10,7 @@
 #include <omp.h>
 
 #include "ProgramOptions.h"
-#include "ReconData.h"
+#include "hostReconData.h"
 #include "ImageRecon.h"
 #include "hostImageData.h"
 #include "cuImageData.h"
@@ -109,12 +109,12 @@ int main(int argc, char *argv[])
 
     // -------------- Load multi-channel data -----------------
     int size = params.samples * params.projections;
-    ReconData<std::vector, float> *reconData = new ReconData<std::vector, float>(size);
+    auto reconData = new hostReconData<float>(size);
     loadReconData(params, reconData);
 
     // GPU Testing
-    auto *d_reconData = new ReconData<thrust::device_vector, float>(size);
-    loadReconData(params, d_reconData);
+    //auto *d_reconData = new ReconData<thrust::device_vector, float>(size);
+    //loadReconData(params, d_reconData);
 
     omp_set_num_threads(std::min(reconData->channels(), omp_get_num_procs()));
 
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
     std::cout << "\nProgram total time excluding I/O: " << timer0.elapsed() / 1000.0 << " s" << std::endl;
 
     delete reconData;
-    delete d_reconData;
+    //delete d_reconData;
     // -------------------------- Save Data ---------------------------
     /*QFile file(params.result_filename);
     file.open(QIODevice::WriteOnly);

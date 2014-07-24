@@ -34,12 +34,6 @@ void ReconData<C, T>::addDcf(Vector &dcf)
 }
 
 template<template<typename, typename> class C, typename T>
-void ReconData<C, T>::transformLocalTrajComp(float translation, float scale, int comp)
-{
-    transformTraj(*m_traj[comp], translation, scale);
-}
-
-template<template<typename, typename> class C, typename T>
 void ReconData<C, T>::clear()
 {
     m_size = 0;
@@ -47,15 +41,6 @@ void ReconData<C, T>::clear()
     m_dcf.reset();
     m_kDataMultiChannel.clear();
     m_bounds.clear();
-}
-
-template<template<typename, typename> class C, typename T>
-void ReconData<C, T>::transformTraj(std::vector<T> &traj, float translation, float scale)
-{
-    for (auto &sample : traj)
-    {
-        sample = (sample + translation) * scale;
-    }
 }
 
 template<template<typename, typename> class C, typename T>

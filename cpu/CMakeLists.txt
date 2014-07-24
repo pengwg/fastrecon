@@ -8,6 +8,8 @@ set(CPU_SRC_FILES
     ImageRecon.cpp
     hostImageData.h
     hostImageData.inl
+    hostReconData.h
+    hostReconData.inl
     ../common/ConvKernel.cpp
     ../common/basicImageData.cpp
     ../common/ImageData.cpp
