@@ -1,4 +1,4 @@
-#include "cudaFunctions.h"
+//#include "cudaFunctions.h"
 
 template<typename T>
 cuReconData<T>::cuReconData(int size)
@@ -9,5 +9,5 @@ cuReconData<T>::cuReconData(int size)
 template<typename T>
 void cuReconData<T>::transformLocalTrajComp(float translation, float scale, int comp)
 {
-    thrust_scale(*this->m_traj[comp], translation, scale);
+    this->thrust_scale(*this->m_traj[comp], translation, scale);
 }

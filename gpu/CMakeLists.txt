@@ -1,6 +1,5 @@
 set(GRID_GPU_SRC_FILES
-    cudaFunctions.h
-    cudaFunctions.cu
+    basicReconData.cu
 )
 
 include_directories(
