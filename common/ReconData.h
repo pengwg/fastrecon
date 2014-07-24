@@ -44,8 +44,6 @@ protected:
     template<typename V, typename LV>
     LV *toLocalVector(V &v) const;
 
-    void transformTraj(thrust::device_vector<T> &traj, float translation, float scale);
-
     std::vector<std::unique_ptr<LocalVector>> m_traj;
     std::vector<std::unique_ptr<const LocalComplexVector>> m_kDataMultiChannel;
     std::unique_ptr<LocalVector> m_dcf;

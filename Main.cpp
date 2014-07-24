@@ -11,9 +11,10 @@
 
 #include "ProgramOptions.h"
 #include "hostReconData.h"
-#include "ImageRecon.h"
+#include "cuReconData.h"
 #include "hostImageData.h"
 #include "cuImageData.h"
+#include "ImageRecon.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
 #include "FFT.h"
@@ -113,8 +114,8 @@ int main(int argc, char *argv[])
     loadReconData(params, reconData);
 
     // GPU Testing
-    //auto *d_reconData = new ReconData<thrust::device_vector, float>(size);
-    //loadReconData(params, d_reconData);
+    auto d_reconData = new cuReconData<float>(size);
+    loadReconData(params, d_reconData);
 
     omp_set_num_threads(std::min(reconData->channels(), omp_get_num_procs()));
 
@@ -134,7 +135,8 @@ int main(int argc, char *argv[])
     timer.start();
     hostImageData<float> imgData = gridCpu.gridding(*reconData);
     //CUDA testing
-    //cuImageData<float> cuimgData = gridCpu.gridding(*d_reconData);
+    //cuImageData<float> cuimgData =
+    gridCpu.gridding(*d_reconData);
 
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 

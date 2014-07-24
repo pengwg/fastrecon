@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "ReconData.h"
-#include "cudaFunctions.h"
 
 template<template<typename, typename> class C, typename T>
 ReconData<C, T>::ReconData(int size)
@@ -41,12 +40,6 @@ void ReconData<C, T>::clear()
     m_dcf.reset();
     m_kDataMultiChannel.clear();
     m_bounds.clear();
-}
-
-template<template<typename, typename> class C, typename T>
-void ReconData<C, T>::transformTraj(thrust::device_vector<T> &traj, float translation, float scale)
-{
-    thrust_scale(traj, translation, scale);
 }
 
 template<template<typename, typename> class C, typename T>
