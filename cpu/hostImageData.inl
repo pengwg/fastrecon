@@ -1,4 +1,3 @@
-#include "hostImageData.h"
 
 template<typename T>
 hostImageData<T>::hostImageData()

@@ -1,4 +1,3 @@
-#include "cuImageData.h"
 
 template<typename T>
 cuImageData<T>::cuImageData()

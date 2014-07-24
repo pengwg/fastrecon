@@ -1,4 +1,3 @@
-#include "hostReconData.h"
 
 template<typename T>
 hostReconData<T>::hostReconData(int size)
