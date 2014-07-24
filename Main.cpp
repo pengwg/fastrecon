@@ -13,6 +13,7 @@
 #include "ReconData.h"
 #include "ImageRecon.h"
 #include "hostImageData.h"
+#include "cuImageData.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
 #include "FFT.h"
@@ -133,7 +134,7 @@ int main(int argc, char *argv[])
     timer.start();
     hostImageData<float> imgData = gridCpu.gridding(*reconData);
     //CUDA testing
-    //ImageData imgData = gridCpu.gridding(*d_reconData);
+    //cuImageData<float> cuimgData = gridCpu.gridding(*d_reconData);
 
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
