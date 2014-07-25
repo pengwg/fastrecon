@@ -1,3 +1,5 @@
+#include <cassert>
+#include "hostImageData.h"
 
 template<typename T>
 cuImageData<T>::cuImageData()
@@ -28,15 +30,29 @@ cuImageData<T> &cuImageData<T>::operator=(T1 &&imageData)
 template<typename T>
 void cuImageData<T>::copy(const basicImageData &imageData)
 {
-    const cuImageData &im = dynamic_cast<const cuImageData &>(imageData);
-    m_dim = im.m_dim;
-    m_size = im.m_size;
+    m_dim = imageData.dim();
+    m_size = imageData.imageSize();
     m_data.clear();
 
-    for (const auto &data : im.m_data)
+    auto im = dynamic_cast<const cuImageData *>(&imageData);
+    if (im)
     {
-        auto data_copy = new LocalComplexVector(*data);
-        addChannelImage(data_copy);
+        for (const auto &data : im->m_data)
+        {
+            auto data_copy = new LocalComplexVector(*data);
+            this->addChannelImage(data_copy);
+        }
+    }
+    else
+    {
+        auto im = dynamic_cast<const hostImageData<T> *>(&imageData);
+        assert(im);
+        for (const auto &data : im->m_data)
+        {
+            auto h_data = reinterpret_cast<std::vector<typename LocalComplexVector::value_type> &>(*data);
+            auto data_copy = new LocalComplexVector(h_data);
+            this->addChannelImage(data_copy);
+        }
     }
 
     // std::cout << "Copy called" << std::endl;
@@ -45,16 +61,23 @@ void cuImageData<T>::copy(const basicImageData &imageData)
 template<typename T>
 void cuImageData<T>::copy(basicImageData &&imageData)
 {
-    cuImageData &im = dynamic_cast<cuImageData &>(imageData);
-    m_dim = im.m_dim;
-    m_size = im.m_size;
-    m_channels = im.m_channels;
+    auto im = dynamic_cast<cuImageData *>(&imageData);
+    if (im)
+    {
+        m_dim = im->m_dim;
+        m_size = im->m_size;
+        m_channels = im->m_channels;
 
-    m_data = std::move(im.m_data);
+        m_data = std::move(im->m_data);
 
-    im.m_dim = 0;
-    im.m_size = {0};
-    im.m_channels = 0;
+        im->m_dim = 0;
+        im->m_size = {0};
+        im->m_channels = 0;
+    }
+    else
+    {
+        copy(imageData);
+    }
     // std::cout << "Move called" << std::endl;
 }
 

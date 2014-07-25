@@ -1,6 +1,10 @@
 #ifndef CUIMAGEDATA_H
 #define CUIMAGEDATA_H
 
+#include "ImageData.h"
+
+template<typename T>
+class hostImageData;
 
 template<typename T>
 class cuImageData : public ImageData<thrust::device_vector, T>
@@ -32,6 +36,8 @@ private:
 
     void fftShift2(LocalComplexVector *data);
     void fftShift3(LocalComplexVector *data);
+
+    friend class hostImageData<T>;
 };
 
 #include "cuImageData.inl"

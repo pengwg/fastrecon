@@ -1,3 +1,5 @@
+#include <cassert>
+#include "cuImageData.h"
 
 template<typename T>
 hostImageData<T>::hostImageData()
@@ -28,15 +30,30 @@ hostImageData<T> &hostImageData<T>::operator=(T1 &&imageData)
 template<typename T>
 void hostImageData<T>::copy(const basicImageData &imageData)
 {
-    const hostImageData &im = dynamic_cast<const hostImageData &>(imageData);
-    m_dim = im.m_dim;
-    m_size = im.m_size;
+    m_dim = imageData.dim();
+    m_size = imageData.imageSize();
     m_data.clear();
 
-    for (const auto &data : im.m_data)
+    auto im = dynamic_cast<const hostImageData *>(&imageData);
+    if (im)
     {
-        auto data_copy = new LocalComplexVector(*data);
-        this->addChannelImage(data_copy);
+        for (const auto &data : im->m_data)
+        {
+            auto data_copy = new LocalComplexVector(*data);
+            this->addChannelImage(data_copy);
+        }
+    }
+    else
+    {
+        auto im = dynamic_cast<const cuImageData<T> *>(&imageData);
+        assert(im);
+        for (const auto &data : im->m_data)
+        {
+            auto h_data = thrust::host_vector<typename cuImageData<T>::LocalComplexVector::value_type>(*data);
+            auto p_data = new LocalComplexVector(m_size.x * m_size.y * m_size.z);
+            std::memcpy(p_data->data(), h_data.data(), sizeof(typename LocalComplexVector::value_type) * p_data->size());
+            this->addChannelImage(p_data);
+        }
     }
 
     // std::cout << "Copy called" << std::endl;
@@ -45,16 +62,23 @@ void hostImageData<T>::copy(const basicImageData &imageData)
 template<typename T>
 void hostImageData<T>::copy(basicImageData &&imageData)
 {
-    hostImageData &im = dynamic_cast<hostImageData &>(imageData);
-    m_dim = im.m_dim;
-    m_size = im.m_size;
-    m_channels = im.m_channels;
+    auto im = dynamic_cast<hostImageData *>(&imageData);
+    if (im)
+    {
+        m_dim = im->m_dim;
+        m_size = im->m_size;
+        m_channels = im->m_channels;
 
-    m_data = std::move(im.m_data);
+        m_data = std::move(im->m_data);
 
-    im.m_dim = 0;
-    im.m_size = {0};
-    im.m_channels = 0;
+        im->m_dim = 0;
+        im->m_size = {0};
+        im->m_channels = 0;
+    }
+    else
+    {
+        copy(imageData);
+    }
     // std::cout << "Move called" << std::endl;
 }
 

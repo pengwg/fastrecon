@@ -4,6 +4,9 @@
 #include "ImageData.h"
 
 template<typename T>
+class cuImageData;
+
+template<typename T>
 class hostImageData : public ImageData<std::vector, T>
 {
 public:
@@ -33,6 +36,8 @@ private:
 
     void fftShift2(LocalComplexVector *data);
     void fftShift3(LocalComplexVector *data);
+
+    friend class cuImageData<T>;
 };
 
 #include "hostImageData.inl"
