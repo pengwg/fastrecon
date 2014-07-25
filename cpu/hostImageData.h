@@ -24,6 +24,12 @@ public:
 
 private:
     using ImageData<std::vector, T>::m_size;
+    using ImageData<std::vector, T>::m_dim;
+    using ImageData<std::vector, T>::m_data;
+    using ImageData<std::vector, T>::m_channels;
+
+    virtual void copy(const basicImageData &imageData) override;
+    virtual void copy(basicImageData &&imageData) override;
 
     void fftShift2(LocalComplexVector *data);
     void fftShift3(LocalComplexVector *data);

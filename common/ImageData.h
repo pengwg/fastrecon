@@ -13,14 +13,8 @@ public:
     typedef typename LocalComplexVectorType<C, T>::type LocalComplexVector;
 
 public:
-    // Copy
-    ImageData(const ImageData &imageData);
-    // Move
-    ImageData(ImageData &&imageData);
-    // Copy
-    ImageData &operator=(const ImageData &imageData);
-    // Move
-    ImageData &operator=(ImageData &&imageData);
+    ImageData(const ImageData &) = delete;
+    ImageData &operator=(const ImageData &) = delete;
 
     void addChannelImage(LocalComplexVector *image);
     const LocalComplexVector *getChannelImage(int channel) const;
@@ -30,8 +24,6 @@ protected:
     ImageData() {}
     ImageData(const int dim, const ImageSize &imageSize, LocalComplexVector *image = nullptr);
 
-    virtual void copy(const basicImageData &imageData) override final;
-    virtual void move(basicImageData &imageData) override final;
     virtual ~ImageData() {}
 
     std::vector<std::unique_ptr<LocalComplexVector>> m_data;

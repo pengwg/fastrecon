@@ -13,16 +13,49 @@ hostImageData<T>::hostImageData(const int dim, const ImageSize &imageSize, Local
 template<typename T>
 template<typename T1>
 hostImageData<T>::hostImageData(T1 &&imageData)
-    : ImageData<std::vector, T>(std::forward<T1>(imageData))
 {
+    copy(std::forward<T1>(imageData));
 }
 
 template<typename T>
 template<typename T1>
 hostImageData<T> &hostImageData<T>::operator=(T1 &&imageData)
 {
-    ImageData<std::vector, T>::operator=(std::forward<T1>(imageData));
+    copy(std::forward<T1>(imageData));
     return *this;
+}
+
+template<typename T>
+void hostImageData<T>::copy(const basicImageData &imageData)
+{
+    const hostImageData &im = dynamic_cast<const hostImageData &>(imageData);
+    m_dim = im.m_dim;
+    m_size = im.m_size;
+    m_data.clear();
+
+    for (const auto &data : im.m_data)
+    {
+        auto data_copy = new LocalComplexVector(*data);
+        this->addChannelImage(data_copy);
+    }
+
+    // std::cout << "Copy called" << std::endl;
+}
+
+template<typename T>
+void hostImageData<T>::copy(basicImageData &&imageData)
+{
+    hostImageData &im = dynamic_cast<hostImageData &>(imageData);
+    m_dim = im.m_dim;
+    m_size = im.m_size;
+    m_channels = im.m_channels;
+
+    m_data = std::move(im.m_data);
+
+    im.m_dim = 0;
+    im.m_size = {0};
+    im.m_channels = 0;
+    // std::cout << "Move called" << std::endl;
 }
 
 template<typename T>

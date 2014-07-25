@@ -23,7 +23,7 @@ basicImageData &basicImageData::operator=(const basicImageData &imageData)
 // Move
 basicImageData &basicImageData::operator=(basicImageData &&imageData)
 {
-    move(imageData);
+    copy(std::move(imageData));
     return *this;
 }
 

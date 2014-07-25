@@ -40,7 +40,7 @@ protected:
     virtual ~basicImageData() {}
 
     virtual void copy(const basicImageData &imageData) = 0;
-    virtual void move(basicImageData &imageData) = 0;
+    virtual void copy(basicImageData &&imageData) = 0;
 
     int m_dim = 0;
     ImageSize m_size = {0, 0, 0};
