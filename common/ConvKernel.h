@@ -1,11 +1,7 @@
 #ifndef CONVKERNEL_H
 #define CONVKERNEL_H
 
-#include <memory>
-#include "basicReconData.h"
-
-typedef std::vector<float> FloatVector;
-typedef std::vector<std::complex<float>> ComplexVector;
+#include "common.h"
 
 class ConvKernel
 {

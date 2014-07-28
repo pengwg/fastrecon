@@ -1,4 +1,5 @@
 #include <math.h>
+#include <memory>
 #include <gsl/gsl_sf_bessel.h>
 
 #include "ConvKernel.h"

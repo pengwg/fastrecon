@@ -6,6 +6,9 @@
 #include <cuComplex.h>
 #include <thrust/device_vector.h>
 
+typedef std::vector<float> FloatVector;
+typedef std::vector<std::complex<float>> ComplexVector;
+
 template<template<typename, typename> class C, typename T, typename... A>
 struct LocalVectorType {
     typedef C<T, A...> type;

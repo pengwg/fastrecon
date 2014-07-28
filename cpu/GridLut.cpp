@@ -4,7 +4,10 @@
 #include <cuda_runtime.h>
 
 #include "GridLut.h"
-
+#include "hostReconData.h"
+#include "hostImageData.h"
+#include "cuReconData.h"
+#include "cuImageData.h"
 
 GridLut::GridLut(int gridSize, ConvKernel &kernel)
     : m_gridSize(gridSize), m_kernel(kernel)
@@ -17,7 +20,8 @@ GridLut::~GridLut()
 
 }
 // ----------CUDA Testing-----------------
-hostImageData<float> GridLut::gridding(basicReconData<float> &reconData)
+template<typename T>
+cuImageData<T> GridLut::gridding(cuReconData<T> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -27,11 +31,29 @@ hostImageData<float> GridLut::gridding(basicReconData<float> &reconData)
         reconData.transformTrajComponent(tr, scale, i);
     }
     cudaDeviceSynchronize();
-    hostImageData<float> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+
+    cuImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+
+    QElapsedTimer timer;
+    timer.start();
+
+    for (int i = 0; i < reconData.channels(); i++)
+    {
+        auto out = griddingChannel(reconData, i);
+        img.addChannelImage(out);
+        std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
+    }
     return img;
 }
 
-hostImageData<float> GridLut::gridding(ReconData<std::vector, float> &reconData)
+template<typename T>
+typename cuImageData<T>::LocalComplexVector *GridLut::griddingChannel(const cuReconData<T> &reconData, int channel)
+{
+    return 0;
+}
+
+template<typename T>
+hostImageData<T> GridLut::gridding(hostReconData<T> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -41,7 +63,7 @@ hostImageData<float> GridLut::gridding(ReconData<std::vector, float> &reconData)
         reconData.transformTrajComponent(tr, scale, i);
     }
 
-    hostImageData<float> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+    hostImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
 #pragma omp parallel shared(img, reconData)
     {
@@ -62,8 +84,10 @@ hostImageData<float> GridLut::gridding(ReconData<std::vector, float> &reconData)
     return img;
 }
 
-ComplexVector *GridLut::griddingChannel(const ReconData<std::vector, float> &reconData, int channel)
+template<typename T>
+typename hostImageData<T>::LocalComplexVector *GridLut::griddingChannel(const hostReconData<T> &reconData, int channel)
 {
+    typedef typename hostImageData<T>::LocalComplexVector ComplexVector;
     const ComplexVector *kData = reconData.getChannelData(channel);
     auto itDcf = reconData.getDcf()->cbegin();
     int rcDim = reconData.rcDim();
@@ -134,3 +158,5 @@ ComplexVector *GridLut::griddingChannel(const ReconData<std::vector, float> &rec
     return out;
 }
 
+template hostImageData<float> GridLut::gridding(hostReconData<float> &reconData);
+template cuImageData<float> GridLut::gridding(cuReconData<float> &reconData);
