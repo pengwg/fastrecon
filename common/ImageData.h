@@ -24,6 +24,9 @@ protected:
     ImageData() {}
     ImageData(const int dim, const ImageSize &imageSize, LocalComplexVector *image = nullptr);
 
+    virtual void copy(const basicImageData &imageData) override;
+    virtual void copy(basicImageData &&imageData) override;
+
     virtual ~ImageData() {}
 
     std::vector<std::unique_ptr<LocalComplexVector>> m_data;

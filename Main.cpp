@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
     timer.start();
     hostImageData<float> imgData = gridCpu.gridding(*reconData);
     //CUDA testing
-    cuImageData<float> cuimgData = imgData;
+    //cuImageData<float> cuimgData = imgData;
     gridCpu.gridding(*d_reconData);
 
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;

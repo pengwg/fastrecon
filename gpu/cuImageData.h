@@ -27,10 +27,6 @@ public:
 
 private:
     using ImageData<thrust::device_vector, T>::m_size;
-    using ImageData<thrust::device_vector, T>::m_dim;
-    using ImageData<thrust::device_vector, T>::m_data;
-    using ImageData<thrust::device_vector, T>::m_channels;
-
     virtual void copy(const basicImageData &imageData) override;
     virtual void copy(basicImageData &&imageData) override;
 

@@ -30,23 +30,10 @@ hostImageData<T> &hostImageData<T>::operator=(T1 &&imageData)
 template<typename T>
 void hostImageData<T>::copy(const basicImageData &imageData)
 {
-    m_dim = imageData.dim();
-    m_size = imageData.imageSize();
-    m_data.clear();
-
-    auto im = dynamic_cast<const hostImageData *>(&imageData);
+    ImageData<std::vector, T>::copy(imageData);
+    auto im = dynamic_cast<const cuImageData<T> *>(&imageData);
     if (im)
     {
-        for (const auto &data : im->m_data)
-        {
-            auto data_copy = new LocalComplexVector(*data);
-            this->addChannelImage(data_copy);
-        }
-    }
-    else
-    {
-        auto im = dynamic_cast<const cuImageData<T> *>(&imageData);
-        assert(im);
         for (const auto &data : im->m_data)
         {
             auto h_data = thrust::host_vector<typename cuImageData<T>::LocalComplexVector::value_type>(*data);
@@ -55,31 +42,13 @@ void hostImageData<T>::copy(const basicImageData &imageData)
             this->addChannelImage(p_data);
         }
     }
-
-    // std::cout << "Copy called" << std::endl;
+    //std::cout << "Copy called" << std::endl;
 }
 
 template<typename T>
 void hostImageData<T>::copy(basicImageData &&imageData)
 {
-    auto im = dynamic_cast<hostImageData *>(&imageData);
-    if (im)
-    {
-        m_dim = im->m_dim;
-        m_size = im->m_size;
-        m_channels = im->m_channels;
-
-        m_data = std::move(im->m_data);
-
-        im->m_dim = 0;
-        im->m_size = {0};
-        im->m_channels = 0;
-    }
-    else
-    {
-        copy(imageData);
-    }
-    // std::cout << "Move called" << std::endl;
+    ImageData<std::vector, T>::copy(std::move(imageData));
 }
 
 template<typename T>
