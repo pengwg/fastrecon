@@ -7,10 +7,10 @@ template<typename T>
 class hostImageData;
 
 template<typename T>
-class cuImageData : public ImageData<thrust::device_vector, T>
+class cuImageData : public ImageData<thrust::host_vector, T>
 {
 public:
-    using typename ImageData<thrust::device_vector, T>::LocalComplexVector;
+    using typename ImageData<thrust::host_vector, T>::LocalComplexVector;
 
     cuImageData();
     cuImageData(const int dim, const ImageSize &imageSize, LocalComplexVector *image = nullptr);
@@ -26,7 +26,7 @@ public:
     virtual void normalize() override;
 
 private:
-    using ImageData<thrust::device_vector, T>::m_size;
+    using ImageData<thrust::host_vector, T>::m_size;
     virtual void copy(const basicImageData &imageData) override;
     virtual void copy(basicImageData &&imageData) override;
 

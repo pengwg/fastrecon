@@ -60,6 +60,7 @@ void ImageData<C, T>::ImageData::copy(const basicImageData &imageData)
             auto data_copy = new LocalComplexVector(*data);
             this->addChannelImage(data_copy);
         }
+        std::cout << "Same type copy called" << std::endl;
     }
 }
 
@@ -78,13 +79,15 @@ void ImageData<C, T>::copy(basicImageData &&imageData)
         im->m_dim = 0;
         im->m_size = {0};
         im->m_channels = 0;
+        std::cout << "-- Same type move called --" << std::endl;
     }
     else
     {
+        std::cout << "-- Different types move - copy will be called --" << std::endl;
         copy(imageData);
     }
-    std::cout << "Move called" << std::endl;
+
 }
 
 template class ImageData<std::vector, float>;
-template class ImageData<thrust::device_vector, float>;
+template class ImageData<thrust::host_vector, float>;

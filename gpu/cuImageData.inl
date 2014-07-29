@@ -8,7 +8,7 @@ cuImageData<T>::cuImageData()
 
 template<typename T>
 cuImageData<T>::cuImageData(const int dim, const ImageSize &imageSize, LocalComplexVector *image)
-    : ImageData<thrust::device_vector, T>(dim, imageSize, image)
+    : ImageData<thrust::host_vector, T>(dim, imageSize, image)
 {
 }
 
@@ -30,7 +30,7 @@ cuImageData<T> &cuImageData<T>::operator=(T1 &&imageData)
 template<typename T>
 void cuImageData<T>::copy(const basicImageData &imageData)
 {
-    ImageData<thrust::device_vector, T>::copy(imageData);
+    ImageData<thrust::host_vector, T>::copy(imageData);
     auto im = dynamic_cast<const hostImageData<T> *>(&imageData);
     if (im)
     {
@@ -40,14 +40,14 @@ void cuImageData<T>::copy(const basicImageData &imageData)
             auto data_copy = new LocalComplexVector(h_data);
             this->addChannelImage(data_copy);
         }
+        std::cout << "-- Copy host to cuda --" << std::endl;
     }
-    //std::cout << "Copy called" << std::endl;
 }
 
 template<typename T>
 void cuImageData<T>::copy(basicImageData &&imageData)
 {
-    ImageData<thrust::device_vector, T>::copy(std::move(imageData));
+    ImageData<thrust::host_vector, T>::copy(std::move(imageData));
 }
 
 template<typename T>

@@ -29,4 +29,14 @@ struct LocalComplexVectorType<thrust::device_vector, double, A...> {
     typedef thrust::device_vector<cuDoubleComplex> type;
 };
 
+template<typename... A>
+struct LocalComplexVectorType<thrust::host_vector, float, A...> {
+    typedef thrust::host_vector<cuComplex> type;
+};
+
+template<typename... A>
+struct LocalComplexVectorType<thrust::host_vector, double, A...> {
+    typedef thrust::host_vector<cuDoubleComplex> type;
+};
+
 #endif // COMMON_H

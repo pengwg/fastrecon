@@ -36,13 +36,12 @@ void hostImageData<T>::copy(const basicImageData &imageData)
     {
         for (const auto &data : im->m_data)
         {
-            auto h_data = thrust::host_vector<typename cuImageData<T>::LocalComplexVector::value_type>(*data);
             auto p_data = new LocalComplexVector(m_size.x * m_size.y * m_size.z);
-            std::memcpy(p_data->data(), h_data.data(), sizeof(typename LocalComplexVector::value_type) * p_data->size());
+            std::memcpy(p_data->data(), data->data(), sizeof(typename LocalComplexVector::value_type) * p_data->size());
             this->addChannelImage(p_data);
         }
+        std::cout << "-- Copy cuda to host --" << std::endl;
     }
-    //std::cout << "Copy called" << std::endl;
 }
 
 template<typename T>
