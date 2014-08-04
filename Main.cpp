@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     // -------------- Gridding -------------------------------
     std::cout << "\nCPU gridding... " << std::endl;
     int gridSize = params.rcxres * overGridFactor;
-    GridLut gridCpu(gridSize, kernel);
+    GridLut<float> gridCpu(gridSize, kernel);
 
     timer.start();
     hostImageData<float> imgData = gridCpu.gridding(*reconData);

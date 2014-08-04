@@ -15,15 +15,14 @@ class hostReconData;
 template<typename T>
 class cuReconData;
 
+template<typename T>
 class GridLut
 {
 public:
     GridLut(int gridSize, ConvKernel &kernel);
     virtual ~GridLut();
 
-    template<typename T>
     cuImageData<T> gridding(cuReconData<T> &reconData);
-    template<typename T>
     hostImageData<T> gridding(hostReconData<T> &reconData);
 
 protected:
@@ -33,13 +32,12 @@ protected:
     std::vector<int> m_start[3];
     std::vector<int> m_end[3];
 
-    template<typename T>
     typename hostImageData<T>::LocalComplexVector *griddingChannel(const hostReconData<T> &reconData, int channel);
-    template<typename T>
     typename cuImageData<T>::LocalComplexVector *griddingChannel(const cuReconData<T> &reconData, int channel);
 
-    template<typename T>
-    void cuPreprocess(cuReconData<T> &reconData);
+    //void computeCellsPerSample(T half_W) const;
+
+    void cuPreprocess(const cuReconData<T> &reconData);
 };
 
 #endif // GRIDLUT_H

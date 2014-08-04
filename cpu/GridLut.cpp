@@ -9,19 +9,22 @@
 #include "cuReconData.h"
 #include "cuImageData.h"
 
-GridLut::GridLut(int gridSize, ConvKernel &kernel)
+template<typename T>
+GridLut<T>::GridLut(int gridSize, ConvKernel &kernel)
     : m_gridSize(gridSize), m_kernel(kernel)
 {
 
 }
 
-GridLut::~GridLut()
+template<typename T>
+GridLut<T>::~GridLut()
 {
 
 }
+
 // ----------CUDA Testing-----------------
 template<typename T>
-cuImageData<T> GridLut::gridding(cuReconData<T> &reconData)
+cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -50,20 +53,20 @@ cuImageData<T> GridLut::gridding(cuReconData<T> &reconData)
 }
 
 template<typename T>
-void GridLut::cuPreprocess(cuReconData<T> &reconData)
+void GridLut<T>::cuPreprocess(const cuReconData<T> &reconData)
 {
-
+    //reconData.computeCellsPerSample(m_kernel.getKernelWidth() / 2);
 }
 
 
 template<typename T>
-typename cuImageData<T>::LocalComplexVector *GridLut::griddingChannel(const cuReconData<T> &reconData, int channel)
+typename cuImageData<T>::LocalComplexVector *GridLut<T>::griddingChannel(const cuReconData<T> &reconData, int channel)
 {
     return 0;
 }
 
 template<typename T>
-hostImageData<T> GridLut::gridding(hostReconData<T> &reconData)
+hostImageData<T> GridLut<T>::gridding(hostReconData<T> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -95,7 +98,7 @@ hostImageData<T> GridLut::gridding(hostReconData<T> &reconData)
 }
 
 template<typename T>
-typename hostImageData<T>::LocalComplexVector *GridLut::griddingChannel(const hostReconData<T> &reconData, int channel)
+typename hostImageData<T>::LocalComplexVector *GridLut<T>::griddingChannel(const hostReconData<T> &reconData, int channel)
 {
     typedef typename hostImageData<T>::LocalComplexVector ComplexVector;
     const ComplexVector *kData = reconData.getChannelData(channel);
@@ -168,5 +171,4 @@ typename hostImageData<T>::LocalComplexVector *GridLut::griddingChannel(const ho
     return out;
 }
 
-template hostImageData<float> GridLut::gridding(hostReconData<float> &reconData);
-template cuImageData<float> GridLut::gridding(cuReconData<float> &reconData);
+template class GridLut<float>;
