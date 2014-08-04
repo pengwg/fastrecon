@@ -35,8 +35,6 @@ protected:
     typename hostImageData<T>::LocalComplexVector *griddingChannel(const hostReconData<T> &reconData, int channel);
     typename cuImageData<T>::LocalComplexVector *griddingChannel(const cuReconData<T> &reconData, int channel);
 
-    //void computeCellsPerSample(T half_W) const;
-
     void cuPreprocess(const cuReconData<T> &reconData);
 };
 

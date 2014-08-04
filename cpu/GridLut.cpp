@@ -34,14 +34,16 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
         reconData.transformTrajComponent(tr, scale, i);
     }
 
-    cuPreprocess(reconData);
+    QElapsedTimer timer;
+    timer.start();
+
+    reconData.cuPreprocess(m_kernel.getKernelWidth() / 2);
 
     cudaDeviceSynchronize();
 
-    cuImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+    std::cout << "GPU preprocess " << " | " << timer.restart() << " ms" << std::endl;
 
-    QElapsedTimer timer;
-    timer.start();
+    cuImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
     for (int i = 0; i < reconData.channels(); i++)
     {
@@ -55,7 +57,7 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
 template<typename T>
 void GridLut<T>::cuPreprocess(const cuReconData<T> &reconData)
 {
-    //reconData.computeCellsPerSample(m_kernel.getKernelWidth() / 2);
+
 }
 
 
