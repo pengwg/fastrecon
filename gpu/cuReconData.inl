@@ -11,3 +11,9 @@ void cuReconData<T>::transformLocalTrajComp(float translation, float scale, int 
 {
     this->thrust_scale(*this->m_traj[comp], translation, scale);
 }
+
+template<typename T>
+void cuReconData<T>::addTrajIndexBlock(cuReconData::cuVector &index)
+{
+
+}
