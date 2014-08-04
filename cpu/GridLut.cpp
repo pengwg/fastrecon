@@ -30,6 +30,9 @@ cuImageData<T> GridLut::gridding(cuReconData<T> &reconData)
     {
         reconData.transformTrajComponent(tr, scale, i);
     }
+
+    cuPreprocess(reconData);
+
     cudaDeviceSynchronize();
 
     cuImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
@@ -45,6 +48,13 @@ cuImageData<T> GridLut::gridding(cuReconData<T> &reconData)
     }
     return img;
 }
+
+template<typename T>
+void GridLut::cuPreprocess(cuReconData<T> &reconData)
+{
+
+}
+
 
 template<typename T>
 typename cuImageData<T>::LocalComplexVector *GridLut::griddingChannel(const cuReconData<T> &reconData, int channel)

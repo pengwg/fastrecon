@@ -37,6 +37,9 @@ protected:
     typename hostImageData<T>::LocalComplexVector *griddingChannel(const hostReconData<T> &reconData, int channel);
     template<typename T>
     typename cuImageData<T>::LocalComplexVector *griddingChannel(const cuReconData<T> &reconData, int channel);
+
+    template<typename T>
+    void cuPreprocess(cuReconData<T> &reconData);
 };
 
 #endif // GRIDLUT_H
