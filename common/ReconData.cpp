@@ -19,10 +19,11 @@ void ReconData<C, T>::addData(ComplexVector &data)
 }
 
 template<template<typename, typename> class C, typename T>
-void ReconData<C, T>::addTraj(Vector &traj)
+void ReconData<C, T>::addTraj(TrajVector &traj)
 {
-    auto d_traj = toLocalVector<Vector, LocalVector>(traj);
-    m_traj.push_back(std::unique_ptr<LocalVector>(d_traj));
+    auto d_traj = toLocalVector<TrajVector, LocalTrajVector>(traj);
+    //m_traj.push_back(std::unique_ptr<LocalVector>(d_traj));
+    m_traj.reset(d_traj);
 }
 
 template<template<typename, typename> class C, typename T>
@@ -36,7 +37,7 @@ template<template<typename, typename> class C, typename T>
 void ReconData<C, T>::clear()
 {
     m_size = 0;
-    m_traj.clear();
+    m_traj.reset();
     m_dcf.reset();
     m_kDataMultiChannel.clear();
     m_bounds.clear();

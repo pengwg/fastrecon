@@ -15,8 +15,7 @@ public:
     void cuPreprocess(T half_W);
 
 private:
-    virtual void transformLocalTrajComp(float translation, float scale, int comp) override;
-    void cuComputeCellsPerSample(T half_W, thrust::device_vector<unsigned> &cells_per_sample) const;
+    virtual void transformLocalTraj(float translation, float scale) override;
     void addTrajIndexBlock(cuVector &index);
 
     std::vector<std::unique_ptr<cuVector>> m_traj_index_blocks;

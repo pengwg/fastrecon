@@ -10,12 +10,15 @@ class ReconData : public basicReconData<T>
 {
 public:
     using typename basicReconData<T>::Vector;
+    using typename basicReconData<T>::TrajVector;
     using typename basicReconData<T>::ComplexVector;
+
     typedef typename LocalVectorType<C, T>::type LocalVector;
+    typedef typename LocalVectorType<C, Point<T>>::type LocalTrajVector;
     typedef typename LocalComplexVectorType<C, T>::type LocalComplexVector;
 
-    const LocalVector *getTrajComponent(int comp) const {
-        return m_traj[comp].get();
+    const LocalTrajVector *getTraj() const {
+        return m_traj.get();
     }
 
     const LocalVector *getDcf() const {
@@ -27,7 +30,6 @@ public:
     }
 
     int channels() const { return m_kDataMultiChannel.size(); }
-    int rcDim() const { return m_traj.size(); }
     void clear();
 
 protected:
@@ -38,13 +40,13 @@ protected:
     using basicReconData<T>::m_size;
 
     virtual void addData(ComplexVector &data) override final;
-    virtual void addTraj(Vector &traj) override final;
+    virtual void addTraj(TrajVector &traj) override final;
     virtual void addDcf(Vector &dcf) override final;
 
     template<typename V, typename LV>
     LV *toLocalVector(V &v) const;
 
-    std::vector<std::unique_ptr<LocalVector>> m_traj;
+    std::unique_ptr<LocalTrajVector> m_traj;
     std::vector<std::unique_ptr<const LocalComplexVector>> m_kDataMultiChannel;
     std::unique_ptr<LocalVector> m_dcf;
 };

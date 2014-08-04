@@ -29,10 +29,8 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
     auto scale = (m_gridSize - 1) / (bounds.second - bounds.first);
-    for (int i = 0; i < reconData.rcDim(); i++)
-    {
-        reconData.transformTrajComponent(tr, scale, i);
-    }
+
+    reconData.transformTraj(tr, scale);
 
     QElapsedTimer timer;
     timer.start();
@@ -73,10 +71,8 @@ hostImageData<T> GridLut<T>::gridding(hostReconData<T> &reconData)
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
     auto scale = (m_gridSize - 1) / (bounds.second - bounds.first);
-    for (int i = 0; i < reconData.rcDim(); i++)
-    {
-        reconData.transformTrajComponent(tr, scale, i);
-    }
+
+    reconData.transformTraj(tr, scale);
 
     hostImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
@@ -111,11 +107,7 @@ typename hostImageData<T>::LocalComplexVector *GridLut<T>::griddingChannel(const
     const std::vector<float> *kernelData = m_kernel.getKernelData();
     int klength = kernelData->size();
 
-    FloatVector::const_iterator itTrajComp[3];
-    for (int i = 0; i < rcDim; i++)
-    {
-        itTrajComp[i] = reconData.getTrajComponent(i)->cbegin();
-    }
+    auto itTraj = reconData.getTraj()->cbegin();
 
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};
@@ -125,13 +117,14 @@ typename hostImageData<T>::LocalComplexVector *GridLut<T>::griddingChannel(const
     {
         for (int i = 0; i < rcDim; i++)
         {
-            center[i] = *itTrajComp[i]++; //(0.5 + *itTrajComp[i]++) * (m_gridSize - 1); // kspace in (-0.5, 0.5)
+            center[i] = itTraj->x[i]; //(0.5 + *itTrajComp[i]++) * (m_gridSize - 1); // kspace in (-0.5, 0.5)
             start[i] = ceil(center[i] - kHW);
             end[i] = floor(center[i] + kHW);
 
             start[i] = fmax(start[i], 0);
             end[i] = fmin(end[i], m_gridSize - 1);
         }
+        ++itTraj;
 
         auto data = (*itDcf++) * sample;
 
