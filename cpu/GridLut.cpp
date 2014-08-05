@@ -35,7 +35,7 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
     QElapsedTimer timer;
     timer.start();
 
-    reconData.preprocess(m_kernel.getKernelWidth() / 2);
+    reconData.preprocess(m_gridSize, m_kernel.getKernelWidth() / 2);
 
     cudaDeviceSynchronize();
 
