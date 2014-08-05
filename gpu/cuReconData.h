@@ -12,7 +12,7 @@ public:
 
     cuReconData(int size);
 
-    void cuPreprocess(T half_W);
+    void preprocess(T half_W);
 
 private:
     virtual void transformLocalTraj(float translation, float scale) override;

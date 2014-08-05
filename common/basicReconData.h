@@ -87,7 +87,7 @@ protected:
     virtual void transformLocalTraj(float translation, float scale) = 0;
 
     void thrust_scale(thrust::device_vector<Point<T> > &traj, T translation, T scale) const;
-    void cuComputeCellsPerSample(const thrust::device_vector<Point<T> > &traj, T half_W, thrust::device_vector<int> &cell_coverage) const;
+    void cuPreprocess(const thrust::device_vector<Point<T> > &traj, T half_W) const;
 
     int m_size;
     int m_dim;

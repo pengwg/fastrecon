@@ -8,11 +8,12 @@ void basicReconData<T>::thrust_scale(thrust::device_vector<Point<T> > &traj, T t
 }
 
 template<typename T>
-void basicReconData<T>::cuComputeCellsPerSample(const thrust::device_vector<Point<T> > &traj, T half_W, thrust::device_vector<int> &cell_coverage) const
+void basicReconData<T>::cuPreprocess(const thrust::device_vector<Point<T> > &traj, T half_W) const
 {
-    cell_coverage.resize(traj.size());
-    thrust::transform(traj.begin(), traj.end(), cell_coverage.begin(), compute_num_cells_per_sample(half_W, m_dim));
+    thrust::device_vector<int>  *cells_per_sample = new thrust::device_vector<int> (traj.size());
+    thrust::transform(traj.begin(), traj.end(), cells_per_sample->begin(), compute_num_cells_per_sample(half_W, m_dim));
+    delete cells_per_sample;
 }
 
 template void basicReconData<float>::thrust_scale(thrust::device_vector<Point<float> >&, float, float) const;
-template void basicReconData<float>::cuComputeCellsPerSample(const thrust::device_vector<Point<float> >&, float, thrust::device_vector<int> &) const;
+template void basicReconData<float>::cuPreprocess(const thrust::device_vector<Point<float> >&, float) const;
