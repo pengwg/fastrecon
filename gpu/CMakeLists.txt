@@ -10,6 +10,7 @@ include_directories(
 cuda_include_directories(gridGpu ${Qt5Core_INCLUDE_DIRS})
 
 set(CUDA_NVCC_FLAGS
+    -std=c++11; # Experimental c++11 support for nvcc
     -gencode;arch=compute_20,code=sm_21;
     -gencode;arch=compute_30,code=sm_30;
     --ptxas-options=-v;--compiler-options;-Wno-attributes,-Wall
