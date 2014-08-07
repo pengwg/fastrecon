@@ -54,7 +54,7 @@ void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples
         ub[i] = (int)floor(sample.x[i] + half_W);
     }
 
-    unsigned write_offset = sample_idx == 0 ? 0 : tuple_index[sample_idx - 1];
+    unsigned write_offset = tuple_index[sample_idx];
     int counter = 0;
 
     //if (sample_idx < 10)
@@ -91,21 +91,36 @@ void basicReconData<T>::cuPreprocess(const thrust::device_vector<Point<T> > &tra
     thrust::inclusive_scan(cells_per_sample->begin(), cells_per_sample->end(), tuple_index->begin(), thrust::plus<unsigned> ());
     delete cells_per_sample;
 
-    std::cout << " Traj size: " << traj.size() << " Number of pairs: " << tuple_index->back() << std::endl;
+    tuple_index->insert(tuple_index->begin(), 0);
+    unsigned num_of_pairs_total = tuple_index->back();
+    std::cout << " Traj size: " << traj.size() << " Number of pairs: " << num_of_pairs_total << std::endl;
 
-    unsigned chunk_size = 524288;
-    unsigned num_of_pairs = tuple_index->data()[chunk_size];
-    auto tuples_first = new thrust::device_vector<int> (num_of_pairs);
-    auto tuples_last = new thrust::device_vector<int> (num_of_pairs);
+    unsigned chunk_size = 300000;
 
-    const Point<T> *traj_ptr = thrust::raw_pointer_cast(traj.data());
-    unsigned *tuple_index_ptr = thrust::raw_pointer_cast(tuple_index->data());
-    int *tuples_first_ptr = thrust::raw_pointer_cast(tuples_first->data());
-    int *tuples_last_ptr = thrust::raw_pointer_cast(tuples_last->data());
+    auto tuples_first = new thrust::device_vector<int>;
+    auto tuples_last = new thrust::device_vector<int>;
 
-    int blockSize = 256;
-    int gridSize = (int)ceil((double)chunk_size / blockSize);
-    write_pairs_kernel<T><<<gridSize, blockSize>>>(traj_ptr, tuple_index_ptr, tuples_first_ptr, tuples_last_ptr, reconSize, half_W, chunk_size);
+    unsigned skip = 0;
+    while (skip < traj.size())
+    {
+        unsigned num_of_samples_compute = min(chunk_size, unsigned(traj.size()) - skip);
+        unsigned num_of_pairs = (*tuple_index)[skip + num_of_samples_compute] - (*tuple_index)[skip];
+        std::cout << "num_of_pairs compute: " << num_of_pairs << std::endl;
+        tuples_first->resize(num_of_pairs);
+        tuples_last->resize(num_of_pairs);
+
+        const Point<T> *traj_ptr = thrust::raw_pointer_cast(traj.data()) + skip;
+        unsigned *tuple_index_ptr = thrust::raw_pointer_cast(tuple_index->data()) + skip;
+        int *tuples_first_ptr = thrust::raw_pointer_cast(tuples_first->data()) - (*tuple_index)[skip];
+        int *tuples_last_ptr = thrust::raw_pointer_cast(tuples_last->data()) - (*tuple_index)[skip];
+
+        int blockSize = 256;
+        int gridSize = (int)ceil((double)chunk_size / blockSize);
+        write_pairs_kernel<T><<<gridSize, blockSize>>>(traj_ptr, tuple_index_ptr, tuples_first_ptr, tuples_last_ptr,
+                                                       reconSize, half_W, num_of_samples_compute);
+
+        skip += num_of_samples_compute;
+    }
 
     delete tuples_first;
     delete tuples_last;
