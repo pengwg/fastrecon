@@ -133,8 +133,7 @@ int main(int argc, char *argv[])
     GridLut<float> gridCpu(gridSize, kernel);
 
     timer.start();
-    hostImageData<float> imgData;
-    //= gridCpu.gridding(*reconData);
+    hostImageData<float> imgData; // = gridCpu.gridding(*reconData);
     //CUDA testing
     cuImageData<float> cuimgData = gridCpu.gridding(*d_reconData);
 

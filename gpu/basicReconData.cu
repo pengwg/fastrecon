@@ -1,4 +1,6 @@
 #include <thrust/transform.h>
+#include <thrust/sort.h>
+
 #include "basicReconData.h"
 
 template<typename T>
@@ -75,6 +77,19 @@ void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples
 
 }
 
+void savePreprocess(const thrust::host_vector<int> *tuples_first, const thrust::host_vector<int> *tuples_last)
+{
+    QFile file("tuples_first.dat");
+    file.open(QIODevice::WriteOnly);
+    auto count = file.write((char *)thrust::raw_pointer_cast(tuples_first->data()), tuples_first->size() * sizeof(int));
+    file.close();
+
+    file.setFileName("tuples_last.dat");
+    file.open(QIODevice::WriteOnly);
+    count = file.write((char *)thrust::raw_pointer_cast(tuples_last->data()), tuples_last->size() * sizeof(int));
+    file.close();
+}
+
 template<typename T>
 void basicReconData<T>::cuScale(thrust::device_vector<Point<T> > &traj, T translation, T scale) const
 {
@@ -95,7 +110,10 @@ void basicReconData<T>::cuPreprocess(const thrust::device_vector<Point<T> > &tra
     unsigned num_of_pairs_total = tuple_index->back();
     std::cout << " Traj size: " << traj.size() << " Number of pairs: " << num_of_pairs_total << std::endl;
 
-    unsigned chunk_size = 300000;
+    unsigned chunk_size = 100000;
+
+    auto tuples_first_h = new thrust::host_vector<int>;
+    auto tuples_last_h = new thrust::host_vector<int>;
 
     auto tuples_first = new thrust::device_vector<int>;
     auto tuples_last = new thrust::device_vector<int>;
@@ -119,12 +137,23 @@ void basicReconData<T>::cuPreprocess(const thrust::device_vector<Point<T> > &tra
         write_pairs_kernel<T><<<gridSize, blockSize>>>(traj_ptr, tuple_index_ptr, tuples_first_ptr, tuples_last_ptr,
                                                        reconSize, half_W, num_of_samples_compute);
 
+        thrust::sort_by_key(tuples_first->begin(), tuples_first->end(), tuples_last->begin());
+
+        tuples_first_h->insert(tuples_first_h->end(), tuples_first->begin(), tuples_first->end());
+        tuples_last_h->insert(tuples_last_h->end(), tuples_last->begin(), tuples_last->end());
+
         skip += num_of_samples_compute;
     }
 
     delete tuples_first;
     delete tuples_last;
+
+    //thrust::sort_by_key(tuples_first_h->begin(), tuples_first_h->end(), tuples_last_h->begin());
+    savePreprocess(tuples_first_h, tuples_last_h);
+
     delete tuple_index;
+    delete tuples_first_h;
+    delete tuples_last_h;
 }
 
 template void basicReconData<float>::cuScale(thrust::device_vector<Point<float> >&, float, float) const;
