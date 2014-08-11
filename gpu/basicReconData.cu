@@ -81,13 +81,43 @@ void savePreprocess(const thrust::host_vector<int> *tuples_first, const thrust::
 {
     QFile file("tuples_first.dat");
     file.open(QIODevice::WriteOnly);
-    auto count = file.write((char *)thrust::raw_pointer_cast(tuples_first->data()), tuples_first->size() * sizeof(int));
+    file.write((char *)thrust::raw_pointer_cast(tuples_first->data()), tuples_first->size() * sizeof(int));
     file.close();
 
     file.setFileName("tuples_last.dat");
     file.open(QIODevice::WriteOnly);
-    count = file.write((char *)thrust::raw_pointer_cast(tuples_last->data()), tuples_last->size() * sizeof(int));
+    file.write((char *)thrust::raw_pointer_cast(tuples_last->data()), tuples_last->size() * sizeof(int));
     file.close();
+}
+
+bool loadPreprocess(thrust::host_vector<int> *tuples_first, thrust::host_vector<int> *tuples_last, unsigned length)
+{
+    tuples_first->resize(length);
+    tuples_last->resize(length);
+
+    QFile file("tuples_first.dat");
+    file.open(QIODevice::ReadOnly);
+    auto count = file.read((char *)thrust::raw_pointer_cast(tuples_first->data()), length * sizeof(int));
+    file.close();
+
+    if (count != (int)(length * sizeof(int)))
+    {
+        std::cout << "Error: wrong data size in tuples_first.dat" << std::endl;
+        return false;
+    }
+
+    file.setFileName("tuples_last.dat");
+    file.open(QIODevice::ReadOnly);
+    count = file.read((char *)thrust::raw_pointer_cast(tuples_last->data()), length * sizeof(int));
+    file.close();
+
+    if (count != (int)(length * sizeof(int)))
+    {
+        std::cout << "Error: wrong data size in tuples_last.dat" << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
 template<typename T>
@@ -108,15 +138,23 @@ void basicReconData<T>::cuPreprocess(const thrust::device_vector<Point<T> > &tra
 
     tuple_index->insert(tuple_index->begin(), 0);
     unsigned num_of_pairs_total = tuple_index->back();
-    std::cout << " Traj size: " << traj.size() << " Number of pairs: " << num_of_pairs_total << std::endl;
-
-    unsigned chunk_size = 100000;
+    std::cout << " Traj size: " << traj.size() << "; Number of pairs: " << num_of_pairs_total << std::endl;
 
     auto tuples_first_h = new thrust::host_vector<int>;
     auto tuples_last_h = new thrust::host_vector<int>;
 
+    if (loadPreprocess(tuples_first_h, tuples_last_h, num_of_pairs_total))
+    {
+        delete tuple_index;
+        delete tuples_first_h;
+        delete tuples_last_h;
+        return;
+    }
+
     auto tuples_first = new thrust::device_vector<int>;
     auto tuples_last = new thrust::device_vector<int>;
+
+    unsigned chunk_size = 100000;
 
     unsigned skip = 0;
     while (skip < traj.size())
@@ -148,7 +186,7 @@ void basicReconData<T>::cuPreprocess(const thrust::device_vector<Point<T> > &tra
     delete tuples_first;
     delete tuples_last;
 
-    //thrust::sort_by_key(tuples_first_h->begin(), tuples_first_h->end(), tuples_last_h->begin());
+    thrust::sort_by_key(tuples_first_h->begin(), tuples_first_h->end(), tuples_last_h->begin());
     savePreprocess(tuples_first_h, tuples_last_h);
 
     delete tuple_index;
