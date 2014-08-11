@@ -1,5 +1,7 @@
 #include <thrust/transform.h>
 #include <thrust/sort.h>
+#include <thrust/binary_search.h>
+#include <thrust/system/omp/execution_policy.h>
 
 #include "basicReconData.h"
 
@@ -68,7 +70,8 @@ void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples
         {
             for (int x = lb[0]; x <= ub[0]; ++x)
             {
-                tuples_first[write_offset + counter] = x + y * reconSize + z * reconSize * reconSize;
+                int matrix_index = x + y * reconSize + z * reconSize * reconSize;
+                tuples_first[write_offset + counter] = matrix_index;
                 tuples_last[write_offset + counter] = sample_idx;
                 ++counter;
             }
@@ -77,27 +80,27 @@ void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples
 
 }
 
-void savePreprocess(const thrust::host_vector<int> *tuples_first, const thrust::host_vector<int> *tuples_last)
+void savePreprocess(const thrust::host_vector<unsigned> *first, const thrust::host_vector<unsigned> *last)
 {
-    QFile file("tuples_first.dat");
+    QFile file("bucket_begin.dat");
     file.open(QIODevice::WriteOnly);
-    file.write((char *)thrust::raw_pointer_cast(tuples_first->data()), tuples_first->size() * sizeof(int));
+    file.write((char *)thrust::raw_pointer_cast(first->data()), first->size() * sizeof(unsigned));
     file.close();
 
-    file.setFileName("tuples_last.dat");
+    file.setFileName("bucket_end.dat");
     file.open(QIODevice::WriteOnly);
-    file.write((char *)thrust::raw_pointer_cast(tuples_last->data()), tuples_last->size() * sizeof(int));
+    file.write((char *)thrust::raw_pointer_cast(last->data()), last->size() * sizeof(unsigned));
     file.close();
 }
 
-bool loadPreprocess(thrust::host_vector<int> *tuples_first, thrust::host_vector<int> *tuples_last, unsigned length)
+bool loadPreprocess(thrust::host_vector<int> *first, thrust::host_vector<int> *last, unsigned length)
 {
-    tuples_first->resize(length);
-    tuples_last->resize(length);
+    first->resize(length);
+    last->resize(length);
 
     QFile file("tuples_first.dat");
     file.open(QIODevice::ReadOnly);
-    auto count = file.read((char *)thrust::raw_pointer_cast(tuples_first->data()), length * sizeof(int));
+    auto count = file.read((char *)thrust::raw_pointer_cast(first->data()), length * sizeof(int));
     file.close();
 
     if (count != (int)(length * sizeof(int)))
@@ -108,7 +111,7 @@ bool loadPreprocess(thrust::host_vector<int> *tuples_first, thrust::host_vector<
 
     file.setFileName("tuples_last.dat");
     file.open(QIODevice::ReadOnly);
-    count = file.read((char *)thrust::raw_pointer_cast(tuples_last->data()), length * sizeof(int));
+    count = file.read((char *)thrust::raw_pointer_cast(last->data()), length * sizeof(int));
     file.close();
 
     if (count != (int)(length * sizeof(int)))
@@ -145,11 +148,29 @@ void basicReconData<T>::cuPreprocess(const thrust::device_vector<Point<T> > &tra
 
     if (loadPreprocess(tuples_first_h, tuples_last_h, num_of_pairs_total))
     {
+        std::cout << "Loaded preprocessed data from disk." << std::endl;
+
+        auto bucket_begin = new thrust::host_vector<unsigned>(powf(reconSize, m_dim));
+        auto bucket_end   = new thrust::host_vector<unsigned>(powf(reconSize, m_dim));
+
+        thrust::counting_iterator<unsigned int> search_begin(0);
+        thrust::lower_bound(tuples_first_h->begin(), tuples_first_h->end(), search_begin,
+                    search_begin + (int)powf(reconSize, m_dim), bucket_begin->begin());
+        thrust::upper_bound(tuples_first_h->begin(), tuples_first_h->end(), search_begin,
+                    search_begin + (int)powf(reconSize, m_dim), bucket_end->begin());
+
+        savePreprocess(bucket_begin, bucket_end);
+
+        delete bucket_begin;
+        delete bucket_end;
+
         delete tuple_index;
         delete tuples_first_h;
         delete tuples_last_h;
         return;
     }
+
+    std::cout << "Preprocesse data for CUDA..." << std::endl;
 
     auto tuples_first = new thrust::device_vector<int>;
     auto tuples_last = new thrust::device_vector<int>;
@@ -186,8 +207,21 @@ void basicReconData<T>::cuPreprocess(const thrust::device_vector<Point<T> > &tra
     delete tuples_first;
     delete tuples_last;
 
-    thrust::sort_by_key(tuples_first_h->begin(), tuples_first_h->end(), tuples_last_h->begin());
-    savePreprocess(tuples_first_h, tuples_last_h);
+    thrust::sort_by_key(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), tuples_last_h->begin());
+
+    auto bucket_begin = new thrust::host_vector<unsigned>(powf(reconSize, m_dim));
+    auto bucket_end   = new thrust::host_vector<unsigned>(powf(reconSize, m_dim));
+
+    thrust::counting_iterator<unsigned int> search_begin(0);
+    thrust::lower_bound(tuples_first_h->begin(), tuples_first_h->end(), search_begin,
+                search_begin + (int)powf(reconSize, m_dim), bucket_begin->begin());
+    thrust::upper_bound(tuples_first_h->begin(), tuples_first_h->end(), search_begin,
+                search_begin + (int)powf(reconSize, m_dim), bucket_end->begin());
+
+    savePreprocess(bucket_begin, bucket_end);
+
+    delete bucket_begin;
+    delete bucket_end;
 
     delete tuple_index;
     delete tuples_first_h;
