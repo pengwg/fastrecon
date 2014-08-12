@@ -1,6 +1,6 @@
 set(GRID_GPU_SRC_FILES
     basicReconData.cu
-    #GridLut.cu
+    GridLut.cu
 )
 
 include_directories(

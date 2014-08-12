@@ -2,18 +2,10 @@
 #define GRIDLUT_H
 
 #include "ConvKernel.h"
-
-template<typename T>
-class hostImageData;
-
-template<typename T>
-class cuImageData;
-
-template<typename T>
-class hostReconData;
-
-template<typename T>
-class cuReconData;
+#include "hostReconData.h"
+#include "cuReconData.h"
+#include "hostImageData.h"
+#include "cuImageData.h"
 
 template<typename T>
 class GridLut
@@ -21,6 +13,8 @@ class GridLut
 public:
     GridLut(int gridSize, ConvKernel &kernel);
     virtual ~GridLut();
+
+    void cuPlan();
 
     cuImageData<T> gridding(cuReconData<T> &reconData);
     hostImageData<T> gridding(hostReconData<T> &reconData);
@@ -32,10 +26,12 @@ protected:
     std::vector<int> m_start[3];
     std::vector<int> m_end[3];
 
+    std::unique_ptr<thrust::host_vector<int>> m_tuples_last;
+    std::unique_ptr<thrust::host_vector<unsigned>> m_bucket_begin;
+    std::unique_ptr<thrust::host_vector<unsigned>> m_bucket_end;
+
     typename hostImageData<T>::LocalComplexVector *griddingChannel(const hostReconData<T> &reconData, int channel);
     typename cuImageData<T>::LocalComplexVector *griddingChannel(const cuReconData<T> &reconData, int channel);
-
-    void cuPreprocess(const cuReconData<T> &reconData);
 };
 
 #endif // GRIDLUT_H

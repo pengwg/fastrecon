@@ -4,10 +4,6 @@
 #include <cuda_runtime.h>
 
 #include "GridLut.h"
-#include "hostReconData.h"
-#include "hostImageData.h"
-#include "cuReconData.h"
-#include "cuImageData.h"
 
 template<typename T>
 GridLut<T>::GridLut(int gridSize, ConvKernel &kernel)
@@ -41,9 +37,9 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
 
     reconData.preprocess(m_gridSize, m_kernel.getKernelWidth() / 2, tuples_last, bucket_begin, bucket_end);
 
-    delete tuples_last;
-    delete bucket_begin;
-    delete bucket_end;
+    m_tuples_last.reset(tuples_last);
+    m_bucket_begin.reset(bucket_begin);
+    m_bucket_end.reset(bucket_end);
 
     cudaDeviceSynchronize();
 
@@ -59,13 +55,6 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
     }
     return img;
 }
-
-template<typename T>
-void GridLut<T>::cuPreprocess(const cuReconData<T> &reconData)
-{
-
-}
-
 
 template<typename T>
 typename cuImageData<T>::LocalComplexVector *GridLut<T>::griddingChannel(const cuReconData<T> &reconData, int channel)
