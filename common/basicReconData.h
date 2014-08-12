@@ -52,7 +52,9 @@ protected:
     virtual void transformLocalTraj(float translation, float scale) = 0;
 
     void cuScale(thrust::device_vector<Point<T> > &traj, T translation, T scale) const;
-    void cuPreprocess(const thrust::device_vector<Point<T> > &traj, int reconSize, T half_W) const;
+    void cuPreprocess(const thrust::device_vector<Point<T> > &traj, int reconSize, T half_W,
+                      thrust::host_vector<int> *tuples_last_h,
+                      thrust::host_vector<unsigned> *bucket_begin, thrust::host_vector<unsigned> *bucket_end) const;
 
     int m_size;
     int m_dim;

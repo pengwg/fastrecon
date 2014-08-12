@@ -12,7 +12,8 @@ public:
 
     cuReconData(int size);
 
-    void preprocess(int reconSize, T half_W);
+    void preprocess(int reconSize, T half_W, thrust::host_vector<int> *tuples_last_h,
+                    thrust::host_vector<unsigned> *bucket_begin, thrust::host_vector<unsigned> *bucket_end) const;
 
 private:
     virtual void transformLocalTraj(float translation, float scale) override;

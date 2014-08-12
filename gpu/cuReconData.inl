@@ -18,7 +18,8 @@ void cuReconData<T>::addTrajIndexBlock(cuReconData::cuVector &index)
 }
 
 template<typename T>
-void cuReconData<T>::preprocess(int reconSize, T half_W)
+void cuReconData<T>::preprocess(int reconSize, T half_W, thrust::host_vector<int> *tuples_last,
+                                thrust::host_vector<unsigned> *bucket_begin, thrust::host_vector<unsigned> *bucket_end) const
 {
-    this->cuPreprocess(*this->getTraj(), reconSize, half_W);
+    this->cuPreprocess(*this->getTraj(), reconSize, half_W, tuples_last, bucket_begin, bucket_end);
 }

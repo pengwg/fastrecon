@@ -35,7 +35,15 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
     QElapsedTimer timer;
     timer.start();
 
-    reconData.preprocess(m_gridSize, m_kernel.getKernelWidth() / 2);
+    auto tuples_last = new thrust::host_vector<int>;
+    auto bucket_begin = new thrust::host_vector<unsigned>;
+    auto bucket_end   = new thrust::host_vector<unsigned>;
+
+    reconData.preprocess(m_gridSize, m_kernel.getKernelWidth() / 2, tuples_last, bucket_begin, bucket_end);
+
+    delete tuples_last;
+    delete bucket_begin;
+    delete bucket_end;
 
     cudaDeviceSynchronize();
 
