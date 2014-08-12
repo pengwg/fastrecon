@@ -6,8 +6,8 @@
 #include "GridLut.h"
 
 template<typename T>
-GridLut<T>::GridLut(int gridSize, ConvKernel &kernel)
-    : m_gridSize(gridSize), m_kernel(kernel)
+GridLut<T>::GridLut(int dim, int gridSize, ConvKernel &kernel)
+    : m_dim(dim), m_gridSize(gridSize), m_kernel(kernel)
 {
 
 }
@@ -31,15 +31,7 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
     QElapsedTimer timer;
     timer.start();
 
-    auto tuples_last = new thrust::host_vector<int>;
-    auto bucket_begin = new thrust::host_vector<unsigned>;
-    auto bucket_end   = new thrust::host_vector<unsigned>;
-
-    reconData.preprocess(m_gridSize, m_kernel.getKernelWidth() / 2, tuples_last, bucket_begin, bucket_end);
-
-    m_tuples_last.reset(tuples_last);
-    m_bucket_begin.reset(bucket_begin);
-    m_bucket_end.reset(bucket_end);
+    cuPlan(*reconData.getTraj());
 
     cudaDeviceSynchronize();
 

@@ -11,15 +11,19 @@ template<typename T>
 class GridLut
 {
 public:
-    GridLut(int gridSize, ConvKernel &kernel);
+    GridLut(int dim, int gridSize, ConvKernel &kernel);
     virtual ~GridLut();
 
-    void cuPlan();
+    void cuPlan(const thrust::device_vector<Point<T> > &traj);
 
     cuImageData<T> gridding(cuReconData<T> &reconData);
     hostImageData<T> gridding(hostReconData<T> &reconData);
 
 protected:
+    typename hostImageData<T>::LocalComplexVector *griddingChannel(const hostReconData<T> &reconData, int channel);
+    typename cuImageData<T>::LocalComplexVector *griddingChannel(const cuReconData<T> &reconData, int channel);
+
+    int m_dim;
     int m_gridSize;
     ConvKernel m_kernel;
     FloatVector m_center[3];
@@ -29,9 +33,6 @@ protected:
     std::unique_ptr<thrust::host_vector<int>> m_tuples_last;
     std::unique_ptr<thrust::host_vector<unsigned>> m_bucket_begin;
     std::unique_ptr<thrust::host_vector<unsigned>> m_bucket_end;
-
-    typename hostImageData<T>::LocalComplexVector *griddingChannel(const hostReconData<T> &reconData, int channel);
-    typename cuImageData<T>::LocalComplexVector *griddingChannel(const cuReconData<T> &reconData, int channel);
 };
 
 #endif // GRIDLUT_H
