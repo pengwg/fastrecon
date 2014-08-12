@@ -9,33 +9,43 @@
 typedef std::vector<float> FloatVector;
 typedef std::vector<std::complex<float>> ComplexVector;
 
-template<template<typename, typename> class C, typename T, typename... A>
+template<template<typename, typename> class C, typename T>
 struct LocalVectorType {
-    typedef C<T, A...> type;
+    typedef std::vector<T> type;
 };
 
-template<template<typename, typename> class C, typename T, typename... A>
+template<typename T>
+struct LocalVectorType<thrust::device_vector, T> {
+    typedef thrust::device_vector<T> type;
+};
+
+template<typename T>
+struct LocalVectorType<thrust::host_vector, T> {
+    typedef thrust::host_vector<T> type;
+};
+
+template<template<typename, typename> class C, typename T>
 struct LocalComplexVectorType {
-    typedef C<std::complex<T>, A...> type;
+    typedef std::vector<std::complex<T>> type;
 };
 
-template<typename... A>
-struct LocalComplexVectorType<thrust::device_vector, float, A...> {
+template<>
+struct LocalComplexVectorType<thrust::device_vector, float> {
     typedef thrust::device_vector<cuComplex> type;
 };
 
-template<typename... A>
-struct LocalComplexVectorType<thrust::device_vector, double, A...> {
+template<>
+struct LocalComplexVectorType<thrust::device_vector, double> {
     typedef thrust::device_vector<cuDoubleComplex> type;
 };
 
-template<typename... A>
-struct LocalComplexVectorType<thrust::host_vector, float, A...> {
+template<>
+struct LocalComplexVectorType<thrust::host_vector, float> {
     typedef thrust::host_vector<cuComplex> type;
 };
 
-template<typename... A>
-struct LocalComplexVectorType<thrust::host_vector, double, A...> {
+template<>
+struct LocalComplexVectorType<thrust::host_vector, double> {
     typedef thrust::host_vector<cuDoubleComplex> type;
 };
 

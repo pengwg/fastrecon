@@ -7,4 +7,4 @@ void GridLut<T>::cuPlan()
 
 }
 
-// template void GridLut<float>::cuPlan();
+template void GridLut<float>::cuPlan();
