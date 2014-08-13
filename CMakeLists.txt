@@ -14,30 +14,37 @@ if(OPENMP_FOUND)
 endif(OPENMP_FOUND)
 
 include_directories(
-    common/
-    cpu/
-    gpu/
+    ImageData/
+    ReconData/
+    Recon/
     ${CUDA_INCLUDE_DIRS}
 )
+
+add_subdirectory(ImageData)
+add_subdirectory(ReconData)
+add_subdirectory(Recon)
+
+set(CUDA_SRC_FILES
+    ReconData/cuReconData.cu
+    Recon/GridLut.cu
+)
+
+cuda_include_directories(${Qt5Core_INCLUDE_DIRS})
+
+set(CUDA_NVCC_FLAGS
+    -std=c++11; # Experimental c++11 support for nvcc
+    -gencode;arch=compute_20,code=sm_21;
+    -gencode;arch=compute_30,code=sm_30;
+    --ptxas-options=-v;--compiler-options;-Wno-attributes,-Wall
+)
+
+cuda_add_library(cuRecon SHARED ${CUDA_SRC_FILES})
 
 set(MAIN_SRC_FILES
     Main.cpp
     ProgramOptions.cpp
-# Include the following files to show them in QtCreator project
-    cpu/hostImageData.h
-    cpu/hostImageData.inl
-    cpu/hostReconData.h
-    cpu/hostReconData.inl
-    gpu/cuImageData.h
-    gpu/cuImageData.inl
-    gpu/cuReconData.h
-    gpu/cuReconData.inl
 )
 
-add_subdirectory(common)
-add_subdirectory(cpu)
-add_subdirectory(gpu)
-
 add_executable(fastrecon ${MAIN_SRC_FILES})
-target_link_libraries(fastrecon common recon gridGPU)
+target_link_libraries(fastrecon recon imageData reconData cuRecon)
 qt5_use_modules(fastrecon Core Widgets)
