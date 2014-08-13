@@ -125,7 +125,7 @@ void basicReconData<T>::loadFromFiles(const QStringList &dataFileList, const QSt
 }
 
 template<typename T>
-void basicReconData<T>::transformTraj(float translation, float scale)
+void basicReconData<T>::transformTraj(T translation, T scale)
 {
     transformLocalTraj(translation, scale);
 

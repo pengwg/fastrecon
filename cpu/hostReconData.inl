@@ -6,7 +6,7 @@ hostReconData<T>::hostReconData(int size)
 }
 
 template<typename T>
-void hostReconData<T>::transformLocalTraj(float translation, float scale)
+void hostReconData<T>::transformLocalTraj(T translation, T scale)
 {
     for (auto &sample : *this->m_traj)
     {

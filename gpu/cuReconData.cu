@@ -1,6 +1,6 @@
 #include <thrust/transform.h>
 
-#include "basicReconData.h"
+#include "cuReconData.h"
 
 template<typename T>
 struct scale_functor
@@ -19,10 +19,11 @@ struct scale_functor
 };
 
 template<typename T>
-void basicReconData<T>::cuScale(thrust::device_vector<Point<T> > &traj, T translation, T scale) const
+void cuReconData<T>::transformLocalTraj(T translation, T scale)
 {
-    thrust::transform(traj.begin(), traj.end(), traj.begin(), scale_functor<T>(translation, scale, m_dim));
+    auto traj = this->m_traj.get();
+
+    thrust::transform(traj->begin(), traj->end(), traj->begin(), scale_functor<T>(translation, scale, this->rcDim()));
 }
 
-template void basicReconData<float>::cuScale(thrust::device_vector<Point<float> >&, float, float) const;
-
+template void cuReconData<float>::transformLocalTraj(float, float);

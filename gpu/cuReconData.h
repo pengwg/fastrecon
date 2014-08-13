@@ -12,15 +12,11 @@ public:
 
     cuReconData(int size);
 
-    void preprocess(int reconSize, T half_W, thrust::host_vector<int> *tuples_last_h,
-                    thrust::host_vector<unsigned> *bucket_begin, thrust::host_vector<unsigned> *bucket_end) const;
-
 private:
-    virtual void transformLocalTraj(float translation, float scale) override;
+    virtual void transformLocalTraj(T translation, T scale) override;
     void addTrajIndexBlock(cuVector &index);
 
     std::vector<std::unique_ptr<cuVector>> m_traj_index_blocks;
-
 };
 
 #include "cuReconData.inl"

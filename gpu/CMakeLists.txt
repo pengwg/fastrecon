@@ -1,5 +1,5 @@
 set(GRID_GPU_SRC_FILES
-    basicReconData.cu
+    cuReconData.cu
     GridLut.cu
 )
 

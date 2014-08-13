@@ -26,10 +26,8 @@ public:
     void storeTrajComponent(TrajVector &traj, const Vector &traj_c);
     void setDcf(Vector &dcf);
 
-    void transformTraj(float translation, float scale);
+    void transformTraj(T translation, T scale);
     void loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName);
-
-//  virtual const FloatVector *getTrajComponent(int comp) const = 0;
 
     std::pair<T, T> getCompBounds(int comp) const {
         return m_bounds[comp];
@@ -50,8 +48,6 @@ protected:
     virtual void addTraj(TrajVector &traj) = 0;
     virtual void addDcf(Vector &dcf) = 0;
     virtual void transformLocalTraj(float translation, float scale) = 0;
-
-    void cuScale(thrust::device_vector<Point<T> > &traj, T translation, T scale) const;
 
     int m_size;
     int m_dim;

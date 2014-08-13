@@ -10,7 +10,7 @@ public:
     hostReconData(int size);
 
 private:
-    virtual void transformLocalTraj(float translation, float scale) override;
+    virtual void transformLocalTraj(T translation, T scale) override;
 };
 
 #include "hostReconData.inl"
