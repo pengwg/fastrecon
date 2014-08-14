@@ -12,8 +12,6 @@
 #include "ProgramOptions.h"
 #include "hostReconData.h"
 #include "cuReconData.h"
-#include "hostImageData.h"
-#include "cuImageData.h"
 #include "ImageRecon.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
@@ -134,13 +132,13 @@ int main(int argc, char *argv[])
     GridLut<float> gridCpu(reconData->rcDim(), gridSize, kernel);
 
     timer.start();
-    hostImageData<float> imgData; // = gridCpu.gridding(*reconData);
+    ImageData<float> imgData = gridCpu.gridding(*reconData);
     //CUDA testing
-    cuImageData<float> cuimgData = gridCpu.gridding(*d_reconData);
+    //cuImageData<float> cuimgData = gridCpu.gridding(*d_reconData);
 
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
-    hostImageData<float> imgMap;
+    ImageData<float> imgMap;
     if (params.pils)
         imgMap = imgData;
 
@@ -156,7 +154,7 @@ int main(int argc, char *argv[])
 
     // -------------- Recon Methods -----------------------------------
     ImageRecon recon(imgData, {params.rcxres, params.rcyres, params.rczres});
-    hostImageData<float> finalImage;
+    ImageData<float> finalImage;
 
     timer.restart();
     if (params.pils) {

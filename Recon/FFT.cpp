@@ -45,7 +45,7 @@ void FFT::plan(int threads)
     }
 }
 
-void FFT::excute(ImageData<std::vector, float> &imgData)
+void FFT::excute(ImageData<float> &imgData)
 {
     int threads = omp_get_max_threads();
     if (m_plan.size() < threads)

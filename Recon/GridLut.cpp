@@ -20,7 +20,7 @@ GridLut<T>::~GridLut()
 
 // ----------CUDA Testing-----------------
 template<typename T>
-cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
+ImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -31,25 +31,25 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
     QElapsedTimer timer;
     timer.start();
 
-    cuPlan(*reconData.getTraj());
+    //cuPlan(*reconData.getTraj());
 
     cudaDeviceSynchronize();
 
     std::cout << "GPU preprocess " << " | " << timer.restart() << " ms" << std::endl;
 
-    cuImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+    ImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
     for (int i = 0; i < reconData.channels(); i++)
     {
-        auto out = griddingChannel(reconData, i);
-        img.addChannelImage(out);
+        //auto out = griddingChannel(reconData, i);
+        //img.addChannelImage(out);
         std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }
     return img;
 }
 
 template<typename T>
-hostImageData<T> GridLut<T>::gridding(hostReconData<T> &reconData)
+ImageData<T> GridLut<T>::gridding(hostReconData<T> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -57,7 +57,7 @@ hostImageData<T> GridLut<T>::gridding(hostReconData<T> &reconData)
 
     reconData.transformTraj(tr, scale);
 
-    hostImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+    ImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
 #pragma omp parallel shared(img, reconData)
     {
@@ -79,10 +79,9 @@ hostImageData<T> GridLut<T>::gridding(hostReconData<T> &reconData)
 }
 
 template<typename T>
-typename hostImageData<T>::LocalComplexVector *GridLut<T>::griddingChannel(const hostReconData<T> &reconData, int channel)
+ComplexVector<T> *GridLut<T>::griddingChannel(const hostReconData<T> &reconData, int channel)
 {
-    typedef typename hostImageData<T>::LocalComplexVector ComplexVector;
-    const ComplexVector *kData = reconData.getChannelData(channel);
+    const ComplexVector<T> *kData = reconData.getChannelData(channel);
     auto itDcf = reconData.getDcf()->cbegin();
 
     float kHW = m_kernel.getKernelWidth() / 2;
@@ -93,7 +92,7 @@ typename hostImageData<T>::LocalComplexVector *GridLut<T>::griddingChannel(const
 
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};
-    ComplexVector *out = new ComplexVector(powf(m_gridSize, m_dim));
+    ComplexVector<T> *out = new ComplexVector<T>(powf(m_gridSize, m_dim));
 
     for (const auto &sample : (*kData))
     {

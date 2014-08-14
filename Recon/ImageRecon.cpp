@@ -1,13 +1,13 @@
 #include "ImageRecon.h"
 
-ImageRecon::ImageRecon(const hostImageData<float> &imageData, const ImageSize &reconSize)
+ImageRecon::ImageRecon(const ImageData<float> &imageData, const ImageSize &reconSize)
     : m_imageData(imageData), m_reconSize(reconSize)
 {
 }
 
-hostImageData<float> ImageRecon::SOS() const
+ImageData<float> ImageRecon::SOS() const
 {
-    hostImageData<float> img = SOS(m_imageData);
+    ImageData<float> img = SOS(m_imageData);
 
     for (auto &data : *img.getChannelImage(0))
     {
@@ -17,14 +17,14 @@ hostImageData<float> ImageRecon::SOS() const
     return img;
 }
 
-hostImageData<float> ImageRecon::SOS(const ImageData<std::vector, float> &map) const
+ImageData<float> ImageRecon::SOS(const ImageData<float> &map) const
 {
     auto imageSize = m_imageData.imageSize();
     auto x0 = (imageSize.x - m_reconSize.x) / 2;
     auto y0 = (imageSize.y - m_reconSize.y) / 2;
     auto z0 = (imageSize.z - m_reconSize.z) / 2;
 
-    auto out = new hostImageData<float>::LocalComplexVector(m_reconSize.x * m_reconSize.y * m_reconSize.z);
+    auto out = new ComplexVector<float>(m_reconSize.x * m_reconSize.y * m_reconSize.z);
 
     for (int n = 0; n < m_imageData.channels(); n++)
     {
@@ -53,5 +53,5 @@ hostImageData<float> ImageRecon::SOS(const ImageData<std::vector, float> &map) c
             }
         }
     }
-    return hostImageData<float>(m_imageData.dim(), m_reconSize, out);
+    return ImageData<float>(m_imageData.dim(), m_reconSize, out);
 }

@@ -1,17 +1,17 @@
 #ifndef IMAGERECON_H
 #define IMAGERECON_H
 
-#include "hostImageData.h"
+#include "ImageData.h"
 
 class ImageRecon
 {
 public:
-    ImageRecon(const hostImageData<float> &imageData, const ImageSize &reconSize);
-    hostImageData<float> SOS() const;
-    hostImageData<float> SOS(const ImageData<std::vector, float> &map) const;
+    ImageRecon(const ImageData<float> &imageData, const ImageSize &reconSize);
+    ImageData<float> SOS() const;
+    ImageData<float> SOS(const ImageData<float> &map) const;
 
 private:
-    const hostImageData<float> &m_imageData;
+    const ImageData<float> &m_imageData;
     ImageSize m_reconSize;
 };
 
