@@ -219,4 +219,35 @@ void GridLut<T>::cuPlan(const thrust::device_vector<Point<T>> &traj)
     m_bucket_end.reset(bucket_end);
 }
 
+template<typename T>
+using cu_complex = typename cuComplexVector<T>::value_type;
+
+template<typename T> __global__
+void gridding_kernel(const cu_complex<T> *kData, cu_complex<T> *out)
+{
+
+}
+
+template<typename T>
+cuComplexVector<T> *GridLut<T>::griddingChannel(const cuReconData<T> &reconData, int channel)
+{
+    const cuComplexVector<T> *kData = reconData.getChannelData(channel);
+    auto out = new cuComplexVector<T>(powf(m_gridSize, m_dim));
+
+    int blockSize = 256;
+    int gridSize = (int)ceil((double)out->size() / blockSize);
+
+    auto d_kData = thrust::raw_pointer_cast(kData->data());
+    auto d_out = thrust::raw_pointer_cast(out->data());
+
+    auto tuples_last_ptr = thrust::raw_pointer_cast(m_tuples_last.get());
+    auto bucket_begin_ptr = thrust::raw_pointer_cast(m_bucket_begin.get());
+    auto bucket_end_ptr = thrust::raw_pointer_cast(m_bucket_end.get());
+
+    gridding_kernel<T><<<gridSize, blockSize>>>(d_kData, d_out);
+
+    return out;
+}
+
 template void GridLut<float>::cuPlan(const thrust::device_vector<Point<float>> &traj);
+template cuComplexVector<float> *GridLut<float>::griddingChannel(const cuReconData<float> &reconData, int channel);

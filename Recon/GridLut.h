@@ -21,7 +21,7 @@ public:
 
 protected:
     typename hostImageData<T>::LocalComplexVector *griddingChannel(const hostReconData<T> &reconData, int channel);
-    typename cuImageData<T>::LocalComplexVector *griddingChannel(const cuReconData<T> &reconData, int channel);
+    cuComplexVector<T> *griddingChannel(const cuReconData<T> &reconData, int channel);
 
     int m_dim;
     int m_gridSize;

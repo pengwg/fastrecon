@@ -49,12 +49,6 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
 }
 
 template<typename T>
-typename cuImageData<T>::LocalComplexVector *GridLut<T>::griddingChannel(const cuReconData<T> &reconData, int channel)
-{
-    return 0;
-}
-
-template<typename T>
 hostImageData<T> GridLut<T>::gridding(hostReconData<T> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
@@ -90,7 +84,6 @@ typename hostImageData<T>::LocalComplexVector *GridLut<T>::griddingChannel(const
     typedef typename hostImageData<T>::LocalComplexVector ComplexVector;
     const ComplexVector *kData = reconData.getChannelData(channel);
     auto itDcf = reconData.getDcf()->cbegin();
-    int rcDim = reconData.rcDim();
 
     float kHW = m_kernel.getKernelWidth() / 2;
     const std::vector<float> *kernelData = m_kernel.getKernelData();
@@ -100,11 +93,11 @@ typename hostImageData<T>::LocalComplexVector *GridLut<T>::griddingChannel(const
 
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};
-    ComplexVector *out = new ComplexVector(powf(m_gridSize, rcDim));
+    ComplexVector *out = new ComplexVector(powf(m_gridSize, m_dim));
 
     for (const auto &sample : (*kData))
     {
-        for (int i = 0; i < rcDim; i++)
+        for (int i = 0; i < m_dim; i++)
         {
             center[i] = itTraj->x[i]; //(0.5 + *itTrajComp[i]++) * (m_gridSize - 1); // kspace in (-0.5, 0.5)
             start[i] = ceil(center[i] - kHW);
