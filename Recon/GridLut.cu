@@ -121,8 +121,8 @@ template<typename T>
 void GridLut<T>::cuPlan(const thrust::device_vector<Point<T>> &traj)
 {
     auto tuples_last_h = new thrust::host_vector<int>;
-    auto bucket_begin = new thrust::host_vector<unsigned>;
-    auto bucket_end   = new thrust::host_vector<unsigned>;
+    auto bucket_begin_h = new thrust::host_vector<unsigned>;
+    auto bucket_end_h   = new thrust::host_vector<unsigned>;
 
     T half_W = m_kernel.getKernelWidth() / 2.0;
 
@@ -137,86 +137,94 @@ void GridLut<T>::cuPlan(const thrust::device_vector<Point<T>> &traj)
     unsigned num_of_pairs_total = tuple_index->back();
     std::cout << " Traj size: " << traj.size() << "; Number of pairs: " << num_of_pairs_total << std::endl;
 
-    auto tuples_first_h = new thrust::host_vector<int>;
-
-    if (loadPreprocess(tuples_last_h, bucket_begin, bucket_end))
+    bool loadSuccess = false;
+    if (loadPreprocess(tuples_last_h, bucket_begin_h, bucket_end_h))
     {
         std::cout << "Loaded preprocessed data from disk." << std::endl;
 
-        if (tuples_last_h->size() != num_of_pairs_total || bucket_begin->size() != powf(m_gridSize, m_dim) ||
-                bucket_end->size() != powf(m_gridSize, m_dim))
+        if (tuples_last_h->size() != num_of_pairs_total || bucket_begin_h->size() != powf(m_gridSize, m_dim) ||
+                bucket_end_h->size() != powf(m_gridSize, m_dim))
         {
             std::cout << "Wrong size, recompute data... " << std::endl;
         }
         else
         {
-            delete tuple_index;
-            delete tuples_first_h;
-
-            return;
+            loadSuccess = true;
         }
     }
 
-    std::cout << "Preprocesse data for CUDA..." << std::endl;
-
-    auto tuples_first = new thrust::device_vector<int>;
-    auto tuples_last = new thrust::device_vector<int>;
-
-    unsigned chunk_size = 100000;
-
-    unsigned skip = 0;
-    while (skip < traj.size())
+    if (!loadSuccess)
     {
-        unsigned num_of_samples_compute = min(chunk_size, unsigned(traj.size()) - skip);
-        unsigned num_of_pairs = (*tuple_index)[skip + num_of_samples_compute] - (*tuple_index)[skip];
-        std::cout << "num_of_pairs compute: " << num_of_pairs << std::endl;
-        tuples_first->resize(num_of_pairs);
-        tuples_last->resize(num_of_pairs);
+        std::cout << "Preprocesse data for CUDA..." << std::endl;
 
-        const Point<T> *traj_ptr = thrust::raw_pointer_cast(traj.data()) + skip;
-        unsigned *tuple_index_ptr = thrust::raw_pointer_cast(tuple_index->data()) + skip;
-        int *tuples_first_ptr = thrust::raw_pointer_cast(tuples_first->data()) - (*tuple_index)[skip];
-        int *tuples_last_ptr = thrust::raw_pointer_cast(tuples_last->data()) - (*tuple_index)[skip];
+        auto tuples_first_h = new thrust::host_vector<int>;
+        tuples_last_h->clear();
 
-        int blockSize = 256;
-        int gridSize = (int)ceil((double)chunk_size / blockSize);
-        write_pairs_kernel<T><<<gridSize, blockSize>>>(traj_ptr, tuple_index_ptr, tuples_first_ptr, tuples_last_ptr,
-                                                       m_gridSize, half_W, num_of_samples_compute);
+        auto tuples_first = new thrust::device_vector<int>;
+        auto tuples_last = new thrust::device_vector<int>;
 
-        thrust::sort_by_key(tuples_first->begin(), tuples_first->end(), tuples_last->begin());
+        unsigned chunk_size = 100000;
 
-        tuples_first_h->insert(tuples_first_h->end(), tuples_first->begin(), tuples_first->end());
-        tuples_last_h->insert(tuples_last_h->end(), tuples_last->begin(), tuples_last->end());
+        unsigned skip = 0;
+        while (skip < traj.size())
+        {
+            unsigned num_of_samples_compute = min(chunk_size, unsigned(traj.size()) - skip);
+            unsigned num_of_pairs = (*tuple_index)[skip + num_of_samples_compute] - (*tuple_index)[skip];
+            std::cout << "num_of_pairs compute: " << num_of_pairs << std::endl;
+            tuples_first->resize(num_of_pairs);
+            tuples_last->resize(num_of_pairs);
 
-        skip += num_of_samples_compute;
+            const Point<T> *traj_ptr = thrust::raw_pointer_cast(traj.data()) + skip;
+            unsigned *tuple_index_ptr = thrust::raw_pointer_cast(tuple_index->data()) + skip;
+            int *tuples_first_ptr = thrust::raw_pointer_cast(tuples_first->data()) - (*tuple_index)[skip];
+            int *tuples_last_ptr = thrust::raw_pointer_cast(tuples_last->data()) - (*tuple_index)[skip];
+
+            int blockSize = 256;
+            int gridSize = (int)ceil((double)chunk_size / blockSize);
+            write_pairs_kernel<T><<<gridSize, blockSize>>>(traj_ptr, tuple_index_ptr, tuples_first_ptr, tuples_last_ptr,
+                                                           m_gridSize, half_W, num_of_samples_compute);
+
+            thrust::sort_by_key(tuples_first->begin(), tuples_first->end(), tuples_last->begin());
+
+            tuples_first_h->insert(tuples_first_h->end(), tuples_first->begin(), tuples_first->end());
+            tuples_last_h->insert(tuples_last_h->end(), tuples_last->begin(), tuples_last->end());
+
+            skip += num_of_samples_compute;
+        }
+
+        delete tuple_index;
+        delete tuples_first;
+        delete tuples_last;
+
+        std::cout << "Sort tuples... ";
+        thrust::sort_by_key(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), tuples_last_h->begin());
+
+        bucket_begin_h->resize(powf(m_gridSize, m_dim));
+        bucket_end_h->resize(powf(m_gridSize, m_dim));
+
+        std::cout << "Generate buckets... ";
+        thrust::counting_iterator<unsigned int> search_begin(0);
+        thrust::lower_bound(tuples_first_h->begin(), tuples_first_h->end(), search_begin,
+                            search_begin + (int)powf(m_gridSize, m_dim), bucket_begin_h->begin());
+        thrust::upper_bound(tuples_first_h->begin(), tuples_first_h->end(), search_begin,
+                            search_begin + (int)powf(m_gridSize, m_dim), bucket_end_h->begin());
+
+        std::cout << "Save data to disk... ";
+        savePreprocess(tuples_last_h, bucket_begin_h, bucket_end_h);
+        std::cout << "done." << std::endl;
+
+        delete tuples_first_h;
     }
 
-    delete tuple_index;
-    delete tuples_first;
-    delete tuples_last;
+    auto bucket_begin = new thrust::device_vector<unsigned>(*bucket_begin_h);
+    auto bucket_end   = new thrust::device_vector<unsigned>(*bucket_end_h);
 
-    std::cout << "Sort tuples... ";
-    thrust::sort_by_key(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), tuples_last_h->begin());
-
-    bucket_begin->resize(powf(m_gridSize, m_dim));
-    bucket_end->resize(powf(m_gridSize, m_dim));
-
-    std::cout << "Generate buckets... ";
-    thrust::counting_iterator<unsigned int> search_begin(0);
-    thrust::lower_bound(tuples_first_h->begin(), tuples_first_h->end(), search_begin,
-                search_begin + (int)powf(m_gridSize, m_dim), bucket_begin->begin());
-    thrust::upper_bound(tuples_first_h->begin(), tuples_first_h->end(), search_begin,
-                search_begin + (int)powf(m_gridSize, m_dim), bucket_end->begin());
-
-    std::cout << "Save data to disk... ";
-    savePreprocess(tuples_last_h, bucket_begin, bucket_end);
-    std::cout << "done." << std::endl;
-
-    delete tuples_first_h;
+    delete bucket_begin_h;
+    delete bucket_end_h;
 
     m_tuples_last.reset(tuples_last_h);
-    m_bucket_begin.reset(bucket_begin);
-    m_bucket_end.reset(bucket_end);
+    m_cu_bucket_begin.reset(bucket_begin);
+    m_cu_bucket_end.reset(bucket_end);
 }
 
 template<typename T>
@@ -240,9 +248,9 @@ cuComplexVector<T> *GridLut<T>::griddingChannel(const cuReconData<T> &reconData,
     auto d_kData = thrust::raw_pointer_cast(kData->data());
     auto d_out = thrust::raw_pointer_cast(out->data());
 
-    auto tuples_last_ptr = thrust::raw_pointer_cast(m_tuples_last.get());
-    auto bucket_begin_ptr = thrust::raw_pointer_cast(m_bucket_begin.get());
-    auto bucket_end_ptr = thrust::raw_pointer_cast(m_bucket_end.get());
+    auto tuples_last_ptr = thrust::raw_pointer_cast(m_tuples_last.get()->data());
+    auto bucket_begin_ptr = thrust::raw_pointer_cast(m_cu_bucket_begin.get()->data());
+    auto bucket_end_ptr = thrust::raw_pointer_cast(m_cu_bucket_end.get()->data());
 
     gridding_kernel<T><<<gridSize, blockSize>>>(d_kData, d_out);
 
