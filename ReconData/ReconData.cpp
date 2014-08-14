@@ -9,7 +9,7 @@ ReconData<C, T>::ReconData(int size)
 }
 
 template<template<typename, typename> class C, typename T>
-void ReconData<C, T>::addData(ComplexVector &data)
+void ReconData<C, T>::addData(ComplexVector<T> &data)
 {
     typedef std::vector<typename LocalComplexVector::value_type> interm_type;
     interm_type &h_data = reinterpret_cast<interm_type &>(data);
@@ -27,9 +27,9 @@ void ReconData<C, T>::addTraj(TrajVector &traj)
 }
 
 template<template<typename, typename> class C, typename T>
-void ReconData<C, T>::addDcf(Vector &dcf)
+void ReconData<C, T>::addDcf(std::vector<T> &dcf)
 {
-    auto d_dcf = toLocalVector<Vector, LocalVector>(dcf);
+    auto d_dcf = toLocalVector<std::vector<T>, LocalVector>(dcf);
     m_dcf.reset(d_dcf);
 }
 

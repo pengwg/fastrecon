@@ -13,7 +13,7 @@ cuImageData<T>::cuImageData(const int dim, const ImageSize &imageSize, LocalComp
 }
 
 template<typename T>
-void cuImageData<T>::addChannelImage(cuComplexVector *image)
+void cuImageData<T>::addChannelImage(cuComplexVector<T> *image)
 {
     m_cudata.reset(image);
 
@@ -24,7 +24,7 @@ void cuImageData<T>::addChannelImage(cuComplexVector *image)
 }
 
 template<typename T>
-typename cuImageData<T>::cuComplexVector *cuImageData<T>::cuImageData::getCUChannelImage(int channel)
+cuComplexVector<T> *cuImageData<T>::cuImageData::getCUChannelImage(int channel)
 {
     if (channel == m_channel_in_device)
     {

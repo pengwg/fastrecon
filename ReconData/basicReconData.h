@@ -3,11 +3,11 @@
 
 #include <complex>
 #include <vector>
-
 #include <QStringList>
 #include <QFile>
-
 #include <thrust/device_vector.h>
+
+#include "common.h"
 
 template<typename T>
 struct Point {
@@ -18,13 +18,11 @@ template<typename T>
 class basicReconData
 {
 public:
-    typedef std::vector<T> Vector;
-    typedef std::vector<Point<T> > TrajVector;
-    typedef std::vector<std::complex<T> > ComplexVector;
+    typedef std::vector<Point<T>> TrajVector;
 
-    void addChannelData(ComplexVector &data);
-    void storeTrajComponent(TrajVector &traj, const Vector &traj_c);
-    void setDcf(Vector &dcf);
+    void addChannelData(ComplexVector<T> &data);
+    void storeTrajComponent(TrajVector &traj, const std::vector<T> &traj_c);
+    void setDcf(std::vector<T> &dcf);
 
     void transformTraj(T translation, T scale);
     void loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName);
@@ -44,14 +42,14 @@ protected:
     basicReconData(int size);
     virtual ~basicReconData() {}
 
-    virtual void addData(ComplexVector &data) = 0;
+    virtual void addData(ComplexVector<T> &data) = 0;
     virtual void addTraj(TrajVector &traj) = 0;
-    virtual void addDcf(Vector &dcf) = 0;
+    virtual void addDcf(std::vector<T> &dcf) = 0;
     virtual void transformLocalTraj(float translation, float scale) = 0;
 
     int m_size;
     int m_dim;
-    std::vector<std::pair<T, T> > m_bounds;
+    std::vector<std::pair<T, T>> m_bounds;
 };
 
 #endif // BASICRECONDATA_H

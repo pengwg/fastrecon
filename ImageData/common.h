@@ -6,8 +6,8 @@
 #include <cuComplex.h>
 #include <thrust/device_vector.h>
 
-typedef std::vector<float> FloatVector;
-typedef std::vector<std::complex<float>> ComplexVector;
+template<typename T>
+using ComplexVector = std::vector<std::complex<T>>;
 
 template<template<typename, typename> class C, typename T>
 struct LocalVectorType {
@@ -26,7 +26,7 @@ struct LocalVectorType<thrust::host_vector, T> {
 
 template<template<typename, typename> class C, typename T>
 struct LocalComplexVectorType {
-    typedef std::vector<std::complex<T>> type;
+    typedef ComplexVector<T> type;
 };
 
 template<>
@@ -48,5 +48,11 @@ template<>
 struct LocalComplexVectorType<thrust::host_vector, double> {
     typedef thrust::host_vector<cuDoubleComplex> type;
 };
+
+template<typename T>
+using cuVector = typename LocalVectorType<thrust::device_vector, T>::type;
+
+template<typename T>
+using cuComplexVector = typename LocalComplexVectorType<thrust::device_vector, T>::type;
 
 #endif // COMMON_H

@@ -34,7 +34,7 @@ ConvKernel::~ConvKernel()
 
 }
 
-const FloatVector *ConvKernel::getKernelData() const
+const std::vector<float> *ConvKernel::getKernelData() const
 {
     return m_kernelData.get();
 }

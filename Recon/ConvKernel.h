@@ -9,7 +9,7 @@ public:
     ConvKernel(float kWidth, float overGridFactor, int length = 32);
     ~ConvKernel();
 
-    const FloatVector *getKernelData() const;
+    const std::vector<float> *getKernelData() const;
     float getKernelWidth() const;
 
 private:
@@ -17,7 +17,7 @@ private:
     float m_ogFactor;
     int m_length;
 
-    std::shared_ptr<FloatVector> m_kernelData;
+    std::shared_ptr<std::vector<float>> m_kernelData;
 };
 
 #endif // CONVKERNEL_H

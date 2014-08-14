@@ -9,7 +9,6 @@ template<template<typename, typename> class C, typename T>
 class ImageData : public basicImageData
 {
 public:
-    typedef typename LocalVectorType<C, T>::type LocalVector;
     typedef typename LocalComplexVectorType<C, T>::type LocalComplexVector;
 
 public:

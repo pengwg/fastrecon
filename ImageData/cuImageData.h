@@ -11,7 +11,6 @@ class cuImageData : public ImageData<thrust::host_vector, T>
 {
 public:
     using typename ImageData<thrust::host_vector, T>::LocalComplexVector;
-    typedef typename LocalComplexVectorType<thrust::device_vector, T>::type cuComplexVector;
 
     cuImageData();
     cuImageData(const int dim, const ImageSize &imageSize, LocalComplexVector *image = nullptr);
@@ -23,8 +22,8 @@ public:
     cuImageData<T> &operator=(T1 &&imageData);
 
     using ImageData<thrust::host_vector, T>::addChannelImage;
-    void addChannelImage(cuComplexVector *image);
-    cuComplexVector *getCUChannelImage(int channel);
+    void addChannelImage(cuComplexVector<T> *image);
+    cuComplexVector<T> *getCUChannelImage(int channel);
 
     virtual void fftShift() override;
     virtual void lowFilter(int res) override;
@@ -38,7 +37,7 @@ private:
     void fftShift2(LocalComplexVector *data);
     void fftShift3(LocalComplexVector *data);
 
-    std::unique_ptr<cuComplexVector> m_cudata;
+    std::unique_ptr<cuComplexVector<T>> m_cudata;
     int m_channel_in_device = 0;
 
     friend class hostImageData<T>;

@@ -6,7 +6,7 @@ cuReconData<T>::cuReconData(int size)
 }
 
 template<typename T>
-void cuReconData<T>::addTrajIndexBlock(cuReconData::cuVector &index)
+void cuReconData<T>::addTrajIndexBlock(cuVector<T> &index)
 {
 
 }

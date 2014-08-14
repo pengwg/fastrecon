@@ -26,7 +26,7 @@ protected:
     int m_dim;
     int m_gridSize;
     ConvKernel m_kernel;
-    FloatVector m_center[3];
+    std::vector<float> m_center[3];
     std::vector<int> m_start[3];
     std::vector<int> m_end[3];
 

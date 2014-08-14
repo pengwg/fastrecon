@@ -7,16 +7,13 @@ template<typename T>
 class cuReconData : public ReconData<thrust::device_vector, T>
 {
 public:
-    typedef typename ReconData<thrust::device_vector, T>::LocalVector cuVector;
-    typedef typename ReconData<thrust::device_vector, T>::LocalComplexVector cuComplexVector;
-
     cuReconData(int size);
 
 private:
     virtual void transformLocalTraj(T translation, T scale) override;
-    void addTrajIndexBlock(cuVector &index);
+    void addTrajIndexBlock(cuVector<T> &index);
 
-    std::vector<std::unique_ptr<cuVector>> m_traj_index_blocks;
+    std::vector<std::unique_ptr<cuVector<T>>> m_traj_index_blocks;
 };
 
 #include "cuReconData.inl"

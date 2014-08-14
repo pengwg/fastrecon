@@ -24,9 +24,10 @@
 #include "GridGpu.h"
 #endif
 
-void displayData(const ComplexVector& data, ImageSize size, const QString& title)
+template<typename T>
+void displayData(const ComplexVector<T> &data, ImageSize size, const QString& title)
 {
-    std::vector<float> dataValue;
+    std::vector<T> dataValue;
     int n0 = size.x;
     int n1 = size.y;
     int n2 = size.z;

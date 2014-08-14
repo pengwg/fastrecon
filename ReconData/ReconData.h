@@ -9,9 +9,7 @@ template<template<typename, typename> class C, typename T>
 class ReconData : public basicReconData<T>
 {
 public:
-    using typename basicReconData<T>::Vector;
     using typename basicReconData<T>::TrajVector;
-    using typename basicReconData<T>::ComplexVector;
 
     typedef typename LocalVectorType<C, T>::type LocalVector;
     typedef typename LocalVectorType<C, Point<T>>::type LocalTrajVector;
@@ -39,9 +37,9 @@ protected:
     using basicReconData<T>::m_bounds;
     using basicReconData<T>::m_size;
 
-    virtual void addData(ComplexVector &data) override final;
+    virtual void addData(ComplexVector<T> &data) override final;
     virtual void addTraj(TrajVector &traj) override final;
-    virtual void addDcf(Vector &dcf) override final;
+    virtual void addDcf(std::vector<T> &dcf) override final;
 
     template<typename V, typename LV>
     LV *toLocalVector(V &v) const;
