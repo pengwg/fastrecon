@@ -39,8 +39,11 @@ public:
     }
 
     int dataSize() const;
+
     void addChannelImage(ComplexVector<T> *image);
+
     const ComplexVector<T> *getChannelImage(int channel) const;
+
     ComplexVector<T> *getChannelImage(int channel);
 
     void fftShift();

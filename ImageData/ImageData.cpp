@@ -89,41 +89,29 @@ void ImageData<T>::copy(const ImageData<T> &imageData)
     m_size = imageData.imageSize();
     m_data.clear();
 
-    auto im = dynamic_cast<const ImageData<T> *>(&imageData);
-    if (im)
+    for (const auto &data : imageData.m_data)
     {
-        for (const auto &data : im->m_data)
-        {
-            auto data_copy = new ComplexVector<T>(*data);
-            this->addChannelImage(data_copy);
-        }
-        std::cout << "Same type copy called" << std::endl;
+        auto data_copy = new ComplexVector<T>(*data);
+        addChannelImage(data_copy);
     }
+    std::cout << "Same type copy called" << std::endl;
+
 }
 
 template<typename T>
 void ImageData<T>::copy(ImageData<T> &&imageData)
 {
-    auto im = dynamic_cast<ImageData<T> *>(&imageData);
-    if (im)
-    {
-        m_dim = im->m_dim;
-        m_size = im->m_size;
-        m_channels = im->m_channels;
 
-        m_data = std::move(im->m_data);
+        m_dim = imageData.m_dim;
+        m_size = imageData.m_size;
+        m_channels = imageData.m_channels;
 
-        im->m_dim = 0;
-        im->m_size = {0};
-        im->m_channels = 0;
+        m_data = std::move(imageData.m_data);
+
+        imageData.m_dim = 0;
+        imageData.m_size = {0};
+        imageData.m_channels = 0;
         std::cout << "-- Same type move called --" << std::endl;
-    }
-    else
-    {
-        std::cout << "-- Different types move - copy will be called --" << std::endl;
-        copy(imageData);
-    }
-
 }
 
 
@@ -131,9 +119,9 @@ template<typename T>
 void ImageData<T>::fftShift()
 {
 #pragma omp parallel for
-    for (int n = 0; n < this->channels(); n++)
+    for (int n = 0; n < channels(); n++)
     {
-        auto data = this->getChannelImage(n);
+        auto data = getChannelImage(n);
 
         if (this->m_dim == 3)
             fftShift3(data);
@@ -210,9 +198,9 @@ void ImageData<T>::lowFilter(int res)
     }
 
 #pragma omp parallel for
-    for (int n = 0; n < this->channels(); n++)
+    for (int n = 0; n < channels(); n++)
     {
-        auto itData = this->getChannelImage(n)->begin();
+        auto itData = getChannelImage(n)->begin();
 
         for (int z = 0; z < m_size.z; z++)
         {
@@ -237,9 +225,9 @@ void ImageData<T>::lowFilter(int res)
 template<typename T>
 void ImageData<T>::normalize()
 {
-    std::vector<T> mag(this->dataSize(), 0);
+    std::vector<T> mag(dataSize(), 0);
 
-    for (const auto &data : this->m_data)
+    for (const auto &data : m_data)
     {
         auto itMag = mag.begin();
         for (const auto &value : *data)
@@ -248,7 +236,7 @@ void ImageData<T>::normalize()
         }
     }
 
-    for (auto &data : this->m_data)
+    for (auto &data : m_data)
     {
         auto itMag = mag.cbegin();
         for (auto &value : *data)

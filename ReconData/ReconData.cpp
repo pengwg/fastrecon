@@ -140,9 +140,9 @@ void ReconData<T>::transformTraj(T translation, T scale)
 template<typename T>
 void ReconData<T>::transformLocalTraj(T translation, T scale)
 {
-    for (auto &sample : *this->m_traj)
+    for (auto &sample : *m_traj)
     {
-        for (int comp = 0; comp < this->m_dim; ++comp)
+        for (int comp = 0; comp < m_dim; ++comp)
             sample.x[comp] = (sample.x[comp] + translation) * scale;
     }
 }

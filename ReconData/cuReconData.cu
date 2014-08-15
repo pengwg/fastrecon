@@ -19,11 +19,17 @@ struct scale_functor
 };
 
 template<typename T>
+cuReconData<T>::cuReconData(int size)
+    : ReconData<T>(size)
+{
+
+}
+
+template<typename T>
 void cuReconData<T>::transformLocalTraj(T translation, T scale)
 {
     auto traj = this->m_traj.get();
-
     thrust::transform(traj->begin(), traj->end(), traj->begin(), scale_functor<T>(translation, scale, this->rcDim()));
 }
 
-template void cuReconData<float>::transformLocalTraj(float, float);
+template class cuReconData<float>;
