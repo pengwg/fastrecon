@@ -46,9 +46,9 @@ public:
 
     ComplexVector<T> *getChannelImage(int channel);
 
-    void fftShift();
-    void lowFilter(int res);
-    void normalize();
+    virtual void fftShift();
+    virtual void lowFilter(int res);
+    virtual void normalize();
 
 protected:
     virtual void copy(const ImageData<T> &imageData);
@@ -61,7 +61,7 @@ protected:
     ImageSize m_size = {0, 0, 0};
     int m_channels = 0;
 
-    std::vector<std::unique_ptr<ComplexVector<T>>> m_data;
+    std::vector<std::unique_ptr<ComplexVector<T>>> m_data_multichannel;
 };
 
 #endif // IMAGEDATA_H

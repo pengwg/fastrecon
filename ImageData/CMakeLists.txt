@@ -1,5 +1,4 @@
 set(SRC_FILES
-    basicImageData.cpp
     ImageData.cpp
 # Include the following to show them in QtCreator project
     common.h

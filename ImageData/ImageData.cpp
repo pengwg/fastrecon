@@ -60,15 +60,15 @@ void ImageData<T>::addChannelImage(ComplexVector<T> *image)
         std::cerr << "Error: ImageData wrong size!" << std::endl;
         exit(1);
     }
-    m_data.push_back(std::unique_ptr<ComplexVector<T>>(image));
-    m_channels = m_data.size();
+    m_data_multichannel.push_back(std::unique_ptr<ComplexVector<T>>(image));
+    m_channels = m_data_multichannel.size();
 }
 
 template<typename T>
 const ComplexVector<T> *ImageData<T>::getChannelImage(int channel) const
 {
     if (channel < channels())
-        return m_data[channel].get();
+        return m_data_multichannel[channel].get();
     else
         return nullptr;
 }
@@ -77,7 +77,7 @@ template<typename T>
 ComplexVector<T> *ImageData<T>::getChannelImage(int channel)
 {
     if (channel < channels())
-        return m_data[channel].get();
+        return m_data_multichannel[channel].get();
     else
         return nullptr;
 }
@@ -87,31 +87,29 @@ void ImageData<T>::copy(const ImageData<T> &imageData)
 {
     m_dim = imageData.dim();
     m_size = imageData.imageSize();
-    m_data.clear();
+    m_data_multichannel.clear();
 
-    for (const auto &data : imageData.m_data)
+    for (const auto &data : imageData.m_data_multichannel)
     {
         auto data_copy = new ComplexVector<T>(*data);
         addChannelImage(data_copy);
     }
-    std::cout << "Same type copy called" << std::endl;
-
+    std::cout << "-- ImageData: copy --" << std::endl;
 }
 
 template<typename T>
 void ImageData<T>::copy(ImageData<T> &&imageData)
 {
+    m_dim = imageData.m_dim;
+    m_size = imageData.m_size;
+    m_channels = imageData.m_channels;
 
-        m_dim = imageData.m_dim;
-        m_size = imageData.m_size;
-        m_channels = imageData.m_channels;
+    m_data_multichannel = std::move(imageData.m_data_multichannel);
 
-        m_data = std::move(imageData.m_data);
-
-        imageData.m_dim = 0;
-        imageData.m_size = {0};
-        imageData.m_channels = 0;
-        std::cout << "-- Same type move called --" << std::endl;
+    imageData.m_dim = 0;
+    imageData.m_size = {0};
+    imageData.m_channels = 0;
+    std::cout << "-- ImageData: move --" << std::endl;
 }
 
 
@@ -227,7 +225,7 @@ void ImageData<T>::normalize()
 {
     std::vector<T> mag(dataSize(), 0);
 
-    for (const auto &data : m_data)
+    for (const auto &data : m_data_multichannel)
     {
         auto itMag = mag.begin();
         for (const auto &value : *data)
@@ -236,7 +234,7 @@ void ImageData<T>::normalize()
         }
     }
 
-    for (auto &data : m_data)
+    for (auto &data : m_data_multichannel)
     {
         auto itMag = mag.cbegin();
         for (auto &value : *data)

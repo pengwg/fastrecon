@@ -5,6 +5,7 @@
 #include "ReconData.h"
 #include "cuReconData.h"
 #include "ImageData.h"
+#include "cuImageData.h"
 
 template<typename T>
 class GridLut
@@ -15,7 +16,7 @@ public:
 
     void cuPlan(const cuVector<Point<T> > &traj);
 
-    ImageData<T> gridding(cuReconData<T> &reconData);
+    cuImageData<T> gridding(cuReconData<T> &reconData);
     ImageData<T> gridding(ReconData<T> &reconData);
 
 protected:

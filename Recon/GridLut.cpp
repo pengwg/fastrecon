@@ -20,7 +20,7 @@ GridLut<T>::~GridLut()
 
 // ----------CUDA Testing-----------------
 template<typename T>
-ImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
+cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
 {
     QElapsedTimer timer;
     timer.start();
@@ -37,13 +37,12 @@ ImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
 
     std::cout << "GPU preprocess " << " | " << timer.restart() << " ms" << std::endl;
 
-    ImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+    cuImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
     for (int i = 0; i < reconData.channels(); i++)
     {
         auto out = griddingChannel(reconData, i);
-        delete out;
-        //img.addChannelImage(out);
+        img.addChannelImage(out);
         std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }
     return img;
