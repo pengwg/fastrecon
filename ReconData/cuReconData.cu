@@ -77,7 +77,6 @@ void cuReconData<T>::transformLocalTraj(T translation, T scale)
 
     //thrust::host_vector<Point<T>> host_traj(*traj);
     //std::copy(host_traj.begin(), host_traj.end(), this->m_traj->begin());
-
     //std::memcpy(this->m_traj->data(), host_traj.data(), host_traj.size() * sizeof(Point<T>));
 }
 

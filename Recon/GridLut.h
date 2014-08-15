@@ -3,6 +3,7 @@
 
 #include "ConvKernel.h"
 #include "ReconData.h"
+#include "cuReconData.h"
 #include "ImageData.h"
 
 template<typename T>
@@ -12,14 +13,14 @@ public:
     GridLut(int dim, int gridSize, ConvKernel &kernel);
     virtual ~GridLut();
 
-    void cuPlan(const thrust::device_vector<Point<T> > &traj);
+    void cuPlan(const cuVector<Point<T> > &traj);
 
-    //ImageData<T> gridding(cuReconData<T> &reconData);
+    ImageData<T> gridding(cuReconData<T> &reconData);
     ImageData<T> gridding(ReconData<T> &reconData);
 
 protected:
     ComplexVector<T> *griddingChannel(const ReconData<T> &reconData, int channel);
-    //ComplexVector<T> *griddingChannel(const cuReconData<T> &reconData, int channel);
+    cuComplexVector<T> *griddingChannel(cuReconData<T> &reconData, int channel);
 
     int m_dim;
     int m_gridSize;
