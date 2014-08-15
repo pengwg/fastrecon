@@ -25,7 +25,7 @@ add_subdirectory(ReconData)
 add_subdirectory(Recon)
 
 set(CUDA_SRC_FILES
-#    ReconData/cuReconData.cu
+    ReconData/cuReconData.cu
 #    Recon/GridLut.cu
 )
 

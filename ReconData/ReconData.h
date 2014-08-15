@@ -21,6 +21,7 @@ public:
     typedef std::vector<Point<T>> TrajVector;
 
     ReconData(int size);
+    virtual ~ReconData() {}
 
     void addChannelData(ComplexVector<T> &data);
     void setDcf(std::vector<T> &dcf);
@@ -54,8 +55,7 @@ public:
     void clear();
 
 protected:
-    void storeTrajComponent(TrajVector &traj, const std::vector<T> &traj_c);
-    void transformLocalTraj(T translation, T scale);
+    virtual void transformLocalTraj(T translation, T scale);
 
     int m_size;
     int m_dim = 0;
@@ -64,5 +64,8 @@ protected:
     std::unique_ptr<TrajVector> m_traj;
     std::vector<std::unique_ptr<const ComplexVector<T>>> m_kDataMultiChannel;
     std::unique_ptr<std::vector<T>> m_dcf;
+
+private:
+    void storeTrajComponent(TrajVector &traj, const std::vector<T> &traj_c);
 };
 #endif // RECONDATA_H
