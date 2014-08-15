@@ -52,7 +52,7 @@ public:
     }
 
     int channels() const { return m_kDataMultiChannel.size(); }
-    void clear();
+    virtual void clear();
 
 protected:
     virtual void transformLocalTraj(T translation, T scale);
