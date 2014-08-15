@@ -2,8 +2,7 @@
 #define GRIDLUT_H
 
 #include "ConvKernel.h"
-#include "hostReconData.h"
-#include "cuReconData.h"
+#include "ReconData.h"
 #include "ImageData.h"
 
 template<typename T>
@@ -15,12 +14,12 @@ public:
 
     void cuPlan(const thrust::device_vector<Point<T> > &traj);
 
-    ImageData<T> gridding(cuReconData<T> &reconData);
-    ImageData<T> gridding(hostReconData<T> &reconData);
+    //ImageData<T> gridding(cuReconData<T> &reconData);
+    ImageData<T> gridding(ReconData<T> &reconData);
 
 protected:
-    ComplexVector<T> *griddingChannel(const hostReconData<T> &reconData, int channel);
-    ComplexVector<T> *griddingChannel(const cuReconData<T> &reconData, int channel);
+    ComplexVector<T> *griddingChannel(const ReconData<T> &reconData, int channel);
+    //ComplexVector<T> *griddingChannel(const cuReconData<T> &reconData, int channel);
 
     int m_dim;
     int m_gridSize;

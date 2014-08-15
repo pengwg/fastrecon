@@ -10,8 +10,7 @@
 #include <omp.h>
 
 #include "ProgramOptions.h"
-#include "hostReconData.h"
-#include "cuReconData.h"
+#include "ReconData.h"
 #include "ImageRecon.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
@@ -79,7 +78,7 @@ void displayData(const ComplexVector<T> &data, ImageSize size, const QString& ti
     imgWnd->show();
 }
 
-void loadReconData(const ReconParameters &params, basicReconData<float> *reconData)
+void loadReconData(const ReconParameters &params, ReconData<float> *reconData)
 {
     QDir dir(params.path, QString(params.trajFiles), QDir::Name);
     QStringList trajFileList = dir.entryList();
@@ -109,12 +108,12 @@ int main(int argc, char *argv[])
 
     // -------------- Load multi-channel data -----------------
     int size = params.samples * params.projections;
-    auto reconData = new hostReconData<float>(size);
+    auto reconData = new ReconData<float>(size);
     loadReconData(params, reconData);
 
     // GPU Testing
-    auto d_reconData = new cuReconData<float>(size);
-    loadReconData(params, d_reconData);
+    //auto d_reconData = new cuReconData<float>(size);
+    //loadReconData(params, d_reconData);
 
     omp_set_num_threads(std::min(reconData->channels(), omp_get_num_procs()));
 
@@ -183,7 +182,8 @@ int main(int argc, char *argv[])
     std::cout << "\nProgram total time excluding I/O: " << timer0.elapsed() / 1000.0 << " s" << std::endl;
 
     delete reconData;
-    delete d_reconData;
+    //delete d_reconData;
+
     // -------------------------- Save Data ---------------------------
     /*QFile file(params.result_filename);
     file.open(QIODevice::WriteOnly);

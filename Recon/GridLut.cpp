@@ -19,7 +19,7 @@ GridLut<T>::~GridLut()
 }
 
 // ----------CUDA Testing-----------------
-template<typename T>
+/*template<typename T>
 ImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
@@ -46,10 +46,10 @@ ImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
         std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }
     return img;
-}
+}*/
 
 template<typename T>
-ImageData<T> GridLut<T>::gridding(hostReconData<T> &reconData)
+ImageData<T> GridLut<T>::gridding(ReconData<T> &reconData)
 {
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
@@ -79,7 +79,7 @@ ImageData<T> GridLut<T>::gridding(hostReconData<T> &reconData)
 }
 
 template<typename T>
-ComplexVector<T> *GridLut<T>::griddingChannel(const hostReconData<T> &reconData, int channel)
+ComplexVector<T> *GridLut<T>::griddingChannel(const ReconData<T> &reconData, int channel)
 {
     const ComplexVector<T> *kData = reconData.getChannelData(channel);
     auto itDcf = reconData.getDcf()->cbegin();

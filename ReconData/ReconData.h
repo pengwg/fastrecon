@@ -1,29 +1,52 @@
 #ifndef RECONDATA_H
 #define RECONDATA_H
 
+#include <complex>
+#include <vector>
 #include <memory>
-#include "common.h"
-#include "basicReconData.h"
+#include <QStringList>
+#include <QFile>
 
-template<template<typename, typename> class C, typename T>
-class ReconData : public basicReconData<T>
+#include "common.h"
+
+template<typename T>
+struct Point {
+    T x[4];
+};
+
+template<typename T>
+class ReconData
 {
 public:
-    using typename basicReconData<T>::TrajVector;
+    typedef std::vector<Point<T>> TrajVector;
 
-    typedef typename LocalVectorType<C, T>::type LocalVector;
-    typedef typename LocalVectorType<C, Point<T>>::type LocalTrajVector;
-    typedef typename LocalComplexVectorType<C, T>::type LocalComplexVector;
+    ReconData(int size);
 
-    const LocalTrajVector *getTraj() const {
+    void addChannelData(ComplexVector<T> &data);
+    void setDcf(std::vector<T> &dcf);
+
+    void transformTraj(T translation, T scale);
+    void loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName);
+
+    std::pair<T, T> getCompBounds(int comp) const {
+        return m_bounds[comp];
+    }
+
+    int dataSize() const {
+        return m_size;
+    }
+
+    int rcDim() const { return m_dim; }
+
+    const TrajVector *getTraj() const {
         return m_traj.get();
     }
 
-    const LocalVector *getDcf() const {
+    const std::vector<T> *getDcf() const {
         return m_dcf.get();
     }
 
-    const LocalComplexVector *getChannelData(int channel) const {
+    const ComplexVector<T> *getChannelData(int channel) const {
         return m_kDataMultiChannel[channel].get();
     }
 
@@ -31,21 +54,15 @@ public:
     void clear();
 
 protected:
-    ReconData(int size);
-    virtual ~ReconData() {}
+    void storeTrajComponent(TrajVector &traj, const std::vector<T> &traj_c);
+    void transformLocalTraj(T translation, T scale);
 
-    using basicReconData<T>::m_bounds;
-    using basicReconData<T>::m_size;
+    int m_size;
+    int m_dim = 0;
+    std::vector<std::pair<T, T>> m_bounds;
 
-    virtual void addData(ComplexVector<T> &data) override final;
-    virtual void addTraj(TrajVector &traj) override final;
-    virtual void addDcf(std::vector<T> &dcf) override final;
-
-    template<typename V, typename LV>
-    LV *toLocalVector(V &v) const;
-
-    std::unique_ptr<LocalTrajVector> m_traj;
-    std::vector<std::unique_ptr<const LocalComplexVector>> m_kDataMultiChannel;
-    std::unique_ptr<LocalVector> m_dcf;
+    std::unique_ptr<TrajVector> m_traj;
+    std::vector<std::unique_ptr<const ComplexVector<T>>> m_kDataMultiChannel;
+    std::unique_ptr<std::vector<T>> m_dcf;
 };
 #endif // RECONDATA_H
