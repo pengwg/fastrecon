@@ -42,6 +42,7 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
     for (int i = 0; i < reconData.channels(); i++)
     {
         auto out = griddingChannel(reconData, i);
+        //delete out;
         img.addChannelImage(out);
         std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }

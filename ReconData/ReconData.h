@@ -51,7 +51,7 @@ public:
         return m_kDataMultiChannel[channel].get();
     }
 
-    int channels() const { return m_kDataMultiChannel.size(); }
+    virtual int channels() const { return m_kDataMultiChannel.size(); }
     virtual void clear();
 
 protected:

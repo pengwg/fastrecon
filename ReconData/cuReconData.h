@@ -18,6 +18,11 @@ public:
 
     const cuVector<T> *cuGetDcf();
 
+    virtual int channels() const override
+    {
+        return ReconData<T>::channels();// < 1 ? 0 : 1;
+    }
+
     virtual void clear() override;
 
     template<typename T1>
