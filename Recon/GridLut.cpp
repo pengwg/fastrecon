@@ -93,7 +93,8 @@ ComplexVector<T> *GridLut<T>::griddingChannel(const ReconData<T> &reconData, int
 
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};
-    ComplexVector<T> *out = new ComplexVector<T>(powf(m_gridSize, m_dim));
+    //ComplexVector<T> *out = new ComplexVector<T>(powf(m_gridSize, m_dim));
+    std::vector<std::complex<T>> out(powf(m_gridSize, m_dim));
 
     for (const auto &sample : (*kData))
     {
@@ -111,7 +112,7 @@ ComplexVector<T> *GridLut<T>::griddingChannel(const ReconData<T> &reconData, int
         auto data = (*itDcf++) * sample;
 
         int i = start[2] * m_gridSize * m_gridSize + start[1] * m_gridSize + start[0];
-        auto itOut = out->begin() + i;
+        auto itOut = out.begin() + i;
 
         // Step size for linear addressing
         int di = m_gridSize - (end[0] - start[0]) - 1;
@@ -145,7 +146,7 @@ ComplexVector<T> *GridLut<T>::griddingChannel(const ReconData<T> &reconData, int
             itOut += di2;
         }
     }
-    return out;
+    return new ComplexVector<T>(out);
 }
 
 template class GridLut<float>;
