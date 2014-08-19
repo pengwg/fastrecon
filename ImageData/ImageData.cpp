@@ -146,7 +146,7 @@ void ImageData<T>::fftShift2(ComplexVector<T> *data)
             int i = y * m_size.x + x;
             int j = y1 * m_size.x + x1;
 
-            std::swap(data->at(i), data->at(j));
+            std::swap((*data)[i], (*data)[j]);
         }
     }
 }
@@ -175,7 +175,7 @@ void ImageData<T>::fftShift3(ComplexVector<T> *data)
                 int i = z * m_size.x * m_size.y + y * m_size.x + x;
                 int j = z1 * m_size.x * m_size.y + y1 * m_size.x + x1;
 
-                std::swap(data->at(i), data->at(j));
+                std::swap((*data)[i], (*data)[j]);
             }
         }
     }

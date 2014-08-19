@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
     std::cout << "\nProgram total time excluding I/O: " << timer0.elapsed() / 1000.0 << " s" << std::endl;
 
     delete reconData;
-    //delete d_reconData;
+    delete cu_reconData;
 
     // -------------------------- Save Data ---------------------------
     /*QFile file(params.result_filename);

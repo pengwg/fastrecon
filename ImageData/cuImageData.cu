@@ -20,16 +20,15 @@ void cuImageData<T>::addChannelImage(cuComplexVector<T> *image)
     if (image == nullptr) return;
 
     m_cu_data.reset(image);
+    auto im = new hostVector<typename cuComplexVector<T>::value_type>(*image);
 
-    auto im = new ComplexVector<T>(image->size());
-    auto h_im = reinterpret_cast<std::vector<typename cuComplexVector<T>::value_type> *>(im);
-    thrust::copy(image->begin(), image->end(), h_im->begin());
-
+    //auto h_im = reinterpret_cast<ComplexVector<T> *>(im);
+    //thrust::copy(image->begin(), image->end(), h_im->begin());
     //auto image_ptr = thrust::raw_pointer_cast(image->data());
     //cudaMemcpy(im->data(), image_ptr, im->size() * sizeof(typename ComplexVector<T>::value_type), cudaMemcpyDeviceToHost);
     //thrust::host_vector<typename cuComplexVector<T>::value_type> h_im(*image);
 
-    addChannelImage(im);
+    addChannelImage(reinterpret_cast<ComplexVector<T> *>(im));
     m_channel_in_device = this->m_channels;
 }
 

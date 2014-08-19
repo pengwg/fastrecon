@@ -19,7 +19,7 @@ const cuComplexVector<T> *cuReconData<T>::cuGetChannelData(int channel)
 
     if (channel < this->channels())
     {
-        typedef std::vector<typename cuComplexVector<T>::value_type> interim_type;
+        typedef hostVector<typename cuComplexVector<T>::value_type> interim_type;
         auto ptr = reinterpret_cast<const interim_type *>(this->getChannelData(channel));
         auto cu_kData = new cuComplexVector<T>(*ptr);
         m_cu_kData.reset(cu_kData);

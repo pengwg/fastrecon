@@ -7,7 +7,10 @@
 #include <thrust/device_vector.h>
 
 template<typename T>
-using ComplexVector = std::vector<std::complex<T>>;
+using hostVector = thrust::host_vector<T>;
+
+template<typename T>
+using ComplexVector = hostVector<std::complex<T>>;
 
 template<typename T>
 using cuVector = typename thrust::device_vector<T>;
