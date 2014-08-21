@@ -27,9 +27,9 @@ struct compute_num_cells_per_sample
 };
 
 template<typename T> __global__
-void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples_first, int *tuples_last, int reconSize, T half_W, int num_samples)
+void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples_first, unsigned *tuples_last, int reconSize, T half_W, size_t num_samples)
 {
-    unsigned sample_idx = blockIdx.x * blockDim.x + threadIdx.x;
+    size_t sample_idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (sample_idx >= num_samples)
         return;
 
@@ -64,11 +64,11 @@ void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples
 
 }
 
-void savePreprocess(const thrust::host_vector<int> *tuples_last, const thrust::host_vector<unsigned> *bucket_begin, const thrust::host_vector<unsigned> *bucket_end)
+void savePreprocess(const thrust::host_vector<unsigned> *tuples_last, const thrust::host_vector<unsigned> *bucket_begin, const thrust::host_vector<unsigned> *bucket_end)
 {
     QFile file("tuples_last.dat");
     file.open(QIODevice::WriteOnly);
-    file.write((char *)thrust::raw_pointer_cast(tuples_last->data()), tuples_last->size() * sizeof(int));
+    file.write((char *)thrust::raw_pointer_cast(tuples_last->data()), tuples_last->size() * sizeof(unsigned));
     file.close();
 
     file.setFileName("bucket_begin.dat");
@@ -82,16 +82,16 @@ void savePreprocess(const thrust::host_vector<int> *tuples_last, const thrust::h
     file.close();
 }
 
-bool loadPreprocess(thrust::host_vector<int> *tuples_last, thrust::host_vector<unsigned> *bucket_begin, thrust::host_vector<unsigned> *bucket_end)
+bool loadPreprocess(thrust::host_vector<unsigned> *tuples_last, thrust::host_vector<unsigned> *bucket_begin, thrust::host_vector<unsigned> *bucket_end)
 {
     QFile file("tuples_last.dat");
     if (!file.exists())
         return false;
-    auto length = file.size() / sizeof(int);
+    auto length = file.size() / sizeof(unsigned);
     tuples_last->resize(length);
 
     file.open(QIODevice::ReadOnly);
-    file.read((char *)thrust::raw_pointer_cast(tuples_last->data()), length * sizeof(int));
+    file.read((char *)thrust::raw_pointer_cast(tuples_last->data()), length * sizeof(unsigned));
     file.close();
 
     file.setFileName("bucket_begin.dat");
@@ -120,7 +120,7 @@ bool loadPreprocess(thrust::host_vector<int> *tuples_last, thrust::host_vector<u
 template<typename T>
 void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
 {
-    auto tuples_last_h = new thrust::host_vector<int>;
+    auto tuples_last_h = new thrust::host_vector<unsigned>;
     auto bucket_begin_h = new thrust::host_vector<unsigned>;
     auto bucket_end_h   = new thrust::host_vector<unsigned>;
 
@@ -161,14 +161,16 @@ void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
         tuples_last_h->clear();
 
         auto tuples_first = new thrust::device_vector<int>;
-        auto tuples_last = new thrust::device_vector<int>;
+        auto tuples_last = new thrust::device_vector<unsigned>;
 
-        unsigned chunk_size = 100000;
+        size_t chunk_size = 100000;
+        size_t blockSize = 256;
+        size_t gridSize = (size_t)ceil((float)chunk_size / blockSize);
 
-        unsigned skip = 0;
+        size_t skip = 0;
         while (skip < traj.size())
         {
-            unsigned num_of_samples_compute = min(chunk_size, unsigned(traj.size()) - skip);
+            size_t num_of_samples_compute = std::min(chunk_size, traj.size() - skip);
             unsigned num_of_pairs = (*tuple_index)[skip + num_of_samples_compute] - (*tuple_index)[skip];
             std::cout << "num_of_pairs compute: " << num_of_pairs << std::endl;
             tuples_first->resize(num_of_pairs);
@@ -177,10 +179,8 @@ void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
             const Point<T> *traj_ptr = thrust::raw_pointer_cast(traj.data()) + skip;
             unsigned *tuple_index_ptr = thrust::raw_pointer_cast(tuple_index->data()) + skip;
             int *tuples_first_ptr = thrust::raw_pointer_cast(tuples_first->data()) - (*tuple_index)[skip];
-            int *tuples_last_ptr = thrust::raw_pointer_cast(tuples_last->data()) - (*tuple_index)[skip];
+            unsigned *tuples_last_ptr = thrust::raw_pointer_cast(tuples_last->data()) - (*tuple_index)[skip];
 
-            int blockSize = 256;
-            int gridSize = (int)ceil((double)chunk_size / blockSize);
             write_pairs_kernel<T><<<gridSize, blockSize>>>(traj_ptr, tuple_index_ptr, tuples_first_ptr, tuples_last_ptr,
                                                            m_gridSize, half_W, num_of_samples_compute);
 
@@ -203,7 +203,7 @@ void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
         bucket_end_h->resize(powf(m_gridSize, m_dim));
 
         std::cout << "Generate buckets... " << std::flush;
-        thrust::counting_iterator<unsigned int> search_begin(0);
+        thrust::counting_iterator<unsigned> search_begin(0);
         thrust::lower_bound(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), search_begin,
                             search_begin + (int)powf(m_gridSize, m_dim), bucket_begin_h->begin());
         thrust::upper_bound(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), search_begin,
@@ -241,9 +241,6 @@ cuComplexVector<T> *GridLut<T>::griddingChannel(cuReconData<T> &reconData, int c
 {
     const cuComplexVector<T> *kData = reconData.cuGetChannelData(channel);
     auto out = new cuComplexVector<T>(powf(m_gridSize, m_dim));
-
-    int blockSize = 256;
-    int gridSize = (int)ceil((double)out->size() / blockSize);
 
     auto d_kData = thrust::raw_pointer_cast(kData->data());
     auto d_out = thrust::raw_pointer_cast(out->data());
