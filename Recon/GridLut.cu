@@ -27,9 +27,11 @@ struct compute_num_cells_per_sample
 };
 
 template<typename T> __global__
-void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples_first, unsigned *tuples_last, int reconSize, T half_W, size_t num_samples)
+void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples_first, unsigned *tuples_last,
+                        int reconSize, T half_W, size_t num_samples, size_t skip)
 {
     size_t sample_idx = blockIdx.x * blockDim.x + threadIdx.x;
+
     if (sample_idx >= num_samples)
         return;
 
@@ -46,7 +48,7 @@ void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples
     int counter = 0;
 
     //if (sample_idx < 10)
-        //printf("sample: %d, offset: %d, lb[0]: %d, ub[0]: %d\n", sample_idx, write_offset, lb[2], ub[2]);
+        //printf("sample: %lu, offset: %u, lb: %d, ub: %d\n", sample_idx, write_offset, lb[2], ub[2]);
 
     for (int z = lb[2]; z <= ub[2]; ++z)
     {
@@ -56,12 +58,11 @@ void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples
             {
                 int matrix_index = x + y * reconSize + z * reconSize * reconSize;
                 tuples_first[write_offset + counter] = matrix_index;
-                tuples_last[write_offset + counter] = sample_idx;
+                tuples_last[write_offset + counter] = sample_idx + skip;
                 ++counter;
             }
         }
     }
-
 }
 
 void savePreprocess(const thrust::host_vector<unsigned> *tuples_last, const thrust::host_vector<unsigned> *bucket_begin, const thrust::host_vector<unsigned> *bucket_end)
@@ -182,7 +183,7 @@ void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
             unsigned *tuples_last_ptr = thrust::raw_pointer_cast(tuples_last->data()) - (*tuple_index)[skip];
 
             write_pairs_kernel<T><<<gridSize, blockSize>>>(traj_ptr, tuple_index_ptr, tuples_first_ptr, tuples_last_ptr,
-                                                           m_gridSize, half_W, num_of_samples_compute);
+                                                           m_gridSize, half_W, num_of_samples_compute, skip);
 
             thrust::sort_by_key(tuples_first->begin(), tuples_first->end(), tuples_last->begin());
 
@@ -203,7 +204,7 @@ void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
         bucket_end_h->resize(powf(m_gridSize, m_dim));
 
         std::cout << "Generate buckets... " << std::flush;
-        thrust::counting_iterator<unsigned> search_begin(0);
+        thrust::counting_iterator<int> search_begin(0);
         thrust::lower_bound(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), search_begin,
                             search_begin + (int)powf(m_gridSize, m_dim), bucket_begin_h->begin());
         thrust::upper_bound(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), search_begin,
