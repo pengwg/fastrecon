@@ -7,6 +7,12 @@
 #include "ImageData.h"
 #include "cuImageData.h"
 
+typedef struct
+{
+    unsigned index;
+    float delta;
+} SampleTuple;
+
 template<typename T>
 class GridLut
 {
@@ -30,7 +36,7 @@ protected:
     std::vector<int> m_start[3];
     std::vector<int> m_end[3];
 
-    std::unique_ptr<thrust::host_vector<unsigned>> m_tuples_last;
+    std::unique_ptr<thrust::host_vector<SampleTuple>> m_tuples_last;
     std::unique_ptr<thrust::device_vector<unsigned>> m_cu_bucket_begin;
     std::unique_ptr<thrust::device_vector<unsigned>> m_cu_bucket_end;
 };

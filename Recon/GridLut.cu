@@ -28,7 +28,7 @@ struct compute_num_cells_per_sample
 };
 
 template<typename T> __global__
-void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples_first, unsigned *tuples_last,
+void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples_first, SampleTuple *tuples_last,
                         int reconSize, T half_W, size_t num_samples, size_t skip)
 {
     size_t sample_idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -53,24 +53,29 @@ void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples
 
     for (int z = lb[2]; z <= ub[2]; ++z)
     {
+        auto dz = z - sample.x[2];
         for (int y = lb[1]; y <= ub[1]; ++y)
         {
+            auto dy = y - sample.x[1];
             for (int x = lb[0]; x <= ub[0]; ++x)
             {
                 int matrix_index = x + y * reconSize + z * reconSize * reconSize;
                 tuples_first[write_offset + counter] = matrix_index;
-                tuples_last[write_offset + counter] = sample_idx + skip;
+                tuples_last[write_offset + counter].index = sample_idx + skip;
+
+                auto dx = x - sample.x[0];
+                tuples_last[write_offset + counter].delta = sqrtf(dx * dx + dy * dy + dz * dz);
                 ++counter;
             }
         }
     }
 }
 
-void savePreprocess(const thrust::host_vector<int> *tuples_first, const thrust::host_vector<unsigned> *tuples_last, const thrust::host_vector<unsigned> *bucket_begin, const thrust::host_vector<unsigned> *bucket_end)
+void savePreprocess(const thrust::host_vector<int> *tuples_first, const thrust::host_vector<SampleTuple> *tuples_last, const thrust::host_vector<unsigned> *bucket_begin, const thrust::host_vector<unsigned> *bucket_end)
 {
     QFile file("tuples_last.dat");
     file.open(QIODevice::WriteOnly);
-    file.write((char *)thrust::raw_pointer_cast(tuples_last->data()), tuples_last->size() * sizeof(unsigned));
+    file.write((char *)thrust::raw_pointer_cast(tuples_last->data()), tuples_last->size() * sizeof(SampleTuple));
     file.close();
 
     file.setFileName("tuples_first.dat");
@@ -89,12 +94,12 @@ void savePreprocess(const thrust::host_vector<int> *tuples_first, const thrust::
     file.close();
 }
 
-bool loadPreprocess(thrust::host_vector<int> *tuples_first, thrust::host_vector<unsigned> *tuples_last, thrust::host_vector<unsigned> *bucket_begin, thrust::host_vector<unsigned> *bucket_end)
+bool loadPreprocess(thrust::host_vector<int> *tuples_first, thrust::host_vector<SampleTuple> *tuples_last, thrust::host_vector<unsigned> *bucket_begin, thrust::host_vector<unsigned> *bucket_end)
 {
     QFile file("tuples_last.dat");
     if (!file.exists())
         return false;
-    auto length = file.size() / sizeof(unsigned);
+    auto length = file.size() / sizeof(SampleTuple);
     tuples_last->resize(length);
 
     file.open(QIODevice::ReadOnly);
@@ -138,7 +143,7 @@ template<typename T>
 void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
 {
     auto tuples_first_h = new thrust::host_vector<int>;
-    auto tuples_last_h = new thrust::host_vector<unsigned>;
+    auto tuples_last_h = new thrust::host_vector<SampleTuple>;
     auto bucket_begin_h = new thrust::host_vector<unsigned>;
     auto bucket_end_h   = new thrust::host_vector<unsigned>;
 
@@ -178,7 +183,7 @@ void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
         tuples_last_h->clear();
 
         auto tuples_first = new thrust::device_vector<int>;
-        auto tuples_last = new thrust::device_vector<unsigned>;
+        auto tuples_last = new thrust::device_vector<SampleTuple>;
 
         size_t chunk_size = 100000;
         size_t blockSize = 256;
@@ -196,7 +201,7 @@ void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
             const Point<T> *traj_ptr = thrust::raw_pointer_cast(traj.data()) + skip;
             unsigned *tuple_index_ptr = thrust::raw_pointer_cast(tuple_index->data()) + skip;
             int *tuples_first_ptr = thrust::raw_pointer_cast(tuples_first->data()) - (*tuple_index)[skip];
-            unsigned *tuples_last_ptr = thrust::raw_pointer_cast(tuples_last->data()) - (*tuple_index)[skip];
+            SampleTuple *tuples_last_ptr = thrust::raw_pointer_cast(tuples_last->data()) - (*tuple_index)[skip];
 
             write_pairs_kernel<T><<<gridSize, blockSize>>>(traj_ptr, tuple_index_ptr, tuples_first_ptr, tuples_last_ptr,
                                                            m_gridSize, half_W, num_of_samples_compute, skip);
@@ -257,13 +262,13 @@ __constant__ float d_kernel[512];
 
 template<typename T> __global__
 void gridding_kernel(const cu_complex<T> *kData, cu_complex<T> *out,
-                     const unsigned *bucket_begin, const unsigned *bucket_end, const unsigned *tuples_last,
+                     const unsigned *bucket_begin, const unsigned *bucket_end, const SampleTuple *tuples_last,
                      float half_W, int gridSize, size_t num_of_data_compute)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     const int kernel_length = sizeof(d_kernel) / sizeof(d_kernel[0]);
 
-    int ki = (int)(dk / half_W * (kernel_length - 1));
+    //int ki = (int)(dk / half_W * (kernel_length - 1));
 }
 
 template<typename T>
@@ -282,7 +287,7 @@ cuComplexVector<T> *GridLut<T>::griddingChannel(cuReconData<T> &reconData, int c
     assert(kernel->size() == sizeof(d_kernel) / sizeof(d_kernel[0]));
     cudaMemcpyToSymbol(d_kernel, kernel->data(), kernel->size() * sizeof(float));
 
-    size_t chunk_size = 20000;
+    size_t chunk_size = 10000;
     size_t blockSize = 256;
     size_t gridSize = (size_t)ceil((float)chunk_size / blockSize);
 
@@ -304,7 +309,7 @@ cuComplexVector<T> *GridLut<T>::griddingChannel(cuReconData<T> &reconData, int c
         if (tuples_it_first < tuples_it_last)
         {
             //std::cout << "Chunk: " << skip << std::endl;
-            thrust::device_vector<unsigned> tuples_last(tuples_it_first, tuples_it_last);
+            thrust::device_vector<SampleTuple> tuples_last(tuples_it_first, tuples_it_last);
             auto d_tuples_last = thrust::raw_pointer_cast(tuples_last.data());
 
             gridding_kernel<T><<<gridSize, blockSize>>>(d_kData, d_out + skip, d_bucket_begin + skip, d_bucket_end + skip, d_tuples_last,
