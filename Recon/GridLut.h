@@ -9,7 +9,7 @@
 
 typedef struct
 {
-    unsigned index;
+    unsigned sample_idx;
     float delta;
 } SampleTuple;
 
