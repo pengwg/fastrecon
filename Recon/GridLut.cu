@@ -261,11 +261,12 @@ using cu_complex = typename cuComplexVector<T>::value_type;
 __constant__ float d_kernel[512];
 
 template<typename T> __global__
-void gridding_kernel(const cu_complex<T> *kData, cu_complex<T> *out,
+void gridding_kernel(const cu_complex<T> *kData, const T *dcf, cu_complex<T> *out,
                      const unsigned *bucket_begin, const unsigned *bucket_end, const SampleTuple *tuples_last,
                      float half_W, size_t skip, size_t num_of_data_compute)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
+
     if (index >= num_of_data_compute)
         return;
 
@@ -280,8 +281,8 @@ void gridding_kernel(const cu_complex<T> *kData, cu_complex<T> *out,
         if (delta < half_W)
         {
             int ki = (int)(delta / half_W * (kernel_length - 1));
-            data.x += kData[sample_idx].x * d_kernel[ki];
-            data.y += kData[sample_idx].y * d_kernel[ki];
+            data.x += kData[sample_idx].x * dcf[sample_idx] * d_kernel[ki];
+            data.y += kData[sample_idx].y * dcf[sample_idx] * d_kernel[ki];
         }
     }
 
@@ -292,10 +293,13 @@ template<typename T>
 cuComplexVector<T> *GridLut<T>::griddingChannel(cuReconData<T> &reconData, int channel)
 {
     const cuComplexVector<T> *kData = reconData.cuGetChannelData(channel);
+    const cuVector<T> *dcf = reconData.cuGetDcf();
+
     auto out = new cuComplexVector<T>((int)powf(m_gridSize, m_dim));
 
     auto d_kData = thrust::raw_pointer_cast(kData->data());
     auto d_out = thrust::raw_pointer_cast(out->data());
+    auto d_dcf = thrust::raw_pointer_cast(dcf->data());
 
     auto d_bucket_begin = thrust::raw_pointer_cast(m_cu_bucket_begin->data());
     auto d_bucket_end = thrust::raw_pointer_cast(m_cu_bucket_end->data());
@@ -329,8 +333,9 @@ cuComplexVector<T> *GridLut<T>::griddingChannel(cuReconData<T> &reconData, int c
             thrust::device_vector<SampleTuple> tuples_last(tuples_it_first, tuples_it_last);
             auto d_tuples_last = thrust::raw_pointer_cast(tuples_last.data()) - *(bucket_begin_it + skip);
 
-            gridding_kernel<T><<<gridSize, blockSize>>>(d_kData, d_out + skip, d_bucket_begin + skip, d_bucket_end + skip, d_tuples_last,
+            gridding_kernel<T><<<gridSize, blockSize>>>(d_kData, d_dcf, d_out + skip, d_bucket_begin + skip, d_bucket_end + skip, d_tuples_last,
                                                         m_kernel.getKernelWidth() / 2.0, skip, num_of_data_compute);
+            cudaDeviceSynchronize();
         }
         skip += num_of_data_compute;
     }

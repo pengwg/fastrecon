@@ -31,9 +31,7 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
 
     reconData.transformTraj(tr, scale);
 
-    cuPlan(*reconData.getTraj());
-
-    cudaDeviceSynchronize();
+    cuPlan(*reconData.cuGetTraj());
 
     std::cout << "GPU preprocess " << " | " << timer.restart() << " ms" << std::endl;
 
@@ -42,7 +40,6 @@ cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
     for (int i = 0; i < reconData.channels(); i++)
     {
         auto out = griddingChannel(reconData, i);
-        //delete out;
         img.addChannelImage(out);
         std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }

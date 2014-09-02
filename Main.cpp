@@ -147,7 +147,6 @@ int main(int argc, char *argv[])
     FFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
 
     timer.restart();
-    // fft.fftShift(data);
     fft.excute(imgData);
     imgData.fftShift();
     std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
