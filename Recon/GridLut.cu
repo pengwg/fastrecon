@@ -179,7 +179,7 @@ void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
     {
         std::cout << "Preprocesse data for CUDA..." << std::endl;
 
-        auto tuples_first_h = new thrust::host_vector<int>;
+        tuples_first_h->clear();
         tuples_last_h->clear();
 
         auto tuples_first = new thrust::device_vector<int>;
@@ -263,14 +263,14 @@ __constant__ float d_kernel[512];
 template<typename T> __global__
 void gridding_kernel(const cu_complex<T> *kData, const T *dcf, cu_complex<T> *out,
                      const unsigned *bucket_begin, const unsigned *bucket_end, const SampleTuple *tuples_last,
-                     float half_W, size_t skip, size_t num_of_data_compute)
+                     float half_W, size_t num_of_data_compute)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (index >= num_of_data_compute)
         return;
 
-    const int kernel_length = sizeof(d_kernel) / sizeof(d_kernel[0]);
+    constexpr int kernel_length = sizeof(d_kernel) / sizeof(d_kernel[0]);
 
     cu_complex<T> data {0, 0};
     for (unsigned i = bucket_begin[index]; i < bucket_end[index]; ++i)
@@ -320,21 +320,17 @@ cuComplexVector<T> *GridLut<T>::griddingChannel(cuReconData<T> &reconData, int c
     while (skip < out->size())
     {
         size_t num_of_data_compute = std::min(chunk_size, out->size() - skip);
-        //std::cout << "num_of_data_compute: "  << num_of_data_compute << " skip: " << skip;
 
         auto tuples_it_first = tuples_it + *(bucket_begin_it + skip);
         auto tuples_it_last = tuples_it + *(bucket_end_it + skip + num_of_data_compute - 1);
 
-        //std::cout << " From " << *(bucket_begin_it + skip) << " to " << *(bucket_end_it + skip + num_of_data_compute - 1) << std::endl;
-
         if (tuples_it_first < tuples_it_last)
         {
-            //std::cout << "Skip: " << skip << " Compute: " << num_of_data_compute << std::endl;
             thrust::device_vector<SampleTuple> tuples_last(tuples_it_first, tuples_it_last);
             auto d_tuples_last = thrust::raw_pointer_cast(tuples_last.data()) - *(bucket_begin_it + skip);
 
             gridding_kernel<T><<<gridSize, blockSize>>>(d_kData, d_dcf, d_out + skip, d_bucket_begin + skip, d_bucket_end + skip, d_tuples_last,
-                                                        m_kernel.getKernelWidth() / 2.0, skip, num_of_data_compute);
+                                                        m_kernel.getKernelWidth() / 2.0, num_of_data_compute);
             cudaDeviceSynchronize();
         }
         skip += num_of_data_compute;
