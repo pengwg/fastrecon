@@ -128,7 +128,6 @@ int main(int argc, char *argv[])
     ConvKernel kernel(kWidth, overGridFactor, 512);
 
     // -------------- Gridding -------------------------------
-    std::cout << "\nCPU gridding... " << std::endl;
     int gridSize = params.rcxres * overGridFactor;
     GridLut<float> gridCpu(reconData->rcDim(), gridSize, kernel);
     cuGridLut<float> gridGpu(reconData->rcDim(), gridSize, kernel);

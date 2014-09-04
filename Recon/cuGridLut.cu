@@ -16,6 +16,7 @@ cuGridLut<T>::cuGridLut(int dim, int gridSize, ConvKernel &kernel)
 template<typename T>
 cuImageData<T> cuGridLut<T>::gridding(cuReconData<T> &reconData)
 {
+    std::cout << "\nGPU gridding... " << std::endl;
     QElapsedTimer timer;
     timer.start();
 
