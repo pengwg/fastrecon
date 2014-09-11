@@ -1,10 +1,44 @@
+#include <QElapsedTimer>
 #include <thrust/transform.h>
 #include <thrust/sort.h>
 #include <thrust/binary_search.h>
 #include <thrust/system/omp/execution_policy.h>
 #include <cassert>
 
-#include "GridLut.h"
+#include "cuGridLut.h"
+
+template<typename T>
+cuGridLut<T>::cuGridLut(int dim, int gridSize, ConvKernel &kernel)
+    : GridLut<T>(dim, gridSize, kernel)
+{
+}
+
+template<typename T>
+cuImageData<T> cuGridLut<T>::gridding(cuReconData<T> &reconData)
+{
+    QElapsedTimer timer;
+    timer.start();
+
+    auto bounds = reconData.getCompBounds(0);
+    auto tr = -bounds.first;
+    auto scale = (this->m_gridSize - 1) / (bounds.second - bounds.first);
+
+    reconData.transformTraj(tr, scale);
+
+    plan(*reconData.cuGetTraj());
+
+    std::cout << "GPU preprocess " << " | " << timer.restart() << " ms" << std::endl;
+
+    cuImageData<T> img(reconData.rcDim(), {this->m_gridSize, this->m_gridSize, this->m_gridSize});
+
+    for (int i = 0; i < reconData.channels(); i++)
+    {
+        auto out = griddingChannel(reconData, i);
+        img.addChannelImage(out);
+        std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
+    }
+    return img;
+}
 
 template<typename T>
 struct compute_num_cells_per_sample
@@ -140,17 +174,17 @@ bool loadPreprocess(thrust::host_vector<int> *tuples_first, thrust::host_vector<
 }
 
 template<typename T>
-void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
+void cuGridLut<T>::plan(const cuVector<Point<T>> &traj)
 {
     auto tuples_first_h = new thrust::host_vector<int>;
     auto tuples_last_h = new thrust::host_vector<SampleTuple>;
     auto bucket_begin_h = new thrust::host_vector<unsigned>;
     auto bucket_end_h   = new thrust::host_vector<unsigned>;
 
-    T half_W = m_kernel.getKernelWidth() / 2.0;
+    T half_W = this->m_kernel.getKernelWidth() / 2.0;
 
     auto cells_per_sample = new thrust::device_vector<unsigned> (traj.size());
-    thrust::transform(traj.begin(), traj.end(), cells_per_sample->begin(), compute_num_cells_per_sample<T>(half_W, m_dim));
+    thrust::transform(traj.begin(), traj.end(), cells_per_sample->begin(), compute_num_cells_per_sample<T>(half_W, this->m_dim));
 
     auto tuple_index = new thrust::device_vector<unsigned> (traj.size());
     thrust::inclusive_scan(cells_per_sample->begin(), cells_per_sample->end(), tuple_index->begin(), thrust::plus<unsigned> ());
@@ -164,8 +198,8 @@ void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
     {
         std::cout << "Loaded preprocessed data from disk." << std::endl;
 
-        if (tuples_last_h->size() != num_of_pairs_total || bucket_begin_h->size() != powf(m_gridSize, m_dim) ||
-                bucket_end_h->size() != powf(m_gridSize, m_dim))
+        if (tuples_last_h->size() != num_of_pairs_total || bucket_begin_h->size() != powf(this->m_gridSize, this->m_dim) ||
+                bucket_end_h->size() != powf(this->m_gridSize, this->m_dim))
         {
             std::cout << "Wrong size, recompute data... " << std::endl;
         }
@@ -204,7 +238,7 @@ void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
             SampleTuple *tuples_last_ptr = thrust::raw_pointer_cast(tuples_last->data()) - (*tuple_index)[skip];
 
             write_pairs_kernel<T><<<gridSize, blockSize>>>(traj_ptr, tuple_index_ptr, tuples_first_ptr, tuples_last_ptr,
-                                                           m_gridSize, half_W, num_of_samples_compute, skip);
+                                                           this->m_gridSize, half_W, num_of_samples_compute, skip);
 
             thrust::sort_by_key(tuples_first->begin(), tuples_first->end(), tuples_last->begin());
 
@@ -221,15 +255,15 @@ void GridLut<T>::cuPlan(const cuVector<Point<T>> &traj)
         std::cout << "Sort tuples... " << std::flush;
         thrust::sort_by_key(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), tuples_last_h->begin());
 
-        bucket_begin_h->resize(powf(m_gridSize, m_dim));
-        bucket_end_h->resize(powf(m_gridSize, m_dim));
+        bucket_begin_h->resize(powf(this->m_gridSize, this->m_dim));
+        bucket_end_h->resize(powf(this->m_gridSize, this->m_dim));
 
         std::cout << "Generate buckets... " << std::flush;
         thrust::counting_iterator<int> search_begin(0);
         thrust::lower_bound(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), search_begin,
-                            search_begin + (int)powf(m_gridSize, m_dim), bucket_begin_h->begin());
+                            search_begin + (int)powf(this->m_gridSize, this->m_dim), bucket_begin_h->begin());
         thrust::upper_bound(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), search_begin,
-                            search_begin + (int)powf(m_gridSize, m_dim), bucket_end_h->begin());
+                            search_begin + (int)powf(this->m_gridSize, this->m_dim), bucket_end_h->begin());
 
         std::cout << "Save data to disk... " << std::flush;
         savePreprocess(tuples_first_h, tuples_last_h, bucket_begin_h, bucket_end_h);
@@ -290,12 +324,12 @@ void gridding_kernel(const cu_complex<T> *kData, const T *dcf, cu_complex<T> *ou
 }
 
 template<typename T>
-cuComplexVector<T> *GridLut<T>::griddingChannel(cuReconData<T> &reconData, int channel)
+cuComplexVector<T> *cuGridLut<T>::griddingChannel(cuReconData<T> &reconData, int channel)
 {
     const cuComplexVector<T> *kData = reconData.cuGetChannelData(channel);
     const cuVector<T> *dcf = reconData.cuGetDcf();
 
-    auto out = new cuComplexVector<T>((int)powf(m_gridSize, m_dim));
+    auto out = new cuComplexVector<T>((int)powf(this->m_gridSize, this->m_dim));
 
     auto d_kData = thrust::raw_pointer_cast(kData->data());
     auto d_out = thrust::raw_pointer_cast(out->data());
@@ -304,7 +338,7 @@ cuComplexVector<T> *GridLut<T>::griddingChannel(cuReconData<T> &reconData, int c
     auto d_bucket_begin = thrust::raw_pointer_cast(m_cu_bucket_begin->data());
     auto d_bucket_end = thrust::raw_pointer_cast(m_cu_bucket_end->data());
 
-    auto kernel = m_kernel.getKernelData();
+    auto kernel = this->m_kernel.getKernelData();
     assert(kernel->size() == sizeof(d_kernel) / sizeof(d_kernel[0]));
     cudaMemcpyToSymbol(d_kernel, kernel->data(), kernel->size() * sizeof(float));
 
@@ -330,7 +364,7 @@ cuComplexVector<T> *GridLut<T>::griddingChannel(cuReconData<T> &reconData, int c
             auto d_tuples_last = thrust::raw_pointer_cast(tuples_last.data()) - *(bucket_begin_it + skip);
 
             gridding_kernel<T><<<gridSize, blockSize>>>(d_kData, d_dcf, d_out + skip, d_bucket_begin + skip, d_bucket_end + skip, d_tuples_last,
-                                                        m_kernel.getKernelWidth() / 2.0, num_of_data_compute);
+                                                        this->m_kernel.getKernelWidth() / 2.0, num_of_data_compute);
             cudaDeviceSynchronize();
         }
         skip += num_of_data_compute;
@@ -338,5 +372,4 @@ cuComplexVector<T> *GridLut<T>::griddingChannel(cuReconData<T> &reconData, int c
     return out;
 }
 
-template void GridLut<float>::cuPlan(const thrust::device_vector<Point<float>> &traj);
-template cuComplexVector<float> *GridLut<float>::griddingChannel(cuReconData<float> &reconData, int channel);
+template class cuGridLut<float>;

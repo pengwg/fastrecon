@@ -27,7 +27,7 @@ add_subdirectory(Recon)
 set(CUDA_SRC_FILES
     ReconData/cuReconData.cu
     ImageData/cuImageData.cu
-    Recon/GridLut.cu
+    Recon/cuGridLut.cu
 )
 
 cuda_include_directories(${Qt5Core_INCLUDE_DIRS})

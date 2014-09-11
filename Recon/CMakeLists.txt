@@ -7,6 +7,8 @@ set(SRC_FILES
     FFT.cpp
     ImageRecon.cpp
     ConvKernel.cpp
+
+    cuGridLut.h
 )
 
 include_directories(

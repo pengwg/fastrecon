@@ -18,34 +18,6 @@ GridLut<T>::~GridLut()
 
 }
 
-// ----------CUDA Testing-----------------
-template<typename T>
-cuImageData<T> GridLut<T>::gridding(cuReconData<T> &reconData)
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    auto bounds = reconData.getCompBounds(0);
-    auto tr = -bounds.first;
-    auto scale = (m_gridSize - 1) / (bounds.second - bounds.first);
-
-    reconData.transformTraj(tr, scale);
-
-    cuPlan(*reconData.cuGetTraj());
-
-    std::cout << "GPU preprocess " << " | " << timer.restart() << " ms" << std::endl;
-
-    cuImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
-
-    for (int i = 0; i < reconData.channels(); i++)
-    {
-        auto out = griddingChannel(reconData, i);
-        img.addChannelImage(out);
-        std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
-    }
-    return img;
-}
-
 template<typename T>
 ImageData<T> GridLut<T>::gridding(ReconData<T> &reconData)
 {

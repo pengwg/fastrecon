@@ -15,6 +15,7 @@
 #include "ImageRecon.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
+#include "cuGridLut.h"
 #include "FFT.h"
 
 #ifdef CUDA_CAPABLE
@@ -130,11 +131,12 @@ int main(int argc, char *argv[])
     std::cout << "\nCPU gridding... " << std::endl;
     int gridSize = params.rcxres * overGridFactor;
     GridLut<float> gridCpu(reconData->rcDim(), gridSize, kernel);
+    cuGridLut<float> gridGpu(reconData->rcDim(), gridSize, kernel);
 
     timer.start();
     //ImageData<float> imgData = gridCpu.gridding(*reconData);
     //CUDA testing
-    ImageData<float> imgData = gridCpu.gridding(*cu_reconData);
+    ImageData<float> imgData = gridGpu.gridding(*cu_reconData);
 
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
