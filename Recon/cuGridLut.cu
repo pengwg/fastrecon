@@ -115,7 +115,25 @@ void cuGridLut<T>::addDataMapFromDevice()
     data_map.bucket_end = m_cu_data_map.bucket_end;
     data_map.tuples_last = m_cu_data_map.tuples_last;
 
-    m_index_data_map_in_device = m_all_data_map.size();
+    m_index_data_map_in_device = m_all_data_map.size() - 1;
+}
+
+template<typename T>
+const cuDataMap *cuGridLut<T>::getDeviceDataMapPartition(int index)
+{
+    if (index < 0 || index > m_all_data_map.size() - 1)
+        return nullptr;
+
+    if (index != m_index_data_map_in_device)
+    {
+        m_cu_data_map.bucket_begin = m_all_data_map[index].bucket_begin;
+        m_cu_data_map.bucket_end = m_all_data_map[index].bucket_end;
+        m_cu_data_map.tuples_last = m_all_data_map[index].tuples_last;
+
+        m_index_data_map_in_device = index;
+    }
+
+    return &m_cu_data_map;
 }
 
 template<typename T>
@@ -136,7 +154,7 @@ void cuGridLut<T>::plan(const cuVector<Point<T>> &traj)
 
     std::cout << " Traj size: " << traj.size() << ", Image size: " << m_cu_data_map.bucket_begin.size() << ", Number of pairs: " << tuple_index.back() << std::endl;
 
-    int num_partitions = 20;
+    int num_partitions = 5;
     size_t chunk_size = ceil((double)traj.size() / num_partitions);
 
     size_t blockSize = 256;
@@ -185,16 +203,16 @@ __constant__ float d_kernel[512];
 template<typename T> __global__
 void gridding_kernel(const cu_complex<T> *kData, const T *dcf, cu_complex<T> *out,
                      const unsigned *bucket_begin, const unsigned *bucket_end, const SampleTuple *tuples_last,
-                     float half_W, size_t num_of_data_compute)
+                     float half_W, size_t image_size)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (index >= num_of_data_compute)
+    if (index >= image_size)
         return;
 
     constexpr int kernel_length = sizeof(d_kernel) / sizeof(d_kernel[0]);
 
-    cu_complex<T> data {0, 0};
+    auto data = out[index];
     for (unsigned i = bucket_begin[index]; i < bucket_end[index]; ++i)
     {
         auto delta = tuples_last[i].delta;
@@ -207,7 +225,6 @@ void gridding_kernel(const cu_complex<T> *kData, const T *dcf, cu_complex<T> *ou
             data.y += kData[sample_idx].y * dcf[sample_idx] * d_kernel[ki];
         }
     }
-
     out[index] = data;
 }
 
@@ -223,40 +240,35 @@ cuComplexVector<T> *cuGridLut<T>::griddingChannel(cuReconData<T> &reconData, int
     auto d_out = thrust::raw_pointer_cast(out->data());
     auto d_dcf = thrust::raw_pointer_cast(dcf->data());
 
-    auto d_bucket_begin = thrust::raw_pointer_cast(m_cu_bucket_begin->data());
-    auto d_bucket_end = thrust::raw_pointer_cast(m_cu_bucket_end->data());
-
     auto kernel = this->m_kernel.getKernelData();
     assert(kernel->size() == sizeof(d_kernel) / sizeof(d_kernel[0]));
     cudaMemcpyToSymbol(d_kernel, kernel->data(), kernel->size() * sizeof(float));
 
-    size_t chunk_size = 8000;
-    size_t blockSize = 256;
-    size_t gridSize = (size_t)ceil((float)chunk_size / blockSize);
+    auto index0 = m_index_data_map_in_device;
+    auto index = index0;
+    assert(index != -1);
 
-    auto tuples_it = m_tuples_last->cbegin();
-    auto bucket_begin_it = m_cu_bucket_begin->cbegin();
-    auto bucket_end_it = m_cu_bucket_end->cbegin();
-    size_t skip = 0;
-
-    while (skip < out->size())
+    do
     {
-        size_t num_of_data_compute = std::min(chunk_size, out->size() - skip);
+        //std::cout << "Gridding part " << index << std::endl;
+        auto cu_data_map = getDeviceDataMapPartition(index);
+        index = (index + 1) % m_all_data_map.size();
 
-        auto tuples_it_first = tuples_it + *(bucket_begin_it + skip);
-        auto tuples_it_last = tuples_it + *(bucket_end_it + skip + num_of_data_compute - 1);
+        size_t image_size = cu_data_map->bucket_begin.size();
+        size_t blockSize = 256;
+        size_t gridSize = (size_t)ceil((double)image_size / blockSize);
 
-        if (tuples_it_first < tuples_it_last)
-        {
-            thrust::device_vector<SampleTuple> tuples_last(tuples_it_first, tuples_it_last);
-            auto d_tuples_last = thrust::raw_pointer_cast(tuples_last.data()) - *(bucket_begin_it + skip);
+        auto d_bucket_begin = thrust::raw_pointer_cast(cu_data_map->bucket_begin.data());
+        auto d_bucket_end = thrust::raw_pointer_cast(cu_data_map->bucket_end.data());
+        auto d_tuples_last = thrust::raw_pointer_cast(cu_data_map->tuples_last.data());
 
-            gridding_kernel<T><<<gridSize, blockSize>>>(d_kData, d_dcf, d_out + skip, d_bucket_begin + skip, d_bucket_end + skip, d_tuples_last,
-                                                        this->m_kernel.getKernelWidth() / 2.0, num_of_data_compute);
-            cudaDeviceSynchronize();
-        }
-        skip += num_of_data_compute;
+        gridding_kernel<T><<<gridSize, blockSize>>>(d_kData, d_dcf, d_out, d_bucket_begin, d_bucket_end, d_tuples_last,
+                                                    this->m_kernel.getKernelWidth() / 2.0, image_size);
+        cudaDeviceSynchronize();
+
     }
+    while (index != index0);
+
     return out;
 }
 

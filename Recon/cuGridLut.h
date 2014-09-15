@@ -38,10 +38,7 @@ public:
 private:
     cuComplexVector<T> *griddingChannel(cuReconData<T> &reconData, int channel);
     void addDataMapFromDevice();
-
-    std::unique_ptr<thrust::host_vector<SampleTuple>> m_tuples_last;
-    std::unique_ptr<thrust::device_vector<unsigned>> m_cu_bucket_begin;
-    std::unique_ptr<thrust::device_vector<unsigned>> m_cu_bucket_end;
+    const cuDataMap *getDeviceDataMapPartition(int index);
 
     std::vector<DataMap> m_all_data_map;
     cuDataMap m_cu_data_map;
