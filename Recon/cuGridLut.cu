@@ -105,188 +105,76 @@ void write_pairs_kernel(const Point<T> *traj, unsigned *tuple_index, int *tuples
     }
 }
 
-void savePreprocess(const thrust::host_vector<int> *tuples_first, const thrust::host_vector<SampleTuple> *tuples_last, const thrust::host_vector<unsigned> *bucket_begin, const thrust::host_vector<unsigned> *bucket_end)
+template<typename T>
+void cuGridLut<T>::addDataMapFromDevice()
 {
-    QFile file("tuples_last.dat");
-    file.open(QIODevice::WriteOnly);
-    file.write((char *)thrust::raw_pointer_cast(tuples_last->data()), tuples_last->size() * sizeof(SampleTuple));
-    file.close();
+    m_all_data_map.emplace_back();
+    auto &data_map = m_all_data_map.back();
 
-    file.setFileName("tuples_first.dat");
-    file.open(QIODevice::WriteOnly);
-    file.write((char *)thrust::raw_pointer_cast(tuples_first->data()), tuples_first->size() * sizeof(int));
-    file.close();
+    data_map.bucket_begin = m_cu_data_map.bucket_begin;
+    data_map.bucket_end = m_cu_data_map.bucket_end;
+    data_map.tuples_last = m_cu_data_map.tuples_last;
 
-    file.setFileName("bucket_begin.dat");
-    file.open(QIODevice::WriteOnly);
-    file.write((char *)thrust::raw_pointer_cast(bucket_begin->data()), bucket_begin->size() * sizeof(unsigned));
-    file.close();
-
-    file.setFileName("bucket_end.dat");
-    file.open(QIODevice::WriteOnly);
-    file.write((char *)thrust::raw_pointer_cast(bucket_end->data()), bucket_end->size() * sizeof(unsigned));
-    file.close();
-}
-
-bool loadPreprocess(thrust::host_vector<int> *tuples_first, thrust::host_vector<SampleTuple> *tuples_last, thrust::host_vector<unsigned> *bucket_begin, thrust::host_vector<unsigned> *bucket_end)
-{
-    QFile file("tuples_last.dat");
-    if (!file.exists())
-        return false;
-    auto length = file.size() / sizeof(SampleTuple);
-    tuples_last->resize(length);
-
-    file.open(QIODevice::ReadOnly);
-    file.read((char *)thrust::raw_pointer_cast(tuples_last->data()), file.size());
-    file.close();
-
-    file.setFileName("tuples_first.dat");
-    if (!file.exists())
-        return false;
-    length = file.size() / sizeof(int);
-    tuples_first->resize(length);
-
-    file.open(QIODevice::ReadOnly);
-    file.read((char *)thrust::raw_pointer_cast(tuples_first->data()), file.size());
-    file.close();
-
-    file.setFileName("bucket_begin.dat");
-    if (!file.exists())
-        return false;
-    length = file.size() / sizeof(unsigned);
-    bucket_begin->resize(length);
-
-    file.open(QIODevice::ReadOnly);
-    file.read((char *)thrust::raw_pointer_cast(bucket_begin->data()), file.size());
-    file.close();
-
-    file.setFileName("bucket_end.dat");
-    if (!file.exists())
-        return false;
-    length = file.size() / sizeof(unsigned);
-    bucket_end->resize(length);
-
-    file.open(QIODevice::ReadOnly);
-    file.read((char *)thrust::raw_pointer_cast(bucket_end->data()), file.size());
-    file.close();
-
-    return true;
+    m_index_data_map_in_device = m_all_data_map.size();
 }
 
 template<typename T>
 void cuGridLut<T>::plan(const cuVector<Point<T>> &traj)
 {
-    auto tuples_first_h = new thrust::host_vector<int>;
-    auto tuples_last_h = new thrust::host_vector<SampleTuple>;
-    auto bucket_begin_h = new thrust::host_vector<unsigned>;
-    auto bucket_end_h   = new thrust::host_vector<unsigned>;
-
     T half_W = this->m_kernel.getKernelWidth() / 2.0;
 
     auto cells_per_sample = new thrust::device_vector<unsigned> (traj.size());
     thrust::transform(traj.begin(), traj.end(), cells_per_sample->begin(), compute_num_cells_per_sample<T>(half_W, this->m_dim));
 
-    auto tuple_index = new thrust::device_vector<unsigned> (traj.size());
-    thrust::inclusive_scan(cells_per_sample->begin(), cells_per_sample->end(), tuple_index->begin(), thrust::plus<unsigned> ());
+    thrust::device_vector<unsigned> tuple_index(traj.size());
+    thrust::inclusive_scan(cells_per_sample->begin(), cells_per_sample->end(), tuple_index.begin(), thrust::plus<unsigned> ());
     delete cells_per_sample;
 
-    tuple_index->insert(tuple_index->begin(), 0);
-    unsigned num_of_pairs_total = tuple_index->back();
+    m_cu_data_map.bucket_begin.resize(powf(this->m_gridSize, this->m_dim));
+    m_cu_data_map.bucket_end.resize(powf(this->m_gridSize, this->m_dim));
+    thrust::device_vector<int> cu_tuples_first;
 
-    bool loadSuccess = false;
-    if (loadPreprocess(tuples_first_h, tuples_last_h, bucket_begin_h, bucket_end_h))
+    std::cout << " Traj size: " << traj.size() << ", Image size: " << m_cu_data_map.bucket_begin.size() << ", Number of pairs: " << tuple_index.back() << std::endl;
+
+    int num_partitions = 20;
+    size_t chunk_size = ceil((double)traj.size() / num_partitions);
+
+    size_t blockSize = 256;
+    size_t gridSize = (size_t)ceil((double)chunk_size / blockSize);
+
+    size_t skip = 0;
+    while (skip < traj.size())
     {
-        std::cout << "Loaded preprocessed data from disk." << std::endl;
+        size_t num_of_samples_compute = std::min(chunk_size, traj.size() - skip);
+        unsigned num_of_pairs = tuple_index[skip + num_of_samples_compute - 1] - tuple_index[skip];
 
-        if (tuples_last_h->size() != num_of_pairs_total || bucket_begin_h->size() != powf(this->m_gridSize, this->m_dim) ||
-                bucket_end_h->size() != powf(this->m_gridSize, this->m_dim))
-        {
-            std::cout << "Wrong size, recompute data... " << std::endl;
-        }
-        else
-        {
-            loadSuccess = true;
-        }
-    }
+        std::cout << "num_of_pairs compute: " << num_of_pairs << std::endl;
 
-    if (!loadSuccess)
-    {
-        std::cout << "Preprocesse data for CUDA..." << std::endl;
+        cu_tuples_first.resize(num_of_pairs);
+        m_cu_data_map.tuples_last.resize(num_of_pairs);
 
-        tuples_first_h->clear();
-        tuples_last_h->clear();
+        const Point<T> *traj_ptr = thrust::raw_pointer_cast(traj.data()) + skip;
+        unsigned *tuple_index_ptr = thrust::raw_pointer_cast(tuple_index.data()) + skip;
+        int *tuples_first_ptr = thrust::raw_pointer_cast(cu_tuples_first.data()) - tuple_index[skip];
+        SampleTuple *tuples_last_ptr = thrust::raw_pointer_cast(m_cu_data_map.tuples_last.data()) - tuple_index[skip];
 
-        auto tuples_first = new thrust::device_vector<int>;
-        auto tuples_last = new thrust::device_vector<SampleTuple>;
+        write_pairs_kernel<T><<<gridSize, blockSize>>>(traj_ptr, tuple_index_ptr, tuples_first_ptr, tuples_last_ptr,
+                                                       this->m_gridSize, half_W, num_of_samples_compute, skip);
 
-        size_t chunk_size = 100000;
-        size_t blockSize = 256;
-        size_t gridSize = (size_t)ceil((float)chunk_size / blockSize);
+        thrust::sort_by_key(cu_tuples_first.begin(), cu_tuples_first.end(), m_cu_data_map.tuples_last.begin());
 
-        size_t skip = 0;
-        while (skip < traj.size())
-        {
-            size_t num_of_samples_compute = std::min(chunk_size, traj.size() - skip);
-            unsigned num_of_pairs = (*tuple_index)[skip + num_of_samples_compute] - (*tuple_index)[skip];
-            std::cout << "num_of_pairs compute: " << num_of_pairs << std::endl;
-            tuples_first->resize(num_of_pairs);
-            tuples_last->resize(num_of_pairs);
 
-            const Point<T> *traj_ptr = thrust::raw_pointer_cast(traj.data()) + skip;
-            unsigned *tuple_index_ptr = thrust::raw_pointer_cast(tuple_index->data()) + skip;
-            int *tuples_first_ptr = thrust::raw_pointer_cast(tuples_first->data()) - (*tuple_index)[skip];
-            SampleTuple *tuples_last_ptr = thrust::raw_pointer_cast(tuples_last->data()) - (*tuple_index)[skip];
-
-            write_pairs_kernel<T><<<gridSize, blockSize>>>(traj_ptr, tuple_index_ptr, tuples_first_ptr, tuples_last_ptr,
-                                                           this->m_gridSize, half_W, num_of_samples_compute, skip);
-
-            thrust::sort_by_key(tuples_first->begin(), tuples_first->end(), tuples_last->begin());
-
-            tuples_first_h->insert(tuples_first_h->end(), tuples_first->begin(), tuples_first->end());
-            tuples_last_h->insert(tuples_last_h->end(), tuples_last->begin(), tuples_last->end());
-
-            skip += num_of_samples_compute;
-        }
-
-        delete tuple_index;
-        delete tuples_first;
-        delete tuples_last;
-
-        std::cout << "Sort tuples... " << std::flush;
-        thrust::sort_by_key(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), tuples_last_h->begin());
-
-        bucket_begin_h->resize(powf(this->m_gridSize, this->m_dim));
-        bucket_end_h->resize(powf(this->m_gridSize, this->m_dim));
-
-        std::cout << "Generate buckets... " << std::flush;
         thrust::counting_iterator<int> search_begin(0);
-        thrust::lower_bound(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), search_begin,
-                            search_begin + (int)powf(this->m_gridSize, this->m_dim), bucket_begin_h->begin());
-        thrust::upper_bound(thrust::system::omp::par, tuples_first_h->begin(), tuples_first_h->end(), search_begin,
-                            search_begin + (int)powf(this->m_gridSize, this->m_dim), bucket_end_h->begin());
+        thrust::lower_bound(cu_tuples_first.begin(), cu_tuples_first.end(), search_begin,
+                            search_begin + (int)powf(this->m_gridSize, this->m_dim), m_cu_data_map.bucket_begin.begin());
 
-        std::cout << "Save data to disk... " << std::flush;
-        savePreprocess(tuples_first_h, tuples_last_h, bucket_begin_h, bucket_end_h);
-        std::cout << "done." << std::endl;
+        thrust::upper_bound(cu_tuples_first.begin(), cu_tuples_first.end(), search_begin,
+                            search_begin + (int)powf(this->m_gridSize, this->m_dim), m_cu_data_map.bucket_end.begin());
+
+        addDataMapFromDevice();
+
+        skip += num_of_samples_compute;
     }
-
-    std::cout << " Traj size: " << traj.size() << ", Image size: " << bucket_begin_h->size() << ", Number of pairs: " << num_of_pairs_total << std::endl;
-
-    /*auto it = bucket_end_h->cbegin();
-    for (int i = 0; i < 2024; i++)
-        std::cout << *(it++) << ' ';
-    std::cout << std::endl;*/
-
-    auto bucket_begin = new thrust::device_vector<unsigned>(*bucket_begin_h);
-    auto bucket_end   = new thrust::device_vector<unsigned>(*bucket_end_h);
-
-    delete tuples_first_h;
-    delete bucket_begin_h;
-    delete bucket_end_h;
-
-    m_tuples_last.reset(tuples_last_h);
-    m_cu_bucket_begin.reset(bucket_begin);
-    m_cu_bucket_end.reset(bucket_end);
 }
 
 template<typename T>
