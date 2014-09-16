@@ -29,7 +29,7 @@ void cuImageData<T>::addChannelImage(cuComplexVector<T> *image)
     //thrust::host_vector<typename cuComplexVector<T>::value_type> h_im(*image);
 
     addChannelImage(reinterpret_cast<ComplexVector<T> *>(im));
-    m_channel_in_device = this->m_channels;
+    m_channel_in_device = this->m_channels - 1;
 }
 
 template<typename T>
