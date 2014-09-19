@@ -155,17 +155,18 @@ void cuGridLut<T>::plan(const cuVector<Point<T>> &traj)
 
     std::cout << " Traj size: " << traj.size() << ", Image size: " << m_cu_data_map.bucket_begin.size() << ", Number of pairs: " << tuple_index.back() << std::endl;
 
-    int num_partitions = 5;
+    int num_partitions = 25;
     size_t chunk_size = ceil((double)traj.size() / num_partitions);
 
     size_t blockSize = 256;
     size_t gridSize = (size_t)ceil((double)chunk_size / blockSize);
 
+    tuple_index.insert(tuple_index.begin(), 0);
     size_t skip = 0;
     while (skip < traj.size())
     {
         size_t num_of_samples_compute = std::min(chunk_size, traj.size() - skip);
-        unsigned num_of_pairs = tuple_index[skip + num_of_samples_compute - 1] - tuple_index[skip];
+        unsigned num_of_pairs = tuple_index[skip + num_of_samples_compute] - tuple_index[skip];
 
         std::cout << "num_of_pairs compute: " << num_of_pairs << std::endl;
 
