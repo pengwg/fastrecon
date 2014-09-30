@@ -17,7 +17,7 @@ public:
 private:
     int m_dim;
     ImageSize m_size;
-    bool m_sign;
+    int m_sign;
 
     std::vector<fftwf_plan> m_plan;
     std::vector<fftwf_complex *> m_in;

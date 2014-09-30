@@ -17,6 +17,7 @@
 #include "GridLut.h"
 #include "cuGridLut.h"
 #include "FFT.h"
+#include "cuFFT.h"
 
 #ifdef CUDA_CAPABLE
 #include "FFTGpu.h"
@@ -135,21 +136,24 @@ int main(int argc, char *argv[])
     timer.start();
     //ImageData<float> imgData = gridCpu.gridding(*reconData);
     //CUDA testing
-    ImageData<float> imgData = gridGpu.gridding(*cu_reconData);
+    cuImageData<float> imgData = gridGpu.gridding(*cu_reconData);
 
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
-    ImageData<float> imgMap;
+    cuImageData<float> imgMap;
     if (params.pils)
         imgMap = imgData;
 
     // --------------- FFT ----------------------------------
-    std::cout << "\nCPU FFT... " << std::endl;
-    FFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
+//    std::cout << "\nCPU FFT... " << std::endl;
+//    FFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
+
+    std::cout << "\nGPU FFT... " << std::endl;
+    cuFFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
 
     timer.restart();
     fft.excute(imgData);
-    imgData.fftShift();
+    imgData.ImageData<float>::fftShift();
     std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
     // -------------- Recon Methods -----------------------------------

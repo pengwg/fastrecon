@@ -40,6 +40,7 @@ set(CUDA_NVCC_FLAGS
 )
 
 cuda_add_library(cuRecon SHARED ${CUDA_SRC_FILES})
+cuda_add_cufft_to_target(cuRecon)
 
 set(MAIN_SRC_FILES
     Main.cpp
