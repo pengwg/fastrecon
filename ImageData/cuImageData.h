@@ -11,6 +11,11 @@ public:
     cuImageData();
     cuImageData(const int dim, const ImageSize &imageSize, cuComplexVector<T> *image = nullptr);
 
+    cuImageData(const cuImageData<T> &imageData);
+    cuImageData(cuImageData<T> &&imageData);
+    cuImageData<T> &operator=(const cuImageData<T> &imageData);
+    cuImageData<T> &operator=(cuImageData<T> &&imageData);
+
     using ImageData<T>::addChannelImage;
     void addChannelImage(cuComplexVector<T> *image);
     cuComplexVector<T> *cuGetChannelImage(int channel);

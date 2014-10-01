@@ -15,6 +15,34 @@ cuImageData<T>::cuImageData(const int dim, const ImageSize &imageSize, cuComplex
 }
 
 template<typename T>
+cuImageData<T>::cuImageData(const cuImageData<T> &imageData)
+{
+    copy(imageData);
+}
+
+template<typename T>
+cuImageData<T>::cuImageData(cuImageData<T> &&imageData)
+{
+    copy(std::move(imageData));
+}
+
+// Copy
+template<typename T>
+cuImageData<T> &cuImageData<T>::operator=(const cuImageData<T> &imageData)
+{
+    copy(imageData);
+    return *this;
+}
+
+// Move
+template<typename T>
+cuImageData<T> &cuImageData<T>::operator=(cuImageData<T> &&imageData)
+{
+    copy(std::move(imageData));
+    return *this;
+}
+
+template<typename T>
 void cuImageData<T>::addChannelImage(cuComplexVector<T> *image)
 {
     if (image == nullptr) return;
