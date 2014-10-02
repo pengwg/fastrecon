@@ -19,6 +19,7 @@ public:
     using ImageData<T>::addChannelImage;
     void addChannelImage(cuComplexVector<T> *image);
     cuComplexVector<T> *cuGetChannelImage(int channel);
+    void update();
 
     virtual void fftShift() override;
     virtual void lowFilter(int res) override;

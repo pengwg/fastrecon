@@ -84,6 +84,16 @@ cuComplexVector<T> *cuImageData<T>::cuGetChannelImage(int channel)
 }
 
 template<typename T>
+void cuImageData<T>::update()
+{
+    if (m_channel_in_device == -1) return;
+
+    auto &h_data = reinterpret_cast<hostVector<typename cuComplexVector<T>::value_type> &>
+            (*this->m_data_multichannel[m_channel_in_device]);
+    h_data = *m_cu_data;
+}
+
+template<typename T>
 void cuImageData<T>::copy(const ImageData<T> &imageData)
 {
     std::cout << "cuImageData: copy ";
