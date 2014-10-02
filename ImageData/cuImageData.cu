@@ -69,7 +69,7 @@ cuComplexVector<T> *cuImageData<T>::cuGetChannelImage(int channel)
     }
     else if (channel < this->channels())
     {
-        auto h_data = reinterpret_cast<std::vector<typename cuComplexVector<T>::value_type> &>
+        auto &h_data = reinterpret_cast<hostVector<typename cuComplexVector<T>::value_type> &>
                 (*this->m_data_multichannel[channel]);
         if (m_cu_data == nullptr)
             m_cu_data.reset(new cuComplexVector<T>(h_data));
