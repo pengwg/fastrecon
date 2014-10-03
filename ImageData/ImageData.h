@@ -16,7 +16,7 @@ class ImageData
 {
 public:
     ImageData() {}
-    ImageData(const int dim, const ImageSize &imageSize, ComplexVector<T> *image = nullptr);
+    ImageData(const int dim, const ImageSize &imageSize, std::unique_ptr<ComplexVector<T>> image = nullptr);
 
     ImageData(const ImageData<T> &imageData);
     ImageData(ImageData<T> &&imageData);
@@ -40,7 +40,7 @@ public:
 
     int dataSize() const;
 
-    void addChannelImage(ComplexVector<T> *image);
+    void addChannelImage(std::unique_ptr<ComplexVector<T>> image);
 
     const ComplexVector<T> *getChannelImage(int channel) const;
 

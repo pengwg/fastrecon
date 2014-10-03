@@ -53,5 +53,5 @@ ImageData<float> ImageRecon::SOS(const ImageData<float> &map) const
             }
         }
     }
-    return ImageData<float>(m_imageData.dim(), m_reconSize, out);
+    return ImageData<float>(m_imageData.dim(), m_reconSize, std::unique_ptr<ComplexVector<float>>(out));
 }

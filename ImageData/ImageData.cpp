@@ -4,13 +4,13 @@
 #include "ImageData.h"
 
 template<typename T>
-ImageData<T>::ImageData(const int dim, const ImageSize &size, ComplexVector<T> *image)
+ImageData<T>::ImageData(const int dim, const ImageSize &size, std::unique_ptr<ComplexVector<T>> image)
     : m_dim(dim), m_size(size)
 {
     if (dim == 2)
         m_size.z = 1;
 
-    addChannelImage(image);
+    addChannelImage(std::move(image));
 }
 
 template<typename T>
@@ -51,7 +51,7 @@ int ImageData<T>::dataSize() const
 }
 
 template<typename T>
-void ImageData<T>::addChannelImage(ComplexVector<T> *image)
+void ImageData<T>::addChannelImage(std::unique_ptr<ComplexVector<T>> image)
 {
     if (image == nullptr) return;
 
@@ -60,7 +60,7 @@ void ImageData<T>::addChannelImage(ComplexVector<T> *image)
         std::cerr << "Error: ImageData wrong size!" << std::endl;
         exit(1);
     }
-    m_data_multichannel.push_back(std::unique_ptr<ComplexVector<T>>(image));
+    m_data_multichannel.push_back(std::move(image));
     m_channels = m_data_multichannel.size();
 }
 
@@ -92,7 +92,7 @@ void ImageData<T>::copy(const ImageData<T> &imageData)
     for (const auto &data : imageData.m_data_multichannel)
     {
         auto data_copy = new ComplexVector<T>(*data);
-        addChannelImage(data_copy);
+        addChannelImage(std::unique_ptr<ComplexVector<T>>(data_copy));
     }
     std::cout << "-- ImageData: copy --" << std::endl;
 }

@@ -16,7 +16,7 @@ public:
     ImageData<T> gridding(ReconData<T> &reconData);
 
 protected:
-    ComplexVector<T> *griddingChannel(const ReconData<T> &reconData, int channel);
+    std::unique_ptr<ComplexVector<T>> griddingChannel(const ReconData<T> &reconData, int channel);
 
     int m_dim;
     int m_gridSize;

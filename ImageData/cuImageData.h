@@ -9,7 +9,7 @@ class cuImageData : public ImageData<T>
 {
 public:
     cuImageData();
-    cuImageData(const int dim, const ImageSize &imageSize, cuComplexVector<T> *image = nullptr);
+    cuImageData(const int dim, const ImageSize &imageSize, std::unique_ptr<ComplexVector<T>> image = nullptr);
 
     cuImageData(const cuImageData<T> &imageData);
     cuImageData(cuImageData<T> &&imageData);
@@ -17,7 +17,7 @@ public:
     cuImageData<T> &operator=(cuImageData<T> &&imageData);
 
     using ImageData<T>::addChannelImage;
-    void addChannelImage(cuComplexVector<T> *image);
+    void addChannelImage(std::unique_ptr<cuComplexVector<T>> image);
     cuComplexVector<T> *cuGetChannelImage(int channel);
     void update();
 

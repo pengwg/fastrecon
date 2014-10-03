@@ -35,7 +35,7 @@ cuImageData<T> cuGridLut<T>::gridding(cuReconData<T> &reconData)
     for (int i = 0; i < reconData.channels(); i++)
     {
         auto out = griddingChannel(reconData, i);
-        img.addChannelImage(out);
+        img.addChannelImage(std::move(out));
         std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }
     return img;
@@ -231,12 +231,12 @@ void gridding_kernel(const cu_complex<T> *kData, const T *dcf, cu_complex<T> *ou
 }
 
 template<typename T>
-cuComplexVector<T> *cuGridLut<T>::griddingChannel(cuReconData<T> &reconData, int channel)
+std::unique_ptr<cuComplexVector<T>> cuGridLut<T>::griddingChannel(cuReconData<T> &reconData, int channel)
 {
     const cuComplexVector<T> *kData = reconData.cuGetChannelData(channel);
     const cuVector<T> *dcf = reconData.cuGetDcf();
 
-    auto out = new cuComplexVector<T>((int)powf(this->m_gridSize, this->m_dim));
+    auto out = std::unique_ptr<cuComplexVector<T>>(new cuComplexVector<T>((int)powf(this->m_gridSize, this->m_dim)));
 
     auto d_kData = thrust::raw_pointer_cast(kData->data());
     auto d_out = thrust::raw_pointer_cast(out->data());

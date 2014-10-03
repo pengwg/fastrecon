@@ -8,10 +8,10 @@ cuImageData<T>::cuImageData()
 }
 
 template<typename T>
-cuImageData<T>::cuImageData(const int dim, const ImageSize &imageSize, cuComplexVector<T> *image)
+cuImageData<T>::cuImageData(const int dim, const ImageSize &imageSize, std::unique_ptr<ComplexVector<T>> image)
     : ImageData<T>(dim, imageSize)
 {
-    addChannelImage(image);
+    addChannelImage(std::move(image));
 }
 
 template<typename T>
@@ -43,12 +43,12 @@ cuImageData<T> &cuImageData<T>::operator=(cuImageData<T> &&imageData)
 }
 
 template<typename T>
-void cuImageData<T>::addChannelImage(cuComplexVector<T> *image)
+void cuImageData<T>::addChannelImage(std::unique_ptr<cuComplexVector<T>> image)
 {
     if (image == nullptr) return;
 
-    m_cu_data.reset(image);
     auto im = new hostVector<typename cuComplexVector<T>::value_type>(*image);
+    m_cu_data = std::move(image);
 
     //auto h_im = reinterpret_cast<ComplexVector<T> *>(im);
     //thrust::copy(image->begin(), image->end(), h_im->begin());
@@ -56,7 +56,7 @@ void cuImageData<T>::addChannelImage(cuComplexVector<T> *image)
     //cudaMemcpy(im->data(), image_ptr, im->size() * sizeof(typename ComplexVector<T>::value_type), cudaMemcpyDeviceToHost);
     //thrust::host_vector<typename cuComplexVector<T>::value_type> h_im(*image);
 
-    addChannelImage(reinterpret_cast<ComplexVector<T> *>(im));
+    ImageData<T>::addChannelImage(std::unique_ptr<ComplexVector<T>>(reinterpret_cast<ComplexVector<T> *>(im)));
     m_channel_in_device = this->m_channels - 1;
 }
 

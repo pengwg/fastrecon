@@ -36,7 +36,7 @@ public:
     cuImageData<T> gridding(cuReconData<T> &reconData);
 
 private:
-    cuComplexVector<T> *griddingChannel(cuReconData<T> &reconData, int channel);
+    std::unique_ptr<cuComplexVector<T>> griddingChannel(cuReconData<T> &reconData, int channel);
     void addDataMapFromDevice();
     const cuDataMap *getDeviceDataMapPartition(int index);
 

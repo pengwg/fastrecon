@@ -41,7 +41,7 @@ ImageData<T> GridLut<T>::gridding(ReconData<T> &reconData)
             auto out = griddingChannel(reconData, i);
 #pragma omp ordered
             {
-                img.addChannelImage(out);
+                img.addChannelImage(std::move(out));
                 std::cout << "Thread " << id << " gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
             }
         }
@@ -50,7 +50,7 @@ ImageData<T> GridLut<T>::gridding(ReconData<T> &reconData)
 }
 
 template<typename T>
-ComplexVector<T> *GridLut<T>::griddingChannel(const ReconData<T> &reconData, int channel)
+std::unique_ptr<ComplexVector<T>> GridLut<T>::griddingChannel(const ReconData<T> &reconData, int channel)
 {
     const ComplexVector<T> *kData = reconData.getChannelData(channel);
     auto itDcf = reconData.getDcf()->cbegin();
@@ -116,7 +116,9 @@ ComplexVector<T> *GridLut<T>::griddingChannel(const ReconData<T> &reconData, int
             itOut += di2;
         }
     }
-    return new ComplexVector<T>(out);
+    // When c++14 is available
+    // return std::make_unique<ComplexVector<T>>(out);
+    return std::unique_ptr<ComplexVector<T>>(new ComplexVector<T>(out));
 }
 
 template class GridLut<float>;
