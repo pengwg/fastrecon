@@ -11,18 +11,17 @@
 
 #include "ProgramOptions.h"
 #include "ReconData.h"
-#include "cuReconData.h"
 #include "ImageRecon.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
-#include "cuGridLut.h"
 #include "FFT.h"
-#include "cuFFT.h"
 
 #ifdef CUDA_CAPABLE
-#include "FFTGpu.h"
-#include "GridGpu.h"
-#endif
+#include "cuReconData.h"
+#include "cuImageData.h"
+#include "cuGridLut.h"
+#include "cuFFT.h"
+#endif //CUDA_CAPABLE
 
 template<typename T>
 void displayData(const ComplexVector<T> &data, ImageSize size, const QString& title)
@@ -111,12 +110,14 @@ int main(int argc, char *argv[])
 
     // -------------- Load multi-channel data -----------------
     int size = params.samples * params.projections;
-    auto reconData = new ReconData<float>(size);
-    loadReconData(params, reconData);
 
-    // GPU Testing
-    auto cu_reconData = new cuReconData<float>(size);
-    loadReconData(params, cu_reconData);
+#ifndef CUDA_CAPABLE
+    auto reconData = new ReconData<float>(size);
+#else
+    auto reconData = new cuReconData<float>(size);
+#endif // CUDA_CAPABLE
+
+    loadReconData(params, reconData);
 
     omp_set_num_threads(std::min(reconData->channels(), omp_get_num_procs()));
 
@@ -130,26 +131,27 @@ int main(int argc, char *argv[])
 
     // -------------- Gridding -------------------------------
     int gridSize = params.rcxres * overGridFactor;
-    GridLut<float> gridCpu(reconData->rcDim(), gridSize, kernel);
-    cuGridLut<float> gridGpu(reconData->rcDim(), gridSize, kernel);
-
     timer.start();
-    //ImageData<float> imgData = gridCpu.gridding(*reconData);
-    //CUDA testing
-    cuImageData<float> imgData = gridGpu.gridding(*cu_reconData);
 
+#ifndef CUDA_CAPABLE
+    GridLut<float> grid(reconData->rcDim(), gridSize, kernel);
+#else
+    cuGridLut<float> grid(reconData->rcDim(), gridSize, kernel);
+#endif // CUDA_CAPABLE
+
+    auto imgData = grid.execute(*reconData);
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
-    cuImageData<float> imgMap;
+    decltype(imgData) imgMap;
     if (params.pils)
         imgMap = imgData;
 
     // --------------- FFT ----------------------------------
-//    std::cout << "\nCPU FFT... " << std::endl;
-//    FFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
-
-    std::cout << "\nGPU FFT... " << std::endl;
+#ifndef CUDA_CAPABLE
+    FFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
+#else
     cuFFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
+#endif // CUDA_CAPABLE
 
     timer.restart();
     fft.excute(imgData);
@@ -187,7 +189,6 @@ int main(int argc, char *argv[])
     std::cout << "\nProgram total time excluding I/O: " << timer0.elapsed() / 1000.0 << " s" << std::endl;
 
     delete reconData;
-    delete cu_reconData;
 
     // -------------------------- Save Data ---------------------------
     /*QFile file(params.result_filename);

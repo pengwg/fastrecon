@@ -1,5 +1,6 @@
 #include <QElapsedTimer>
 #include "cuFFT.h"
+#include "cuImageData.h"
 
 cuFFT::cuFFT(int dims, ImageSize size, int sign)
     : m_dim(dims), m_size(size), m_sign(sign)
@@ -22,6 +23,7 @@ void cuFFT::plan()
 
 void cuFFT::excute(cuImageData<float> &imgData)
 {
+    std::cout << "\nGPU FFT... " << std::endl;
     QElapsedTimer timer;
     timer.start();
 

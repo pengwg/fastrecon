@@ -1,6 +1,7 @@
 #ifndef CONVKERNEL_H
 #define CONVKERNEL_H
 
+#include <memory>
 #include "common.h"
 
 class ConvKernel

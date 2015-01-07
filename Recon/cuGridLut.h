@@ -2,8 +2,6 @@
 #define CUGRIDLUT_H
 
 #include "GridLut.h"
-#include "cuImageData.h"
-#include "cuReconData.h"
 
 typedef struct
 {
@@ -26,6 +24,12 @@ typedef struct
 } cuDataMap;
 
 template<typename T>
+class cuReconData;
+
+template<typename T>
+class cuImageData;
+
+template<typename T>
 class cuGridLut : public GridLut<T>
 {
 public:
@@ -33,7 +37,7 @@ public:
     virtual ~cuGridLut() {}
 
     void plan(const cuVector<Point<T> > &traj);
-    cuImageData<T> gridding(cuReconData<T> &reconData);
+    cuImageData<T> execute(cuReconData<T> &reconData);
 
 private:
     std::unique_ptr<cuComplexVector<T>> griddingChannel(cuReconData<T> &reconData, int channel);

@@ -6,6 +6,8 @@
 #include <cassert>
 
 #include "cuGridLut.h"
+#include "cuReconData.h"
+#include "cuImageData.h"
 
 template<typename T>
 cuGridLut<T>::cuGridLut(int dim, int gridSize, ConvKernel &kernel)
@@ -14,7 +16,7 @@ cuGridLut<T>::cuGridLut(int dim, int gridSize, ConvKernel &kernel)
 }
 
 template<typename T>
-cuImageData<T> cuGridLut<T>::gridding(cuReconData<T> &reconData)
+cuImageData<T> cuGridLut<T>::execute(cuReconData<T> &reconData)
 {
     std::cout << "\nGPU gridding... " << std::endl;
     QElapsedTimer timer;

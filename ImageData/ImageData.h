@@ -4,13 +4,6 @@
 #include <memory>
 #include "common.h"
 
-typedef struct
-{
-    int x;
-    int y;
-    int z;
-} ImageSize;
-
 template<typename T>
 class ImageData
 {

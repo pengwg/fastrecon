@@ -1,7 +1,6 @@
 #include <QElapsedTimer>
 #include <iostream>
 #include <omp.h>
-#include <cuda_runtime.h>
 
 #include "GridLut.h"
 
@@ -19,7 +18,7 @@ GridLut<T>::~GridLut()
 }
 
 template<typename T>
-ImageData<T> GridLut<T>::gridding(ReconData<T> &reconData)
+ImageData<T> GridLut<T>::execute(ReconData<T> &reconData)
 {
     std::cout << "\nCPU gridding... " << std::endl;
     auto bounds = reconData.getCompBounds(0);

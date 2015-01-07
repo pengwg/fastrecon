@@ -7,7 +7,6 @@ set(SRC_FILES
     FFT.cpp
     ImageRecon.cpp
     ConvKernel.cpp
-    cuFFT.cpp
 
     cuGridLut.h
 )

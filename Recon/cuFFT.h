@@ -2,7 +2,10 @@
 #define CUFFT_H
 
 #include <cufft.h>
-#include "cuImageData.h"
+#include <common.h>
+
+template<typename T>
+class cuImageData;
 
 class cuFFT
 {
