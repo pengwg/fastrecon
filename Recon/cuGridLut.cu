@@ -207,7 +207,7 @@ void gridding_kernel(const cu_complex<T> *kData, const T *dcf, cu_complex<T> *ou
                      const unsigned *bucket_begin, const unsigned *bucket_end, const SampleTuple *tuples_last,
                      float half_W, size_t image_size)
 {
-    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int index = (blockIdx.y * gridDim.x + blockIdx.x) * blockDim.x + threadIdx.x;
 
     if (index >= image_size)
         return;
@@ -258,13 +258,16 @@ cuComplexVector<T> *cuGridLut<T>::griddingChannel(cuReconData<T> &reconData, int
 
         size_t image_size = cu_data_map->bucket_begin.size();
         size_t blockSize = 256;
-        size_t gridSize = (size_t)ceil((double)image_size / blockSize);
+
+        // Use 2D grid so that grid size is likely less than 65535 for 2.x compute capablility
+        size_t gridSize = (size_t)ceil(sqrt((double)image_size / blockSize));
+        dim3 dimGrid(gridSize, gridSize);
 
         auto d_bucket_begin = thrust::raw_pointer_cast(cu_data_map->bucket_begin.data());
         auto d_bucket_end = thrust::raw_pointer_cast(cu_data_map->bucket_end.data());
         auto d_tuples_last = thrust::raw_pointer_cast(cu_data_map->tuples_last.data());
 
-        gridding_kernel<T><<<gridSize, blockSize>>>(d_kData, d_dcf, d_out, d_bucket_begin, d_bucket_end, d_tuples_last,
+        gridding_kernel<T><<<dimGrid, blockSize>>>(d_kData, d_dcf, d_out, d_bucket_begin, d_bucket_end, d_tuples_last,
                                                     this->m_kernel.getKernelWidth() / 2.0, image_size);
         cudaDeviceSynchronize();
 
