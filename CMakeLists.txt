@@ -19,6 +19,8 @@ include_directories(
     Recon/
 )
 
+set(CMAKE_INSTALL_PREFIX /usr/local/fastrecon)
+
 if(CUDA_FOUND)
     cuda_include_directories(${Qt5Core_INCLUDE_DIRS})
     set(CUDA_NVCC_FLAGS
@@ -37,6 +39,7 @@ if(CUDA_FOUND)
     cuda_add_library(cuRecon SHARED ${CUDA_SRC_FILES})
     cuda_add_cufft_to_target(cuRecon)
     qt5_use_modules(cuRecon Core)
+    install(TARGETS cuRecon LIBRARY DESTINATION lib)
 
     add_definitions(-DCUDA_CAPABLE)
 endif(CUDA_FOUND)
@@ -53,9 +56,10 @@ set(MAIN_SRC_FILES
 add_executable(fastrecon ${MAIN_SRC_FILES})
 
 if(CUDA_FOUND)
-    target_link_libraries(fastrecon recon imageData reconData cuRecon)
+    target_link_libraries(fastrecon Recon cuRecon)
 else(CUDA_FOUND)
-    target_link_libraries(fastrecon recon imageData reconData)
+    target_link_libraries(fastrecon Recon)
 endif(CUDA_FOUND)
 
 qt5_use_modules(fastrecon Core Widgets)
+install(TARGETS fastrecon RUNTIME DESTINATION bin)
