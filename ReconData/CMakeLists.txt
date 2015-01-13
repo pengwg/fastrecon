@@ -1,7 +1,6 @@
 set(SRC_FILES
     ReconData.cpp
-# Include the following to show them in QtCreator project
-    cuReconData.h
+    cuReconData.h   # Include the header files to show them in QtCreator project
 )
 
 file(GLOB HDR_FILES *.h)

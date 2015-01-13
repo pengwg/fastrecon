@@ -28,9 +28,7 @@ void ReconData<T>::setDcf(std::vector<T> &dcf)
         std::cerr << "Error: data size does not match!" << std::endl;
         exit(1);
     }
-
-    auto p_dcf = new std::vector<T>(std::move(dcf));
-    m_dcf.reset(p_dcf);
+    m_dcf = std::move(dcf);
 }
 
 template<typename T>
@@ -64,7 +62,7 @@ template<typename T>
 void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName)
 {
     std::cout << std::endl << "Read trajectory:" << std::endl;
-    auto traj = new TrajVector(m_size);
+    m_traj.resize(m_size);
 
     for (const QString &name : trajFileList)
     {
@@ -82,18 +80,16 @@ void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringL
             std::exit(1);
         }
 
-        storeTrajComponent(*traj, traj_c);
+        storeTrajComponent(m_traj, traj_c);
     }
-
-    m_traj.reset(traj);
 
     std::cout << std::endl << "Read dcf:" << std::endl;
     std::cout << dcfFileName.toStdString() << std::endl;
-    auto dcf = new std::vector<T>(m_size);
+    m_dcf.resize(m_size);
 
     QFile file(dcfFileName);
     file.open(QIODevice::ReadOnly);
-    auto count = file.read((char *)dcf->data(), m_size * sizeof(T));
+    auto count = file.read((char *)m_dcf.data(), m_size * sizeof(T));
     file.close();
 
     if (count != m_size * sizeof(T))
@@ -101,7 +97,6 @@ void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringL
         std::cout << "Error: wrong data size in " << dcfFileName.toStdString() << std::endl;
         std::exit(1);
     }
-    m_dcf.reset(dcf);
 
     // Load data
     std::cout << std::endl << "Read data:" << std::endl;
@@ -140,7 +135,7 @@ void ReconData<T>::transformTraj(T translation, T scale)
 template<typename T>
 void ReconData<T>::transformLocalTraj(T translation, T scale)
 {
-    for (auto &sample : *m_traj)
+    for (auto &sample : m_traj)
     {
         for (int comp = 0; comp < m_dim; ++comp)
             sample.x[comp] = (sample.x[comp] + translation) * scale;
@@ -151,8 +146,8 @@ template<typename T>
 void ReconData<T>::clear()
 {
     m_size = 0;
-    m_traj.reset();
-    m_dcf.reset();
+    m_traj.clear();
+    m_dcf.clear();
     m_kDataMultiChannel.clear();
     m_bounds.clear();
 }

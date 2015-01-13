@@ -1,5 +1,7 @@
 set(SRC_FILES
     ImageData.cpp
+    common.h        # Include header files to show them in qtcreator
+    cuImageData.h
 )
 
 file(GLOB HDR_FILES *.h)

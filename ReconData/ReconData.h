@@ -39,12 +39,12 @@ public:
 
     int rcDim() const { return m_dim; }
 
-    const TrajVector *getTraj() const {
-        return m_traj.get();
+    const TrajVector &getTraj() const {
+        return m_traj;
     }
 
-    const std::vector<T> *getDcf() const {
-        return m_dcf.get();
+    const std::vector<T> &getDcf() const {
+        return m_dcf;
     }
 
     const ComplexVector<T> *getChannelData(int channel) const {
@@ -61,9 +61,9 @@ protected:
     int m_dim = 0;
     std::vector<std::pair<T, T>> m_bounds;
 
-    std::unique_ptr<TrajVector> m_traj;
+    TrajVector m_traj;
     std::vector<std::unique_ptr<const ComplexVector<T>>> m_kDataMultiChannel;
-    std::unique_ptr<std::vector<T>> m_dcf;
+    std::vector<T> m_dcf;
 
 private:
     void storeTrajComponent(TrajVector &traj, const std::vector<T> &traj_c);

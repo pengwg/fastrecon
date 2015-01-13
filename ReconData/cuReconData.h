@@ -12,11 +12,11 @@ public:
     cuReconData(int size);
     virtual ~cuReconData() {}
 
-    const cuComplexVector<T> *cuGetChannelData(int channel);
+    const cuComplexVector<T> *cuGetChannelData(int channel) const;
 
-    cuTrajVector *cuGetTraj();
+    const cuTrajVector &cuGetTraj() const;
 
-    const cuVector<T> *cuGetDcf();
+    const cuVector<T> &cuGetDcf() const;
 
     virtual int channels() const override
     {
@@ -42,12 +42,13 @@ public:
     };
 
 private:
+    cuTrajVector &getTraj() const;
     virtual void transformLocalTraj(T translation, T scale) override;
 
-    std::unique_ptr<cuTrajVector> m_cu_traj;
-    std::unique_ptr<cuComplexVector<T>> m_cu_kData;
-    std::unique_ptr<cuVector<T>> m_cu_dcf;
-    int m_channel_in_device = -1;
+    mutable std::unique_ptr<cuTrajVector> m_cu_traj;
+    mutable std::unique_ptr<cuComplexVector<T>> m_cu_kData;
+    mutable std::unique_ptr<cuVector<T>> m_cu_dcf;
+    mutable int m_channel_in_device = -1;
 };
 
 #endif // CURECONDATA_H

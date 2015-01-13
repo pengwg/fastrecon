@@ -7,8 +7,7 @@ set(SRC_FILES
     FFT.cpp
     ImageRecon.cpp
     ConvKernel.cpp
-
-    cuGridLut.h
+    cuGridLut.h     # Include header files to show them in qtcreator
 )
 
 file(GLOB HDR_FILES *.h)

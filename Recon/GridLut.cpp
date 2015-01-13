@@ -52,13 +52,13 @@ template<typename T>
 std::unique_ptr<ComplexVector<T>> GridLut<T>::griddingChannel(const ReconData<T> &reconData, int channel)
 {
     const ComplexVector<T> *kData = reconData.getChannelData(channel);
-    auto itDcf = reconData.getDcf()->cbegin();
+    auto itDcf = reconData.getDcf().cbegin();
 
     float kHW = m_kernel.getKernelWidth() / 2;
     const std::vector<float> *kernelData = m_kernel.getKernelData();
     int klength = kernelData->size();
 
-    auto itTraj = reconData.getTraj()->cbegin();
+    auto itTraj = reconData.getTraj().cbegin();
 
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};

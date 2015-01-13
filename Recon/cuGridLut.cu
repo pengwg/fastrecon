@@ -28,7 +28,7 @@ cuImageData<T> cuGridLut<T>::execute(cuReconData<T> &reconData)
 
     reconData.transformTraj(tr, scale);
 
-    plan(*reconData.cuGetTraj());
+    plan(reconData.cuGetTraj());
 
     std::cout << "GPU preprocess " << " | " << timer.restart() << " ms" << std::endl;
 
@@ -236,13 +236,13 @@ template<typename T>
 std::unique_ptr<cuComplexVector<T>> cuGridLut<T>::griddingChannel(cuReconData<T> &reconData, int channel)
 {
     const cuComplexVector<T> *kData = reconData.cuGetChannelData(channel);
-    const cuVector<T> *dcf = reconData.cuGetDcf();
+    const auto &dcf = reconData.cuGetDcf();
 
     auto out = std::unique_ptr<cuComplexVector<T>>(new cuComplexVector<T>((int)powf(this->m_gridSize, this->m_dim)));
 
     auto d_kData = thrust::raw_pointer_cast(kData->data());
     auto d_out = thrust::raw_pointer_cast(out->data());
-    auto d_dcf = thrust::raw_pointer_cast(dcf->data());
+    auto d_dcf = thrust::raw_pointer_cast(dcf.data());
 
     auto kernel = this->m_kernel.getKernelData();
     assert(kernel->size() == sizeof(d_kernel) / sizeof(d_kernel[0]));
