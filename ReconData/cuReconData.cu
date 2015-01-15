@@ -3,8 +3,8 @@
 #include "cuReconData.h"
 
 template<typename T>
-cuReconData<T>::cuReconData(int size)
-    : ReconData<T>(size)
+cuReconData<T>::cuReconData(int samples, int acquisitions)
+    : ReconData<T>(samples, acquisitions)
 {
 
 }

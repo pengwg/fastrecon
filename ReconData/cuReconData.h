@@ -9,7 +9,7 @@ class cuReconData : public ReconData<T>
 public:
     typedef cuVector<Point<T>> cuTrajVector;
 
-    cuReconData(int size);
+    cuReconData(int samples, int acquisitions);
     virtual ~cuReconData() {}
 
     const cuComplexVector<T> *cuGetChannelData(int channel) const;

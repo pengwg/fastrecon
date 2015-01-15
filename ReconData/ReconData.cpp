@@ -1,14 +1,17 @@
 #include <iostream>
+#include <limits>
+#include <QVector>
 
 #include "ReconData.h"
 
 template<typename T>
-ReconData<T>::ReconData(int size) : m_size(size)
+ReconData<T>::ReconData(int samples, int acquisitions) : m_samples(samples), m_acquisitions(acquisitions)
 {
+    m_size = samples * acquisitions;
 }
 
 template<typename T>
-void ReconData<T>::addChannelData(ComplexVector<T> &data)
+void ReconData<T>::addChannelData(const ComplexVector<T> &data)
 {
     if (m_size != data.size())
     {
@@ -16,8 +19,8 @@ void ReconData<T>::addChannelData(ComplexVector<T> &data)
         exit(1);
     }
 
-    auto p_data = new ComplexVector<T>(std::move(data));
-    m_kDataMultiChannel.push_back(std::unique_ptr<const ComplexVector<T>>(p_data));
+    auto p_data = new ComplexVector<T>(data);
+    m_kDataMultiChannel.push_back(std::unique_ptr<ComplexVector<T>>(p_data));
 }
 
 template<typename T>
@@ -32,26 +35,26 @@ void ReconData<T>::setDcf(std::vector<T> &dcf)
 }
 
 template<typename T>
-void ReconData<T>::storeTrajComponent(TrajVector &traj, const std::vector<T> &traj_c)
+void ReconData<T>::storeTrajComponent(const std::vector<T> &traj_c)
 {
     if (m_size != traj_c.size())
     {
         std::cerr << "Error: data size does not match!" << std::endl;
         exit(1);
     }
-
     if (m_dim == 4)
     {
         std::cout << "4-D trajectories have been loaded, ignoring additional data." << std::endl;
         return;
     }
+    m_traj.resize(m_size);
 
     auto bound = std::minmax_element(traj_c.begin(), traj_c.end());
     m_bounds.push_back(std::make_pair(*bound.first, *bound.second));
     std::cout << "Range: " << '(' << *bound.first << ", " << *bound.second << ')' << std::endl;
 
     auto in = traj_c.begin();
-    for (auto &p : traj)
+    for (auto &p : m_traj)
     {
         p.x[m_dim] = *(in++);
     }
@@ -62,7 +65,7 @@ template<typename T>
 void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName)
 {
     std::cout << std::endl << "Read trajectory:" << std::endl;
-    m_traj.resize(m_size);
+    m_dim = 0;
 
     for (const QString &name : trajFileList)
     {
@@ -80,7 +83,7 @@ void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringL
             std::exit(1);
         }
 
-        storeTrajComponent(m_traj, traj_c);
+        storeTrajComponent(traj_c);
     }
 
     std::cout << std::endl << "Read dcf:" << std::endl;
@@ -100,9 +103,10 @@ void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringL
 
     // Load data
     std::cout << std::endl << "Read data:" << std::endl;
+    ComplexVector<T> kdata(m_size);
+
     for (const QString &name : dataFileList)
     {
-        ComplexVector<T> kdata(m_size);
         std::cout << name.toStdString() << std::endl;
 
         QFile file(name);
@@ -118,6 +122,61 @@ void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringL
 
         addChannelData(kdata);
     }
+}
+
+template<typename T>
+void ReconData<T>::loadTraj(const QVector<T> &traj, int dim)
+{
+    if (traj.size() != m_size * (dim + 1)) {
+        std::cerr << "Error: data size does not match!" << std::endl << std::flush;
+        return;
+    }
+    m_dim = dim;
+    m_traj.resize(m_size);
+    m_dcf.resize(m_size);
+    m_bounds.resize(dim);
+
+    for (auto &bound : m_bounds) {
+        bound.first = std::numeric_limits<T>::max();
+        bound.second = std::numeric_limits<T>::lowest();
+    }
+
+    auto in = traj.begin();
+    auto it_dcf = m_dcf.begin();
+    for (auto &p : m_traj)
+    {
+        for (auto i = 0; i < dim; i++) {
+            p.x[i] = *(in++);
+
+            if (m_bounds[i].first > p.x[i])
+                m_bounds[i].first = p.x[i];
+            if (m_bounds[i].second < p.x[i])
+                m_bounds[i].second = p.x[i];
+        }
+        *(it_dcf++) = *(in++);
+    }
+}
+
+template<typename T>
+void ReconData<T>::updateSingleAcquisition(const std::complex<T> *data, int acquisition, int channel)
+{
+    if (channel > (int)m_kDataMultiChannel.size() - 1)
+    {
+        std::cerr << "Error: channel " << channel << " is empty!" << std::endl << std::flush;
+        return;
+    }
+    auto &channel_data = *m_kDataMultiChannel[channel];
+    std::copy_n(data, m_samples, channel_data.begin() + m_samples * acquisition);
+}
+
+template<typename T>
+const ComplexVector<T> *ReconData<T>::getChannelData(int channel) const
+{
+    if (channel < 0 || channel > (int)m_kDataMultiChannel.size() - 1)
+    {
+        return nullptr;
+    }
+    return m_kDataMultiChannel[channel].get();
 }
 
 template<typename T>

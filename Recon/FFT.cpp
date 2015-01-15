@@ -49,7 +49,7 @@ void FFT::excute(ImageData<float> &imgData)
 {
     std::cout << "\nCPU FFT... " << std::endl;
     int threads = omp_get_max_threads();
-    if (m_plan.size() < threads)
+    if ((int)m_plan.size() < threads)
     {
         std::cout << "Create plans for " << threads << " threads" << std::endl;
         plan(threads);

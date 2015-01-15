@@ -109,12 +109,10 @@ int main(int argc, char *argv[])
     ReconParameters params = options.getReconParameters();
 
     // -------------- Load multi-channel data -----------------
-    int size = params.samples * params.projections;
-
 #ifndef BUILD_CUDA
-    auto reconData = new ReconData<float>(size);
+    auto reconData = new ReconData<float>(params.samples, params.projections);
 #else
-    auto reconData = new cuReconData<float>(size);
+    auto reconData = new cuReconData<float>(params.samples, params.projections);
 #endif // BUILD_CUDA
 
     loadReconData(params, reconData);

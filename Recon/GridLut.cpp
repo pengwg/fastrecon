@@ -20,7 +20,7 @@ GridLut<T>::~GridLut()
 template<typename T>
 ImageData<T> GridLut<T>::execute(ReconData<T> &reconData)
 {
-    std::cout << "\nCPU gridding... " << std::endl;
+    std::cout << "\nCPU gridding... " << std::endl << std::flush;
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
     auto scale = (m_gridSize - 1) / (bounds.second - bounds.first);

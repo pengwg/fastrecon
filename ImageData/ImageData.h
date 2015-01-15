@@ -35,9 +35,9 @@ public:
 
     void addChannelImage(std::unique_ptr<ComplexVector<T>> image);
 
-    const ComplexVector<T> *getChannelImage(int channel) const;
+    const ComplexVector<T> *getChannelImage(int channel = 0) const;
 
-    ComplexVector<T> *getChannelImage(int channel);
+    ComplexVector<T> *getChannelImage(int channel = 0);
 
     virtual void fftShift();
     virtual void lowFilter(int res);
