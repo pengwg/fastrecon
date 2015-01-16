@@ -16,12 +16,12 @@
 #include "GridLut.h"
 #include "FFT.h"
 
-#ifdef CUDA_CAPABLE
+#ifdef BUILD_CUDA
 #include "cuReconData.h"
 #include "cuImageData.h"
 #include "cuGridLut.h"
 #include "cuFFT.h"
-#endif //CUDA_CAPABLE
+#endif //BUILD_CUDA
 
 template<typename T>
 void displayData(const ComplexVector<T> &data, ImageSize size, const QString& title)
@@ -111,11 +111,11 @@ int main(int argc, char *argv[])
     // -------------- Load multi-channel data -----------------
     int size = params.samples * params.projections;
 
-#ifndef CUDA_CAPABLE
+#ifndef BUILD_CUDA
     auto reconData = new ReconData<float>(size);
 #else
     auto reconData = new cuReconData<float>(size);
-#endif // CUDA_CAPABLE
+#endif // BUILD_CUDA
 
     loadReconData(params, reconData);
 
@@ -133,11 +133,11 @@ int main(int argc, char *argv[])
     int gridSize = params.rcxres * overGridFactor;
     timer.start();
 
-#ifndef CUDA_CAPABLE
+#ifndef BUILD_CUDA
     GridLut<float> grid(reconData->rcDim(), gridSize, kernel);
 #else
     cuGridLut<float> grid(reconData->rcDim(), gridSize, kernel);
-#endif // CUDA_CAPABLE
+#endif // BUILD_CUDA
 
     auto imgData = grid.execute(*reconData);
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
@@ -147,11 +147,11 @@ int main(int argc, char *argv[])
         imgMap = imgData;
 
     // --------------- FFT ----------------------------------
-#ifndef CUDA_CAPABLE
+#ifndef BUILD_CUDA
     FFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
 #else
     cuFFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
-#endif // CUDA_CAPABLE
+#endif // BUILD_CUDA
 
     timer.restart();
     fft.excute(imgData);

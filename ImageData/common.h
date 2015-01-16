@@ -3,8 +3,9 @@
 
 #include <complex>
 #include <vector>
+#include "config.h"
 
-#ifdef CUDA_CAPABLE
+#ifdef BUILD_CUDA
 #include <cuComplex.h>
 #include <thrust/device_vector.h>
 
@@ -36,10 +37,10 @@ struct cuComplexVectorType<double>
 
 template<typename T>
 using cuComplexVector = typename cuComplexVectorType<T>::type;
-#else // CUDA_CAPABLE
+#else // BUILD_CUDA
 template<typename T>
 using ComplexVector = std::vector<std::complex<T>>;
-#endif // CUDA_CAPABLE
+#endif // BUILD_CUDA
 
 
 typedef struct
