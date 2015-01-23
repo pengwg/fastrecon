@@ -42,6 +42,7 @@ public:
     virtual void fftShift();
     virtual void lowFilter(int res);
     virtual void normalize();
+    virtual void crop(const ImageSize &imageSize);
 
 protected:
     virtual void copy(const ImageData<T> &imageData);

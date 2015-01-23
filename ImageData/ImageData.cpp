@@ -244,4 +244,45 @@ void ImageData<T>::normalize()
     }
 }
 
+template<typename T>
+void ImageData<T>::crop(const ImageSize &imageSize)
+{
+    auto x0 = (m_size.x - imageSize.x) / 2;
+    auto y0 = (m_size.y - imageSize.y) / 2;
+    auto z0 = (m_size.z - imageSize.z) / 2;
+
+    if (x0 < 0 || y0 < 0 || z0 < 0) {
+        std::cerr << "Crop size larger than image" << std::endl;
+        return;
+    }
+
+    for (int n = 0; n < channels(); n++)
+    {
+        auto out = new ComplexVector<float>(imageSize.x * imageSize.y * imageSize.z);
+        auto itOut = out->begin();
+        auto itInput = getChannelImage(n)->cbegin();
+
+#pragma omp parallel for
+        for (int z = 0; z < imageSize.z; z++)
+        {
+            auto in1 = (z + z0) * (m_size.x * m_size.y) + y0 * m_size.x;
+            auto out1 = z * (imageSize.x * imageSize.y);
+
+            for (int y = 0; y < imageSize.y; y++)
+            {
+                auto in2 = y * m_size.x + in1 + x0;
+                auto out2 = y * imageSize.x + out1;
+                for (int x = 0; x < imageSize.x; x++)
+                {
+                    auto in3 = x + in2;
+                    auto out3 = x + out2;
+                    *(itOut+out3) = *(itInput + in3);
+                }
+            }
+        }
+        m_data_multichannel[n].reset(out);
+    }
+    m_size = imageSize;
+}
+
 template class ImageData<float>;
