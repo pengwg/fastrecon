@@ -3,7 +3,6 @@
 
 #include <complex>
 #include <vector>
-#include "config.h"
 
 typedef struct
 {
