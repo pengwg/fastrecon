@@ -47,7 +47,9 @@ void cuImageData<T>::addChannelImage(std::unique_ptr<cuComplexVector<T>> image)
 {
     if (image == nullptr) return;
 
-    auto im = new hostVector<typename cuComplexVector<T>::value_type>(*image);
+    auto im = new hostVector<typename cuComplexVector<T>::value_type>(image->size());
+    thrust::copy(image->begin(), image->end(), im->begin());
+
     m_cu_data = std::move(image);
 
     //auto h_im = reinterpret_cast<ComplexVector<T> *>(im);
@@ -90,7 +92,7 @@ void cuImageData<T>::update()
 
     auto &h_data = reinterpret_cast<hostVector<typename cuComplexVector<T>::value_type> &>
             (*this->m_data_multichannel[m_channel_in_device]);
-    h_data = *m_cu_data;
+    thrust::copy(m_cu_data->begin(), m_cu_data->end(), h_data.begin());
 }
 
 template<typename T>

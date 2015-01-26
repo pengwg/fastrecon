@@ -5,15 +5,22 @@
 #include <vector>
 #include "config.h"
 
-#ifdef BUILD_CUDA
-#include <cuComplex.h>
-#include <thrust/device_vector.h>
+typedef struct
+{
+    int x;
+    int y;
+    int z;
+} ImageSize;
 
 template<typename T>
-using hostVector = thrust::host_vector<T>;
+using hostVector = std::vector<T>;
 
 template<typename T>
 using ComplexVector = hostVector<std::complex<T>>;
+
+#ifdef BUILD_CUDA
+#include <cuComplex.h>
+#include <thrust/device_vector.h>
 
 template<typename T>
 using cuVector = typename thrust::device_vector<T>;
@@ -37,17 +44,6 @@ struct cuComplexVectorType<double>
 
 template<typename T>
 using cuComplexVector = typename cuComplexVectorType<T>::type;
-#else // BUILD_CUDA
-template<typename T>
-using ComplexVector = std::vector<std::complex<T>>;
 #endif // BUILD_CUDA
-
-
-typedef struct
-{
-    int x;
-    int y;
-    int z;
-} ImageSize;
 
 #endif // COMMON_H
