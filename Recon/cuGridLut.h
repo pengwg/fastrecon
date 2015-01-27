@@ -2,6 +2,8 @@
 #define CUGRIDLUT_H
 
 #include "GridLut.h"
+#include "cuReconData.h"
+#include "cuImageData.h"
 
 typedef struct
 {
@@ -23,11 +25,6 @@ typedef struct
     thrust::device_vector<SampleTuple> tuples_last;
 } cuDataMap;
 
-template<typename T>
-class cuReconData;
-
-template<typename T>
-class cuImageData;
 
 template<typename T>
 class cuGridLut : public GridLut<T>
@@ -36,7 +33,7 @@ public:
     cuGridLut(int dim, int gridSize, ConvKernel &kernel);
     virtual ~cuGridLut() {}
 
-    void plan(const cuVector<Point<T> > &traj);
+    void plan(cuReconData<T> &reconData);
     cuImageData<T> execute(cuReconData<T> &reconData);
 
 private:

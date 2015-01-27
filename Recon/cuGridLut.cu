@@ -6,8 +6,6 @@
 #include <cassert>
 
 #include "cuGridLut.h"
-#include "cuReconData.h"
-#include "cuImageData.h"
 
 template<typename T>
 cuGridLut<T>::cuGridLut(int dim, int gridSize, ConvKernel &kernel)
@@ -18,19 +16,13 @@ cuGridLut<T>::cuGridLut(int dim, int gridSize, ConvKernel &kernel)
 template<typename T>
 cuImageData<T> cuGridLut<T>::execute(cuReconData<T> &reconData)
 {
+    if (m_all_data_map.empty()) {
+        plan(reconData);
+    }
+
     std::cout << "\nGPU gridding... " << std::endl;
     QElapsedTimer timer;
     timer.start();
-
-    auto bounds = reconData.getCompBounds(0);
-    auto tr = -bounds.first;
-    auto scale = (this->m_gridSize - 1) / (bounds.second - bounds.first);
-
-    reconData.transformTraj(tr, scale);
-
-    plan(reconData.cuGetTraj());
-
-    std::cout << "GPU preprocess " << " | " << timer.restart() << " ms" << std::endl;
 
     cuImageData<T> img(reconData.rcDim(), {this->m_gridSize, this->m_gridSize, this->m_gridSize});
 
@@ -38,7 +30,7 @@ cuImageData<T> cuGridLut<T>::execute(cuReconData<T> &reconData)
     {
         auto out = griddingChannel(reconData, i);
         img.addChannelImage(std::move(out));
-        std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
+        std::cout << "Channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }
     return img;
 }
@@ -140,8 +132,19 @@ const cuDataMap *cuGridLut<T>::getDeviceDataMapPartition(int index)
 }
 
 template<typename T>
-void cuGridLut<T>::plan(const cuVector<Point<T>> &traj)
+void cuGridLut<T>::plan(cuReconData<T> &reconData)
 {
+    std::cout << "\nGPU plan... " << std::endl;
+    QElapsedTimer timer;
+    timer.start();
+
+    auto bounds = reconData.getCompBounds(0);
+    auto tr = -bounds.first;
+    auto scale = (this->m_gridSize - 1) / (bounds.second - bounds.first);
+
+    reconData.transformTraj(tr, scale);
+    auto &traj = reconData.cuGetTraj();
+
     T half_W = this->m_kernel.getKernelWidth() / 2.0;
 
     auto cells_per_sample = new thrust::device_vector<unsigned> (traj.size());
@@ -197,6 +200,7 @@ void cuGridLut<T>::plan(const cuVector<Point<T>> &traj)
 
         skip += num_of_samples_compute;
     }
+    std::cout << " | " << timer.restart() << " ms" << std::endl;
 }
 
 template<typename T>
