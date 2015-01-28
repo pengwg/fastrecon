@@ -13,7 +13,8 @@ public:
     GridLut(int dim, int gridSize, ConvKernel &kernel);
     virtual ~GridLut();
 
-    ImageData<T> execute(ReconData<T> &reconData);
+    virtual void plan(ReconData<T> &reconData);
+    virtual std::unique_ptr<ImageData<T>> execute(ReconData<T> &reconData);
 
 protected:
     std::unique_ptr<ComplexVector<T>> griddingChannel(const ReconData<T> &reconData, int channel);

@@ -21,17 +21,18 @@ void cuFFT::plan()
         cufftPlan3d(&m_plan, m_size.x, m_size.y, m_size.z, CUFFT_C2C);
 }
 
-void cuFFT::excute(cuImageData<float> &imgData)
+void cuFFT::excute(ImageData<float> &imgData)
 {
     std::cout << "\nGPU FFT... " << std::endl;
     QElapsedTimer timer;
     timer.start();
 
-    for (int i = 0; i < imgData.channels(); i++)
+    auto &cu_imgData = dynamic_cast<cuImageData<float> &>(imgData);
+    for (int i = 0; i < cu_imgData.channels(); i++)
     {
-        auto d_data = static_cast<cufftComplex *>(thrust::raw_pointer_cast(imgData.cuGetChannelImage(i)->data()));
+        auto d_data = static_cast<cufftComplex *>(thrust::raw_pointer_cast(cu_imgData.cuGetChannelImage(i)->data()));
         cufftExecC2C(m_plan, d_data, d_data, CUFFT_INVERSE);
-        imgData.update();
+        cu_imgData.update();
         std::cout << " FFT channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }
 }

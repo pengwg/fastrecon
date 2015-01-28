@@ -18,16 +18,20 @@ GridLut<T>::~GridLut()
 }
 
 template<typename T>
-ImageData<T> GridLut<T>::execute(ReconData<T> &reconData)
+void GridLut<T>::plan(ReconData<T> &reconData)
 {
-    std::cout << "\nCPU gridding... " << std::endl << std::flush;
     auto bounds = reconData.getCompBounds(0);
     auto tr = -bounds.first;
     auto scale = (m_gridSize - 1) / (bounds.second - bounds.first);
 
     reconData.transformTraj(tr, scale);
+}
 
-    ImageData<T> img(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+template<typename T>
+std::unique_ptr<ImageData<T>> GridLut<T>::execute(ReconData<T> &reconData)
+{
+    std::cout << "\nCPU gridding... " << std::endl << std::flush;
+    auto img = new ImageData<T>(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
 #pragma omp parallel shared(img, reconData)
     {
@@ -40,12 +44,12 @@ ImageData<T> GridLut<T>::execute(ReconData<T> &reconData)
             auto out = griddingChannel(reconData, i);
 #pragma omp ordered
             {
-                img.addChannelImage(std::move(out));
+                img->addChannelImage(std::move(out));
                 std::cout << "Thread " << id << " gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
             }
         }
     }
-    return img;
+    return std::unique_ptr<ImageData<T>>(img);
 }
 
 template<typename T>

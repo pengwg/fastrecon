@@ -14,7 +14,7 @@ cuGridLut<T>::cuGridLut(int dim, int gridSize, ConvKernel &kernel)
 }
 
 template<typename T>
-cuImageData<T> cuGridLut<T>::execute(cuReconData<T> &reconData)
+std::unique_ptr<ImageData<T>> cuGridLut<T>::execute(ReconData<T> &reconData)
 {
     if (m_all_data_map.empty()) {
         plan(reconData);
@@ -24,15 +24,16 @@ cuImageData<T> cuGridLut<T>::execute(cuReconData<T> &reconData)
     QElapsedTimer timer;
     timer.start();
 
-    cuImageData<T> img(reconData.rcDim(), {this->m_gridSize, this->m_gridSize, this->m_gridSize});
+    auto &cu_reconData = dynamic_cast<cuReconData<T> &>(reconData);
+    auto img = new cuImageData<T>(cu_reconData.rcDim(), {this->m_gridSize, this->m_gridSize, this->m_gridSize});
 
-    for (int i = 0; i < reconData.channels(); i++)
+    for (int i = 0; i < cu_reconData.channels(); i++)
     {
-        auto out = griddingChannel(reconData, i);
-        img.addChannelImage(std::move(out));
+        auto out = griddingChannel(cu_reconData, i);
+        img->addChannelImage(std::move(out));
         std::cout << "Channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }
-    return img;
+    return std::unique_ptr<ImageData<T>>(img);
 }
 
 template<typename T>
@@ -132,18 +133,16 @@ const cuDataMap *cuGridLut<T>::getDeviceDataMapPartition(int index)
 }
 
 template<typename T>
-void cuGridLut<T>::plan(cuReconData<T> &reconData)
+void cuGridLut<T>::plan(ReconData<T> &reconData)
 {
+    GridLut<T>::plan(reconData);
+
     std::cout << "\nGPU plan... " << std::endl;
     QElapsedTimer timer;
     timer.start();
 
-    auto bounds = reconData.getCompBounds(0);
-    auto tr = -bounds.first;
-    auto scale = (this->m_gridSize - 1) / (bounds.second - bounds.first);
-
-    reconData.transformTraj(tr, scale);
-    auto &traj = reconData.cuGetTraj();
+    auto &cu_reconData = dynamic_cast<cuReconData<T> &>(reconData);
+    auto &traj = cu_reconData.cuGetTraj();
 
     T half_W = this->m_kernel.getKernelWidth() / 2.0;
 

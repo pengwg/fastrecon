@@ -2,10 +2,7 @@
 #define CUFFT_H
 
 #include <cufft.h>
-#include <common.h>
-
-template<typename T>
-class cuImageData;
+#include <cuImageData.h>
 
 class cuFFT
 {
@@ -14,7 +11,7 @@ public:
     ~cuFFT();
 
     void plan();
-    void excute(cuImageData<float> &imgData);
+    void excute(ImageData<float> &imgData);
 
 private:
     int m_dim;

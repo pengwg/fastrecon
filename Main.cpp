@@ -109,10 +109,11 @@ int main(int argc, char *argv[])
     ReconParameters params = options.getReconParameters();
 
     // -------------- Load multi-channel data -----------------
+    ReconData<float> *reconData;
 #ifndef BUILD_CUDA
-    auto reconData = new ReconData<float>(params.samples, params.projections);
+    reconData = new ReconData<float>(params.samples, params.projections);
 #else
-    auto reconData = new cuReconData<float>(params.samples, params.projections);
+    reconData = new cuReconData<float>(params.samples, params.projections);
 #endif // BUILD_CUDA
 
     loadReconData(params, reconData);
@@ -131,18 +132,20 @@ int main(int argc, char *argv[])
     int gridSize = params.rcxres * overGridFactor;
     timer.start();
 
+    GridLut<float> *grid;
 #ifndef BUILD_CUDA
-    GridLut<float> grid(reconData->rcDim(), gridSize, kernel);
+    grid = new GridLut<float>(reconData->rcDim(), gridSize, kernel);
 #else
-    cuGridLut<float> grid(reconData->rcDim(), gridSize, kernel);
+    grid = new cuGridLut<float>(reconData->rcDim(), gridSize, kernel);
 #endif // BUILD_CUDA
 
-    auto imgData = grid.execute(*reconData);
+    grid->plan(*reconData);
+    auto imgData = grid->execute(*reconData);
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
-    decltype(imgData) imgMap;
+    ImageData<float> imgMap;
     if (params.pils)
-        imgMap = imgData;
+        imgMap = *imgData;
 
     // --------------- FFT ----------------------------------
 #ifndef BUILD_CUDA
@@ -152,12 +155,12 @@ int main(int argc, char *argv[])
 #endif // BUILD_CUDA
 
     timer.restart();
-    fft.excute(imgData);
-    imgData.ImageData<float>::fftShift();
+    fft.excute(*imgData);
+    imgData->ImageData<float>::fftShift();
     std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
     // -------------- Recon Methods -----------------------------------
-    ImageRecon recon(imgData, {params.rcxres, params.rcyres, params.rczres});
+    ImageRecon recon(*imgData, {params.rcxres, params.rcyres, params.rczres});
     ImageData<float> finalImage;
 
     timer.restart();

@@ -33,8 +33,8 @@ public:
     cuGridLut(int dim, int gridSize, ConvKernel &kernel);
     virtual ~cuGridLut() {}
 
-    void plan(cuReconData<T> &reconData);
-    cuImageData<T> execute(cuReconData<T> &reconData);
+    virtual void plan(ReconData<T> &reconData) override;
+    virtual std::unique_ptr<ImageData<T>> execute(ReconData<T> &reconData) override;
 
 private:
     std::unique_ptr<cuComplexVector<T>> griddingChannel(cuReconData<T> &reconData, int channel);
