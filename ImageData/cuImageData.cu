@@ -96,45 +96,30 @@ void cuImageData<T>::update()
 }
 
 template<typename T>
-void cuImageData<T>::copy(const ImageData<T> &imageData)
+void cuImageData<T>::copy(const cuImageData<T> &imageData)
 {
-    std::cout << "cuImageData: copy ";
-
     ImageData<T>::copy(imageData);
-    m_channel_in_device = -1;
 
-    auto im = dynamic_cast<const cuImageData<T> *>(&imageData);
-    if (im)
-    {
-        m_channel_in_device = im->m_channel_in_device;
-        if (m_cu_data == nullptr)
-            m_cu_data.reset(new cuComplexVector<T>(*im->m_cu_data));
-        else
-            *m_cu_data = *im->m_cu_data;
-
-        std::cout << " copy(device)" << std::endl;
-    }
+    m_channel_in_device = imageData.m_channel_in_device;
+    if (m_cu_data == nullptr)
+        m_cu_data.reset(new cuComplexVector<T>(*imageData.m_cu_data));
+    else
+        *m_cu_data = *imageData.m_cu_data;
+    std::cout << "-- cuImageData: copy --";
 }
 
 template<typename T>
-void cuImageData<T>::copy(ImageData<T> &&imageData)
+void cuImageData<T>::copy(cuImageData<T> &&imageData)
 {
-    std::cout << "cuImageData: move ";
-
     ImageData<T>::copy(std::move(imageData));
-    m_channel_in_device = -1;
 
-    auto im = dynamic_cast<cuImageData<T> *>(&imageData);
-    if (im)
-    {
-        m_channel_in_device = im->m_channel_in_device;
-        if (m_cu_data == nullptr)
-            m_cu_data.reset(new cuComplexVector<T>);
+    m_channel_in_device = imageData.m_channel_in_device;
+    if (m_cu_data == nullptr)
+        m_cu_data.reset(new cuComplexVector<T>);
 
-        m_cu_data->swap(*im->m_cu_data);
-        im->m_channel_in_device = -1;
-        std::cout << " move(device)" << std::endl;
-    }
+    m_cu_data->swap(*imageData.m_cu_data);
+    imageData.m_channel_in_device = -1;
+    std::cout << "-- cuImageData: move --";
 }
 
 template<typename T>
