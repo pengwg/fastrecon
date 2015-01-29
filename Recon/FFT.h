@@ -13,6 +13,9 @@ public:
 
     virtual void plan();
     virtual void excute(ImageData<float> &imgData);
+    void setNumOfThreads(unsigned threads) {
+        m_num_threads = threads;
+    }
 
 protected:
     int m_dim;
@@ -22,6 +25,8 @@ private:
     int m_sign;
     std::vector<fftwf_plan> m_plan;
     std::vector<fftwf_complex *> m_in;
+
+    unsigned m_num_threads = 1;
 };
 
 #endif // FFT_H

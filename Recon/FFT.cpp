@@ -30,11 +30,10 @@ void FFT::plan()
     m_in.clear();
     m_plan.clear();
 
-    int threads = omp_get_max_threads();
-    std::cout << "Create CPU FFT plans for " << threads << " threads" << std::endl;
+    std::cout << "Create CPU FFT plans for " << m_num_threads << " threads" << std::endl;
 
     // Create plans used by each threads
-    for (int i = 0; i < threads; i++)
+    for (unsigned i = 0; i < m_num_threads; i++)
     {
         auto in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * m_size.x * m_size.y * m_size.z);
         fftwf_plan plan;
@@ -50,6 +49,8 @@ void FFT::plan()
 
 void FFT::excute(ImageData<float> &imgData)
 {
+    omp_set_num_threads(m_num_threads);
+
     std::cout << "\nCPU FFT... " << std::endl;
     int threads = omp_get_max_threads();
     if ((int)m_plan.size() < threads)

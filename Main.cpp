@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 
     loadReconData(params, reconData);
 
-    omp_set_num_threads(std::min(reconData->channels(), omp_get_num_procs()));
+    unsigned threads = std::min(reconData->channels(), omp_get_num_procs());
 
     QElapsedTimer timer0, timer;
     timer0.start();
@@ -140,6 +140,7 @@ int main(int argc, char *argv[])
     dynamic_cast<cuGridLut<float> *>(grid)->setNumOfPartitions(25);
 #endif // BUILD_CUDA
 
+    grid->setNumOfThreads(threads);
     grid->plan(*reconData);
     auto imgData = grid->execute(*reconData);
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
@@ -157,6 +158,7 @@ int main(int argc, char *argv[])
 #endif // BUILD_CUDA
 
     timer.restart();
+    fft->setNumOfThreads(threads);
     fft->excute(*imgData);
     imgData->ImageData<float>::fftShift();
     std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;

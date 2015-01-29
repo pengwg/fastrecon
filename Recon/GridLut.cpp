@@ -30,6 +30,8 @@ void GridLut<T>::plan(ReconData<T> &reconData)
 template<typename T>
 std::unique_ptr<ImageData<T>> GridLut<T>::execute(ReconData<T> &reconData)
 {
+    omp_set_num_threads(m_num_threads);
+
     std::cout << "\nCPU gridding... " << std::endl << std::flush;
     auto img = new ImageData<T>(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
