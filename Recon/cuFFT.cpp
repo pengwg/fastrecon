@@ -3,9 +3,8 @@
 #include "cuImageData.h"
 
 cuFFT::cuFFT(int dims, ImageSize size, int sign)
-    : m_dim(dims), m_size(size), m_sign(sign)
+    : FFT(dims, size), m_sign(sign)
 {
-    plan();
 }
 
 cuFFT::~cuFFT()
@@ -15,6 +14,7 @@ cuFFT::~cuFFT()
 
 void cuFFT::plan()
 {
+    std::cout << "Create GPU FFT plan." << std::endl;
     if (m_dim == 2)
         cufftPlan2d(&m_plan, m_size.x, m_size.y, CUFFT_C2C);
     else if (m_dim == 3)
@@ -23,6 +23,10 @@ void cuFFT::plan()
 
 void cuFFT::excute(ImageData<float> &imgData)
 {
+    if (m_plan == 0) {
+        plan();
+    }
+
     std::cout << "\nGPU FFT... " << std::endl;
     QElapsedTimer timer;
     timer.start();

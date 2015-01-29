@@ -148,14 +148,15 @@ int main(int argc, char *argv[])
         imgMap = *imgData;
 
     // --------------- FFT ----------------------------------
+    FFT *fft;
 #ifndef BUILD_CUDA
-    FFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
+    fft = new FFT(reconData->rcDim(), {gridSize, gridSize, gridSize});
 #else
-    cuFFT fft(reconData->rcDim(), {gridSize, gridSize, gridSize});
+    fft = new cuFFT(reconData->rcDim(), {gridSize, gridSize, gridSize});
 #endif // BUILD_CUDA
 
     timer.restart();
-    fft.excute(*imgData);
+    fft->excute(*imgData);
     imgData->ImageData<float>::fftShift();
     std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
@@ -170,7 +171,7 @@ int main(int argc, char *argv[])
         std::cout << "\nLow pass filtering | " << timer.restart() << " ms" << std::endl;
 
         std::cout << "\nFFT low res image... " << std::endl;
-        fft.excute(imgMap);
+        fft->excute(imgMap);
         imgMap.fftShift();
         std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
@@ -190,6 +191,8 @@ int main(int argc, char *argv[])
     std::cout << "\nProgram total time excluding I/O: " << timer0.elapsed() / 1000.0 << " s" << std::endl;
 
     delete reconData;
+    delete grid;
+    delete fft;
 
     // -------------------------- Save Data ---------------------------
     /*QFile file(params.result_filename);

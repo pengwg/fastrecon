@@ -25,10 +25,13 @@ FFT::~FFT()
     }
 }
 
-void FFT::plan(int threads)
+void FFT::plan()
 {
     m_in.clear();
     m_plan.clear();
+
+    int threads = omp_get_max_threads();
+    std::cout << "Create CPU FFT plans for " << threads << " threads" << std::endl;
 
     // Create plans used by each threads
     for (int i = 0; i < threads; i++)
@@ -51,9 +54,9 @@ void FFT::excute(ImageData<float> &imgData)
     int threads = omp_get_max_threads();
     if ((int)m_plan.size() < threads)
     {
-        std::cout << "Create plans for " << threads << " threads" << std::endl;
-        plan(threads);
+        plan();
     }
+
     if (imgData.dataSize() != m_size.x * m_size.y * m_size.z)
     {
         std::cerr << "Error: FFT wrong image size" << std::endl;

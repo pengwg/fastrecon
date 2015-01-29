@@ -9,16 +9,17 @@ class FFT
 {
 public:
     FFT(int dims, ImageSize size, int sign = FFTW_BACKWARD);
-    ~FFT();
+    virtual ~FFT();
 
-    void plan(int threads);
-    void excute(ImageData<float> &imgData);
+    virtual void plan();
+    virtual void excute(ImageData<float> &imgData);
 
-private:
+protected:
     int m_dim;
     ImageSize m_size;
-    int m_sign;
 
+private:
+    int m_sign;
     std::vector<fftwf_plan> m_plan;
     std::vector<fftwf_complex *> m_in;
 };
