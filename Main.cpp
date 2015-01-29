@@ -137,6 +137,7 @@ int main(int argc, char *argv[])
     grid = new GridLut<float>(reconData->rcDim(), gridSize, kernel);
 #else
     grid = new cuGridLut<float>(reconData->rcDim(), gridSize, kernel);
+    dynamic_cast<cuGridLut<float> *>(grid)->setNumOfPartitions(25);
 #endif // BUILD_CUDA
 
     grid->plan(*reconData);

@@ -137,7 +137,7 @@ void cuGridLut<T>::plan(ReconData<T> &reconData)
 {
     GridLut<T>::plan(reconData);
 
-    std::cout << "\nGPU plan... " << std::endl;
+    std::cout << "\nGPU plan, partition data by " << m_gpu_partitions << " ..." << std::endl;
     QElapsedTimer timer;
     timer.start();
 
@@ -159,8 +159,7 @@ void cuGridLut<T>::plan(ReconData<T> &reconData)
 
     std::cout << " Traj size: " << traj.size() << ", Image size: " << m_cu_data_map.bucket_begin.size() << ", Number of pairs: " << tuple_index.back() << std::endl;
 
-    int num_partitions = 25;
-    size_t chunk_size = ceil((double)traj.size() / num_partitions);
+    size_t chunk_size = ceil((double)traj.size() / m_gpu_partitions);
 
     size_t blockSize = 256;
     size_t gridSize = (size_t)ceil((double)chunk_size / blockSize);
