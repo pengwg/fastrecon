@@ -13,10 +13,10 @@ public:
     virtual ~cuReconData() {}
 
     const cuComplexVector<T> *cuGetChannelData(int channel) const;
-
     const cuTrajVector &cuGetTraj() const;
-
     const cuVector<T> &cuGetDcf() const;
+
+    virtual void updateSingleAcquisition(const std::complex<T> *data, int acquisition, int channel = 0) override;
 
     virtual int channels() const override
     {

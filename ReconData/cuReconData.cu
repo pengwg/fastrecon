@@ -50,6 +50,18 @@ const cuVector<T> &cuReconData<T>::cuGetDcf() const
 }
 
 template<typename T>
+void cuReconData<T>::updateSingleAcquisition(const std::complex<T> *data, int acquisition, int channel)
+{
+    ReconData<T>::updateSingleAcquisition(data, acquisition, channel);
+
+    if (channel == m_channel_in_device)
+    {
+        auto ptr = reinterpret_cast<const typename cuComplexVector<T>::value_type *>(data);
+        thrust::copy_n(ptr, this->m_samples, m_cu_kData->begin() + this->m_samples * acquisition);
+    }
+}
+
+template<typename T>
 void cuReconData<T>::clear()
 {
     ReconData<T>::clear();

@@ -29,7 +29,7 @@ public:
     void transformTraj(T translation, T scale);
     void loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName);
     void loadTraj(const QVector<T> &traj, int dim);
-    void updateSingleAcquisition(const std::complex<T> *data, int acquisition, int channel = 0);
+    virtual void updateSingleAcquisition(const std::complex<T> *data, int acquisition, int channel = 0);
 
     std::pair<T, T> getCompBounds(int comp) const {
         return m_bounds[comp];
