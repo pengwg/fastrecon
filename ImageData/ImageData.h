@@ -13,6 +13,7 @@ public:
 
     ImageData(const ImageData<T> &imageData);
     ImageData(ImageData<T> &&imageData);
+    virtual ~ImageData() {}
 
     // Copy
     ImageData<T> &operator=(const ImageData<T> &imageData);

@@ -13,6 +13,8 @@ public:
 
     cuImageData(const cuImageData<T> &imageData);
     cuImageData(cuImageData<T> &&imageData);
+    virtual ~cuImageData() {}
+
     cuImageData<T> &operator=(const cuImageData<T> &imageData);
     cuImageData<T> &operator=(cuImageData<T> &&imageData);
 
