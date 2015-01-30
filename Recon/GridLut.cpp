@@ -32,7 +32,6 @@ std::unique_ptr<ImageData<T>> GridLut<T>::execute(ReconData<T> &reconData)
 {
     omp_set_num_threads(m_num_threads);
 
-    std::cout << "\nCPU gridding... " << std::endl << std::flush;
     auto img = new ImageData<T>(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
 
 #pragma omp parallel shared(img, reconData)
@@ -47,7 +46,7 @@ std::unique_ptr<ImageData<T>> GridLut<T>::execute(ReconData<T> &reconData)
 #pragma omp ordered
             {
                 img->addChannelImage(std::move(out));
-                std::cout << "Thread " << id << " gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
+                std::cout << "Thread " << id << " cpu gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
             }
         }
     }

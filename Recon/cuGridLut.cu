@@ -26,7 +26,6 @@ std::unique_ptr<ImageData<T>> cuGridLut<T>::execute(ReconData<T> &reconData)
         plan(reconData);
     }
 
-    std::cout << "\nGPU gridding... " << std::endl;
     QElapsedTimer timer;
     timer.start();
 
@@ -37,7 +36,7 @@ std::unique_ptr<ImageData<T>> cuGridLut<T>::execute(ReconData<T> &reconData)
     {
         auto out = griddingChannel(cu_reconData, i);
         img->addChannelImage(std::move(out));
-        std::cout << "Channel " << i << " | " << timer.restart() << " ms" << std::endl;
+        std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }
     return std::unique_ptr<ImageData<T>>(img);
 }

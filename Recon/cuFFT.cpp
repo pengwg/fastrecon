@@ -27,7 +27,6 @@ void cuFFT::excute(ImageData<float> &imgData)
         plan();
     }
 
-    std::cout << "\nGPU FFT... " << std::endl;
     QElapsedTimer timer;
     timer.start();
 
@@ -37,6 +36,6 @@ void cuFFT::excute(ImageData<float> &imgData)
         auto d_data = static_cast<cufftComplex *>(thrust::raw_pointer_cast(cu_imgData.cuGetChannelImage(i)->data()));
         cufftExecC2C(m_plan, d_data, d_data, CUFFT_INVERSE);
         cu_imgData.update();
-        std::cout << " FFT channel " << i << " | " << timer.restart() << " ms" << std::endl;
+        std::cout << "GPU FFT channel " << i << " | " << timer.restart() << " ms" << std::endl;
     }
 }

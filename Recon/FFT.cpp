@@ -55,7 +55,6 @@ void FFT::excute(ImageData<float> &imgData)
 {
     omp_set_num_threads(m_num_threads);
 
-    std::cout << "\nCPU FFT... " << std::endl;
     int threads = omp_get_max_threads();
     if ((int)m_plan.size() < threads)
     {
@@ -86,7 +85,7 @@ void FFT::excute(ImageData<float> &imgData)
             memcpy(data->data(), in, imgData.dataSize() * sizeof(fftwf_complex));
 
 #pragma omp critical
-            std::cout << "Thread " << id << " FFT channel " << i << " | " << timer.restart() << " ms" << std::endl;
+            std::cout << "Thread " << id << " CPU FFT channel " << i << " | " << timer.restart() << " ms" << std::endl;
         }
     }
 }
