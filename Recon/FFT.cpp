@@ -5,6 +5,8 @@
 
 #include "FFT.h"
 
+std::mutex FFT::m_mutex;
+
 FFT::FFT(int dims, ImageSize size, int sign)
     : m_dim(dims), m_size(size), m_sign(sign)
 {
@@ -33,6 +35,8 @@ void FFT::plan()
     std::cout << "Create CPU FFT plans for " << m_num_threads << " threads" << std::endl;
 
     // Create plans used by each threads
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     for (unsigned i = 0; i < m_num_threads; i++)
     {
         auto in = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * m_size.x * m_size.y * m_size.z);

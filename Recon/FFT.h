@@ -2,6 +2,8 @@
 #define FFT_H
 
 #include <fftw3.h>
+#include <mutex>
+
 #include "ReconData.h"
 #include "ImageData.h"
 
@@ -26,7 +28,8 @@ private:
     std::vector<fftwf_plan> m_plan;
     std::vector<fftwf_complex *> m_in;
 
-    unsigned m_num_threads = 1;
+    unsigned m_num_threads = 1; // number of child threads for openmp
+    static std::mutex m_mutex;
 };
 
 #endif // FFT_H
