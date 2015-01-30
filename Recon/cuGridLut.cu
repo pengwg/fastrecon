@@ -8,6 +8,12 @@
 #include "cuGridLut.h"
 
 template<typename T>
+std::mutex cuGridLut<T>::m_mutex;
+
+template<typename T>
+const cuDataMap *cuGridLut<T>::m_cu_data_map_persistent = nullptr;
+
+template<typename T>
 cuGridLut<T>::cuGridLut(int dim, int gridSize, ConvKernel &kernel)
     : GridLut<T>(dim, gridSize, kernel)
 {
@@ -137,6 +143,11 @@ void cuGridLut<T>::plan(ReconData<T> &reconData)
 {
     GridLut<T>::plan(reconData);
 
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if(!m_all_data_map.empty())
+        return;
+
     std::cout << "\nGPU plan, partition data by " << m_gpu_partitions << " ..." << std::endl;
     QElapsedTimer timer;
     timer.start();
@@ -199,6 +210,10 @@ void cuGridLut<T>::plan(ReconData<T> &reconData)
         skip += num_of_samples_compute;
     }
     std::cout << " | " << timer.restart() << " ms" << std::endl;
+
+    if (m_gpu_partitions == 1) {
+        m_cu_data_map_persistent = &m_cu_data_map;
+    }
 }
 
 template<typename T>
@@ -252,12 +267,17 @@ std::unique_ptr<cuComplexVector<T>> cuGridLut<T>::griddingChannel(cuReconData<T>
 
     auto index0 = m_index_data_map_in_device;
     auto index = index0;
-    assert(index != -1);
+    // assert(index != -1);
 
     do
     {
         //std::cout << "Gridding part " << index << std::endl;
-        auto cu_data_map = getDeviceDataMapPartition(index);
+        const cuDataMap *cu_data_map;
+        if (m_gpu_partitions == 1)
+            cu_data_map = m_cu_data_map_persistent;
+        else
+            cu_data_map = getDeviceDataMapPartition(index);
+
         index = (index + 1) % m_all_data_map.size();
 
         size_t image_size = cu_data_map->bucket_begin.size();

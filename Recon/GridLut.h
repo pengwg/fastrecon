@@ -5,7 +5,6 @@
 #include "ReconData.h"
 #include "ImageData.h"
 
-
 template<typename T>
 class GridLut
 {
@@ -29,7 +28,7 @@ protected:
     std::vector<int> m_start[3];
     std::vector<int> m_end[3];
 
-    unsigned m_num_threads = 1;
+    unsigned m_num_threads = 1; // number of child threads for openmp
 };
 
 #endif // GRIDLUT_H
