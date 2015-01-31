@@ -36,7 +36,7 @@ std::unique_ptr<ImageData<T>> cuGridLut<T>::execute(ReconData<T> &reconData)
     {
         auto out = griddingChannel(cu_reconData, i);
         img->addChannelImage(std::move(out));
-        std::cout << "GPU gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
+        std::cout << "GPU gridding channel " << this->m_index << ':' << i << " | " << timer.restart() << " ms" << std::endl;
     }
     return std::unique_ptr<ImageData<T>>(img);
 }

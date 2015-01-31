@@ -85,7 +85,7 @@ void FFT::excute(ImageData<float> &imgData)
             memcpy(data->data(), in, imgData.dataSize() * sizeof(fftwf_complex));
 
 #pragma omp critical
-            std::cout << "Thread " << id << " CPU FFT channel " << i << " | " << timer.restart() << " ms" << std::endl;
+            std::cout << "Thread " << id << " CPU FFT channel " << m_index << ':' << i << " | " << timer.restart() << " ms" << std::endl;
         }
     }
 }

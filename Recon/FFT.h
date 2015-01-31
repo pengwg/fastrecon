@@ -18,10 +18,14 @@ public:
     void setNumOfThreads(unsigned threads) {
         m_num_threads = threads;
     }
+    void setIndex(int index) {
+        m_index = index;
+    }
 
 protected:
     int m_dim;
     ImageSize m_size;
+    int m_index = 0;
 
 private:
     int m_sign;

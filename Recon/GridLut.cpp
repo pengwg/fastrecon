@@ -46,7 +46,7 @@ std::unique_ptr<ImageData<T>> GridLut<T>::execute(ReconData<T> &reconData)
 #pragma omp ordered
             {
                 img->addChannelImage(std::move(out));
-                std::cout << "Thread " << id << " cpu gridding channel " << i << " | " << timer.restart() << " ms" << std::endl;
+                std::cout << "Thread " << id << " cpu gridding channel " << m_index << ':' << i << " | " << timer.restart() << " ms" << std::endl;
             }
         }
     }

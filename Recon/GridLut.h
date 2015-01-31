@@ -17,6 +17,9 @@ public:
     void setNumOfThreads(unsigned threads) {
         m_num_threads = threads;
     }
+    void setIndex(int index) {
+        m_index = index;
+    }
 
 protected:
     std::unique_ptr<ComplexVector<T>> griddingChannel(const ReconData<T> &reconData, int channel);
@@ -29,6 +32,7 @@ protected:
     std::vector<int> m_end[3];
 
     unsigned m_num_threads = 1; // number of child threads for openmp
+    int m_index = 0;
 };
 
 #endif // GRIDLUT_H
