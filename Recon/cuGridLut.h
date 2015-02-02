@@ -46,7 +46,7 @@ private:
     void addDataMapFromDevice();
     const cuDataMap *getDeviceDataMapPartition(int index);
 
-    std::vector<DataMap> m_all_data_map;
+    static std::vector<DataMap> m_all_data_map;
     cuDataMap m_cu_data_map;
     int m_index_data_map_in_device = -1;
     int m_gpu_partitions = 1;

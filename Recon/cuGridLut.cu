@@ -11,6 +11,9 @@ template<typename T>
 std::mutex cuGridLut<T>::m_mutex;
 
 template<typename T>
+std::vector<DataMap> cuGridLut<T>::m_all_data_map;
+
+template<typename T>
 const cuDataMap *cuGridLut<T>::m_cu_data_map_persistent = nullptr;
 
 template<typename T>
@@ -124,6 +127,11 @@ const cuDataMap *cuGridLut<T>::getDeviceDataMapPartition(int index)
 {
     if (index < 0 || index > m_all_data_map.size() - 1)
         return nullptr;
+
+    if (m_gpu_partitions == 1) {
+        m_index_data_map_in_device = 0;
+        return m_cu_data_map_persistent;
+    }
 
     if (index != m_index_data_map_in_device)
     {
@@ -251,6 +259,8 @@ void gridding_kernel(const cu_complex<T> *kData, const T *dcf, cu_complex<T> *ou
 template<typename T>
 std::unique_ptr<cuComplexVector<T>> cuGridLut<T>::griddingChannel(cuReconData<T> &reconData, int channel)
 {
+    //std::lock_guard<std::mutex> lock(m_mutex);
+
     const cuComplexVector<T> *kData = reconData.cuGetChannelData(channel);
     const auto &dcf = reconData.cuGetDcf();
 
@@ -265,17 +275,13 @@ std::unique_ptr<cuComplexVector<T>> cuGridLut<T>::griddingChannel(cuReconData<T>
     cudaMemcpyToSymbol(d_kernel, kernel->data(), kernel->size() * sizeof(float));
 
     auto index0 = m_index_data_map_in_device;
+    if (index0 == -1) index0 = 0;
     auto index = index0;
-    // assert(index != -1);
 
     do
     {
         //std::cout << "Gridding part " << index << std::endl;
-        const cuDataMap *cu_data_map;
-        if (m_gpu_partitions == 1)
-            cu_data_map = m_cu_data_map_persistent;
-        else
-            cu_data_map = getDeviceDataMapPartition(index);
+        auto cu_data_map = getDeviceDataMapPartition(index);
 
         index = (index + 1) % m_all_data_map.size();
 
