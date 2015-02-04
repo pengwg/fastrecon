@@ -110,7 +110,7 @@ std::unique_ptr<ComplexVector<T>> GridLut<T>::griddingChannel(const ReconData<T>
                     if (dk < kHW)
                     {
                         // kernelData has hight resolution, interpolation error can be ignored
-                        int ki = (int)(dk / kHW * (klength - 1));
+                        int ki = (int)std::round(dk / kHW * (klength - 1));
                         *itOut += kernelData->at(ki) * data;
                     }
                     itOut++;

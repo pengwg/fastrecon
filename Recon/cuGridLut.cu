@@ -248,7 +248,7 @@ void gridding_kernel(const cu_complex<T> *kData, const T *dcf, cu_complex<T> *ou
 
         if (delta < half_W)
         {
-            int ki = (int)(delta / half_W * (kernel_length - 1));
+            int ki = lroundf(delta / half_W * (kernel_length - 1));
             data.x += kData[sample_idx].x * dcf[sample_idx] * d_kernel[ki];
             data.y += kData[sample_idx].y * dcf[sample_idx] * d_kernel[ki];
         }
