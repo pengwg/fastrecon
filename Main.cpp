@@ -198,10 +198,13 @@ int main(int argc, char *argv[])
     delete fft;
 
     // -------------------------- Save Data ---------------------------
-    /*QFile file(params.result_filename);
+    QFile file(params.path + params.outFile);
     file.open(QIODevice::WriteOnly);
-    auto count = file.write((const char *)data.data(), data.size() * sizeof(typename KData::value_type));
-    file.close();*/
+    for (const auto &data : *finalImage.getChannelImage()) {
+        auto value = std::abs(data);
+        file.write((const char *)&value, sizeof(decltype(value)));
+    }
+    file.close();
 
     // -------------------------- Display Data -----------------------
     int n = 0;
