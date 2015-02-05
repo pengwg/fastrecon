@@ -68,7 +68,7 @@ std::unique_ptr<ComplexVector<T>> GridLut<T>::griddingChannel(const ReconData<T>
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};
     //ComplexVector<T> *out = new ComplexVector<T>(powf(m_gridSize, m_dim));
-    std::vector<std::complex<T>> out(powf(m_gridSize, m_dim));
+    std::vector<std::complex<T>> out(std::pow(m_gridSize, m_dim));
 
     for (const auto &sample : (*kData))
     {
