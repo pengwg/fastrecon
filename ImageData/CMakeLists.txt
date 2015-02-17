@@ -1,13 +1,14 @@
-set(SRC_FILES
-    ImageData.cpp
-    common.h        # Include header files to show them in qtcreator
-    cuImageData.h
+set(IMAGE_SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/ImageData.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/common.h        # Include header files to show them in qtcreator
+    CACHE INTERNAL ""
+)
+
+set(CU_IMAGE_SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/cuImageData.cu
+    CACHE INTERNAL ""
 )
 
 file(GLOB HDR_FILES *.h)
-
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-add_library(imageData STATIC ${SRC_FILES})
-
 install(FILES ${HDR_FILES} DESTINATION include)
 

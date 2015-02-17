@@ -1,11 +1,16 @@
-set(SRC_FILES
-    ReconData.cpp
-    cuReconData.h   # Include the header files to show them in QtCreator project
+set(RECON_SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/ReconData.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/GridLut.cpp   
+    ${CMAKE_CURRENT_SOURCE_DIR}/ConvKernel.cpp 
+    CACHE INTERNAL ""  
+)
+
+set(CU_RECON_SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/cuReconData.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/cuGridLut.cu   
+    ${CMAKE_CURRENT_SOURCE_DIR}/cuReconData.h   # Include the header files to show them in QtCreator project
+    CACHE INTERNAL ""
 )
 
 file(GLOB HDR_FILES *.h)
-
-add_library(reconData STATIC ${SRC_FILES})
-qt5_use_modules(reconData Core)
-
 install(FILES ${HDR_FILES} DESTINATION include)
