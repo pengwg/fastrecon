@@ -6,9 +6,9 @@
 
 typedef struct
 {
-    int x;
-    int y;
-    int z;
+    unsigned x;
+    unsigned y;
+    unsigned z;
 } ImageSize;
 
 template<typename T>

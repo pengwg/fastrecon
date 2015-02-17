@@ -32,7 +32,7 @@ template<typename T>
 class cuGridLut : public GridLut<T>
 {
 public:
-    cuGridLut(int dim, int gridSize, ConvKernel &kernel);
+    cuGridLut(unsigned dim, unsigned gridSize, ConvKernel &kernel);
     virtual ~cuGridLut() {}
 
     virtual void plan(ReconData<T> &reconData) override;

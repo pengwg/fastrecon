@@ -17,7 +17,7 @@ template<typename T>
 const cuDataMap *cuGridLut<T>::m_cu_data_map_persistent = nullptr;
 
 template<typename T>
-cuGridLut<T>::cuGridLut(int dim, int gridSize, ConvKernel &kernel)
+cuGridLut<T>::cuGridLut(unsigned dim, unsigned gridSize, ConvKernel &kernel)
     : GridLut<T>(dim, gridSize, kernel)
 {
 }
@@ -125,7 +125,7 @@ void cuGridLut<T>::addDataMapFromDevice()
 template<typename T>
 const cuDataMap *cuGridLut<T>::getDeviceDataMapPartition(int index)
 {
-    if (index < 0 || index > m_all_data_map.size() - 1)
+    if (index < 0 || index > (int)m_all_data_map.size() - 1)
         return nullptr;
 
     if (m_gpu_partitions == 1) {

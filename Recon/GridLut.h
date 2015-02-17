@@ -9,7 +9,7 @@ template<typename T>
 class GridLut
 {
 public:
-    GridLut(int dim, int gridSize, ConvKernel &kernel);
+    GridLut(unsigned dim, unsigned gridSize, ConvKernel &kernel);
     virtual ~GridLut();
 
     virtual void plan(ReconData<T> &reconData);
@@ -24,8 +24,8 @@ public:
 protected:
     std::unique_ptr<ComplexVector<T>> griddingChannel(const ReconData<T> &reconData, int channel);
 
-    int m_dim;
-    int m_gridSize;
+    unsigned m_dim;
+    unsigned m_gridSize;
     ConvKernel m_kernel;
     std::vector<float> m_center[3];
     std::vector<int> m_start[3];

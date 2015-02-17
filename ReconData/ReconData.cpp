@@ -77,7 +77,7 @@ void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringL
         auto count = file.read((char *)traj_c.data(), m_size * sizeof(T));
         file.close();
 
-        if (count != m_size * sizeof(T))
+        if ((std::size_t)count != m_size * sizeof(T))
         {
             std::cout << "Error: wrong data size in " << name.toStdString() << std::endl;
             std::exit(1);
@@ -95,7 +95,7 @@ void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringL
     auto count = file.read((char *)m_dcf.data(), m_size * sizeof(T));
     file.close();
 
-    if (count != m_size * sizeof(T))
+    if ((std::size_t)count != m_size * sizeof(T))
     {
         std::cout << "Error: wrong data size in " << dcfFileName.toStdString() << std::endl;
         std::exit(1);
@@ -114,7 +114,7 @@ void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringL
         auto count = file.read((char *)kdata.data(), m_size * sizeof(typename ComplexVector<T>::value_type));
         file.close();
 
-        if (count != m_size * sizeof(typename ComplexVector<T>::value_type))
+        if ((std::size_t)count != m_size * sizeof(typename ComplexVector<T>::value_type))
         {
             std::cout << "Error: wrong data size in " << name.toStdString() << std::endl;
             std::exit(1);
@@ -127,7 +127,7 @@ void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringL
 template<typename T>
 void ReconData<T>::loadTraj(const QVector<T> &traj, int dim)
 {
-    if (traj.size() != m_size * (dim + 1)) {
+    if ((std::size_t)traj.size() != m_size * (dim + 1)) {
         std::cerr << "Error: data size does not match!" << std::endl << std::flush;
         return;
     }

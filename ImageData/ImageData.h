@@ -32,7 +32,7 @@ public:
         return m_dim;
     }
 
-    int dataSize() const;
+    std::size_t dataSize() const;
 
     void addChannelImage(std::unique_ptr<ComplexVector<T>> image);
 

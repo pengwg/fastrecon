@@ -59,7 +59,7 @@ protected:
 
     int m_samples;
     int m_acquisitions;
-    int m_size;
+    std::size_t m_size;
     int m_dim = 0;
     std::vector<std::pair<T, T>> m_bounds;
 

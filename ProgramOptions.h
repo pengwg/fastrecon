@@ -17,9 +17,9 @@ struct ReconParameters
     float kernel_width = 4;
     bool pils = false;
 
-    int rcxres;
-    int rcyres;
-    int rczres;
+    unsigned rcxres;
+    unsigned rcyres;
+    unsigned rczres;
 };
 
 class ProgramOptions

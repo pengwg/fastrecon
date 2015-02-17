@@ -5,7 +5,7 @@
 #include "GridLut.h"
 
 template<typename T>
-GridLut<T>::GridLut(int dim, int gridSize, ConvKernel &kernel)
+GridLut<T>::GridLut(unsigned dim, unsigned gridSize, ConvKernel &kernel)
     : m_dim(dim), m_gridSize(gridSize), m_kernel(kernel)
 {
 
@@ -72,7 +72,7 @@ std::unique_ptr<ComplexVector<T>> GridLut<T>::griddingChannel(const ReconData<T>
 
     for (const auto &sample : (*kData))
     {
-        for (int i = 0; i < m_dim; i++)
+        for (auto i = 0u; i < m_dim; i++)
         {
             center[i] = itTraj->x[i]; //(0.5 + *itTrajComp[i]++) * (m_gridSize - 1); // kspace in (-0.5, 0.5)
             start[i] = ceil(center[i] - kHW);

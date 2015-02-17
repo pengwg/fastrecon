@@ -33,15 +33,15 @@ ImageData<float> ImageRecon::SOS(const ImageData<float> &map) const
         auto itMap = map.getChannelImage(n)->cbegin();
 
 #pragma omp parallel for
-        for (int z = 0; z < m_reconSize.z; z++)
+        for (auto z = 0u; z < m_reconSize.z; z++)
         {
             auto in1 = (z + z0) * (imageSize.x * imageSize.y) + y0 * imageSize.x;
             auto out1 = z * (m_reconSize.x * m_reconSize.y);
-            for (int y = 0; y < m_reconSize.y; y++)
+            for (auto y = 0u; y < m_reconSize.y; y++)
             {
                 auto in2 = y * imageSize.x + in1 + x0;
                 auto out2 = y * m_reconSize.x + out1;
-                for (int x = 0; x < m_reconSize.x; x++)
+                for (auto x = 0u; x < m_reconSize.x; x++)
                 {
                     auto in3 = x + in2;
                     auto out3 = x + out2;

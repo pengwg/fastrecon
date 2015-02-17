@@ -42,7 +42,7 @@ ImageData<T> &ImageData<T>::operator=(ImageData<T> &&imageData)
 }
 
 template<typename T>
-int ImageData<T>::dataSize() const
+std::size_t ImageData<T>::dataSize() const
 {
     if (m_dim == 3)
         return m_size.x * m_size.y * m_size.z;
@@ -131,20 +131,18 @@ void ImageData<T>::fftShift()
 template<typename T>
 void ImageData<T>::fftShift2(ComplexVector<T> *data)
 {
-    int n0h = m_size.x / 2;
-    int n1h = m_size.y / 2;
+    auto n0h = m_size.x / 2;
+    auto n1h = m_size.y / 2;
 
-    int x1, y1;
-
-    for (int y = 0; y < n1h; y++)
+    for (auto y = 0ul; y < n1h; y++)
     {
-        y1 = y + n1h;
+        auto y1 = y + n1h;
 
-        for (int x = 0; x < m_size.x; x++)
+        for (auto x = 0ul; x < m_size.x; x++)
         {
-            x1 = x < n0h ? x + n0h : x - n0h;
-            int i = y * m_size.x + x;
-            int j = y1 * m_size.x + x1;
+            auto x1 = x < n0h ? x + n0h : x - n0h;
+            auto i = y * m_size.x + x;
+            auto j = y1 * m_size.x + x1;
 
             std::swap((*data)[i], (*data)[j]);
         }
@@ -154,26 +152,24 @@ void ImageData<T>::fftShift2(ComplexVector<T> *data)
 template<typename T>
 void ImageData<T>::fftShift3(ComplexVector<T> *data)
 {
-    int n0h = m_size.x / 2;
-    int n1h = m_size.y / 2;
-    int n2h = m_size.z / 2;
+    auto n0h = m_size.x / 2;
+    auto n1h = m_size.y / 2;
+    auto n2h = m_size.z / 2;
 
-    int x1, y1, z1;
-
-    for (int z = 0; z < n2h; z++)
+    for (auto z = 0ul; z < n2h; z++)
     {
-        z1 = z + n2h;
+        auto z1 = z + n2h;
 
-        for (int y = 0; y < m_size.y; y++)
+        for (auto y = 0ul; y < m_size.y; y++)
         {
-            y1 = y < n1h ? y + n1h : y - n1h;
+            auto y1 = y < n1h ? y + n1h : y - n1h;
 
-            for (int x = 0; x < m_size.x; x++)
+            for (auto x = 0ul; x < m_size.x; x++)
             {
-                x1 = x < n0h ? x + n0h : x - n0h;
+                auto x1 = x < n0h ? x + n0h : x - n0h;
 
-                int i = z * m_size.x * m_size.y + y * m_size.x + x;
-                int j = z1 * m_size.x * m_size.y + y1 * m_size.x + x1;
+                auto i = z * m_size.x * m_size.y + y * m_size.x + x;
+                auto j = z1 * m_size.x * m_size.y + y1 * m_size.x + x1;
 
                 std::swap((*data)[i], (*data)[j]);
             }
@@ -184,9 +180,9 @@ void ImageData<T>::fftShift3(ComplexVector<T> *data)
 template<typename T>
 void ImageData<T>::lowFilter(int res)
 {
-    int x0 = m_size.x / 2;
-    int y0 = m_size.y / 2;
-    int z0 = m_size.z / 2;
+    auto x0 = m_size.x / 2;
+    auto y0 = m_size.y / 2;
+    auto z0 = m_size.z / 2;
     float att = 2.0 * res * res / 4.0;
 
     std::vector<T> coeff;
@@ -200,13 +196,13 @@ void ImageData<T>::lowFilter(int res)
     {
         auto itData = getChannelImage(n)->begin();
 
-        for (int z = 0; z < m_size.z; z++)
+        for (auto z = 0ul; z < m_size.z; z++)
         {
             int r1 = (z - z0) * (z - z0);
-            for (int y = 0; y < m_size.y; y++)
+            for (auto y = 0ul; y < m_size.y; y++)
             {
                 int r2 = (y - y0) * (y - y0) + r1;
-                for (int x = 0; x < m_size.x; x++)
+                for (auto x = 0ul; x < m_size.x; x++)
                 {
                     int r = (x - x0) * (x - x0) + r2;
                     int idx = (int)(r / att * 100.0);
@@ -263,16 +259,16 @@ void ImageData<T>::crop(const ImageSize &imageSize)
         auto itInput = getChannelImage(n)->cbegin();
 
 #pragma omp parallel for
-        for (int z = 0; z < imageSize.z; z++)
+        for (auto z = 0ul; z < imageSize.z; z++)
         {
             auto in1 = (z + z0) * (m_size.x * m_size.y) + y0 * m_size.x;
             auto out1 = z * (imageSize.x * imageSize.y);
 
-            for (int y = 0; y < imageSize.y; y++)
+            for (auto y = 0ul; y < imageSize.y; y++)
             {
                 auto in2 = y * m_size.x + in1 + x0;
                 auto out2 = y * imageSize.x + out1;
-                for (int x = 0; x < imageSize.x; x++)
+                for (auto x = 0ul; x < imageSize.x; x++)
                 {
                     auto in3 = x + in2;
                     auto out3 = x + out2;

@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
     ConvKernel kernel(kWidth, overGridFactor, 512);
 
     // -------------- Gridding -------------------------------
-    int gridSize = params.rcxres * overGridFactor;
+    unsigned gridSize = params.rcxres * overGridFactor;
     timer.start();
 
     GridLut<float> *grid;
