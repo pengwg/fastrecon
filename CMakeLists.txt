@@ -2,7 +2,7 @@ project(FastRecon)
 
 cmake_minimum_required(VERSION 2.8.9)
 
-add_definitions(-std=c++11 -Wall)
+set(CMAKE_BUILD_TYPE Release)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
@@ -12,13 +12,14 @@ find_package(CUDA)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 find_package(FFTW3 COMPONENTS single REQUIRED)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 if(OPENMP_FOUND)
-    set(CMAKE_CXX_FLAGS ${OpenMP_CXX_FLAGS})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(OPENMP_FOUND)
 
 if(CUDA_FOUND)
     set(BUILD_CUDA ON CACHE BOOL "")
-    add_definitions(-DBUILD_CUDA)
 else(CUDA_FOUND)
     unset(BUILD_CUDA CACHE)
 endif(CUDA_FOUND)
@@ -43,14 +44,14 @@ install(TARGETS Recon LIBRARY DESTINATION lib)
 
 set(RECON_LIB Recon)
 if(BUILD_CUDA)
-    cuda_include_directories(${Qt5Core_INCLUDE_DIRS})
-    
+    add_definitions(-DBUILD_CUDA)
+    set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
     set(CUDA_NVCC_FLAGS
-        -std=c++11; # Experimental c++11 support for nvcc
-        -DBUILD_CUDA
-#       -gencode;arch=compute_30,code=sm_30;
+        -std=c++11;
+#        -gencode;arch=compute_50,code=sm_50;
         --ptxas-options=-v;--compiler-options;-Wno-attributes,-Wall
     )
+    cuda_include_directories(${Qt5Core_INCLUDE_DIRS})
 
     cuda_add_library(cuRecon SHARED ${CU_IMAGE_SRC_FILES} ${CU_RECON_SRC_FILES} ${CU_IMAGEPROCESSOR_SRC_FILES})
     cuda_add_cufft_to_target(cuRecon)
@@ -62,5 +63,6 @@ if(BUILD_CUDA)
     set(RECON_LIB cuRecon)
 endif(BUILD_CUDA)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 add_subdirectory(Program)
 

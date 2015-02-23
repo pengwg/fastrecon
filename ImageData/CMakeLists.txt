@@ -6,6 +6,7 @@ set(IMAGE_SRC_FILES
 
 set(CU_IMAGE_SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/cuImageData.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/cuImageData.h   # Include header files to show them in qtcreator
     CACHE INTERNAL ""
 )
 

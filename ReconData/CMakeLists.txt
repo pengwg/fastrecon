@@ -9,6 +9,7 @@ set(CU_RECON_SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/cuReconData.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/cuGridLut.cu   
     ${CMAKE_CURRENT_SOURCE_DIR}/cuReconData.h   # Include the header files to show them in QtCreator project
+    ${CMAKE_CURRENT_SOURCE_DIR}/cuGridLut.h
     CACHE INTERNAL ""
 )
 
