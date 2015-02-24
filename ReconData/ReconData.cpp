@@ -180,18 +180,6 @@ const ComplexVector<T> *ReconData<T>::getChannelData(int channel) const
 }
 
 template<typename T>
-void ReconData<T>::transformTraj(T translation, T scale)
-{
-    transformLocalTraj(translation, scale);
-
-    for (int comp = 0; comp < m_dim; ++comp)
-    {
-        m_bounds[comp].first = (m_bounds[comp].first + translation) * scale;
-        m_bounds[comp].second = (m_bounds[comp].second + translation) * scale;
-    }
-}
-
-template<typename T>
 void ReconData<T>::transformLocalTraj(T translation, T scale)
 {
     for (auto &sample : m_traj)
@@ -199,6 +187,22 @@ void ReconData<T>::transformLocalTraj(T translation, T scale)
         for (int comp = 0; comp < m_dim; ++comp)
             sample.x[comp] = (sample.x[comp] + translation) * scale;
     }
+}
+
+template<typename T>
+void ReconData<T>::normalizeTraj(unsigned size)
+{
+    auto bounds = getCompBounds(0);
+    auto tr = -bounds.first;
+    auto scale = (size - 1) / (bounds.second - bounds.first);
+
+    for (int comp = 0; comp < m_dim; ++comp)
+    {
+        m_bounds[comp].first = (m_bounds[comp].first + tr) * scale;
+        m_bounds[comp].second = (m_bounds[comp].second + tr) * scale;
+    }
+
+    transformLocalTraj(tr, scale);
 }
 
 template<typename T>

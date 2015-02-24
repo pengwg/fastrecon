@@ -20,11 +20,7 @@ GridLut<T>::~GridLut()
 template<typename T>
 void GridLut<T>::plan(ReconData<T> &reconData)
 {
-    auto bounds = reconData.getCompBounds(0);
-    auto tr = -bounds.first;
-    auto scale = (m_gridSize - 1) / (bounds.second - bounds.first);
-
-    reconData.transformTraj(tr, scale);
+    reconData.normalizeTraj(m_gridSize);
 }
 
 template<typename T>

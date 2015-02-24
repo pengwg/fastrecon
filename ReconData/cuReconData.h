@@ -18,11 +18,6 @@ public:
 
     virtual void updateSingleAcquisition(const std::complex<T> *data, int acquisition, int channel = 0) override;
 
-    virtual int channels() const override
-    {
-        return ReconData<T>::channels();// < 1 ? 0 : 1;
-    }
-
     virtual void clear() override;
 
     template<typename T1>
