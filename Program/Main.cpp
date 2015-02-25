@@ -109,12 +109,13 @@ int main(int argc, char *argv[])
     ReconParameters params = options.getReconParameters();
 
     // -------------- Load multi-channel data -----------------
-    ReconData<float> *reconData;
-#ifndef BUILD_CUDA
-    reconData = new ReconData<float>(params.samples, params.projections);
-#else
-    reconData = new cuReconData<float>(params.samples, params.projections);
+    ReconData<float> *reconData = nullptr;
+#ifdef BUILD_CUDA
+    if (options.isGPU())
+        reconData = new cuReconData<float>(params.samples, params.projections);
 #endif // BUILD_CUDA
+    if (reconData == nullptr)
+        reconData = new ReconData<float>(params.samples, params.projections);
 
     loadReconData(params, reconData);
 
@@ -132,13 +133,15 @@ int main(int argc, char *argv[])
     unsigned gridSize = params.rcxres * overGridFactor;
     timer.start();
 
-    GridLut<float> *grid;
-#ifndef BUILD_CUDA
-    grid = new GridLut<float>(reconData->rcDim(), gridSize, kernel);
-#else
-    grid = new cuGridLut<float>(reconData->rcDim(), gridSize, kernel);
-    dynamic_cast<cuGridLut<float> *>(grid)->setNumOfPartitions(25);
+    GridLut<float> *grid = nullptr;
+#ifdef BUILD_CUDA
+    if (options.isGPU()) {
+        grid = new cuGridLut<float>(reconData->rcDim(), gridSize, kernel);
+        dynamic_cast<cuGridLut<float> *>(grid)->setNumOfPartitions(25);
+    }
 #endif // BUILD_CUDA
+    if (grid == nullptr)
+        grid = new GridLut<float>(reconData->rcDim(), gridSize, kernel);
 
     grid->setNumOfThreads(threads);
     grid->plan(*reconData);
@@ -150,13 +153,14 @@ int main(int argc, char *argv[])
         imgMap = *imgData;
 
     // --------------- FFT ----------------------------------
-    FFT *fft;
-#ifndef BUILD_CUDA
-    fft = new FFT(reconData->rcDim(), {gridSize, gridSize, gridSize});
-#else
-    fft = new cuFFT(reconData->rcDim(), {gridSize, gridSize, gridSize});
+    FFT *fft = nullptr;
+#ifdef BUILD_CUDA
+    if (options.isGPU())
+        fft = new cuFFT(reconData->rcDim(), {gridSize, gridSize, gridSize});
 #endif // BUILD_CUDA
-
+    if (fft == nullptr)
+        fft = new FFT(reconData->rcDim(), {gridSize, gridSize, gridSize});
+    
     timer.restart();
     fft->setNumOfThreads(threads);
     fft->excute(*imgData);

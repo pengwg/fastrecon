@@ -29,6 +29,7 @@ public:
     void showParameters() const;
 
     bool isDisplay() const { return display; }
+    bool isGPU() const { return gpu; }
     ReconParameters getReconParameters() const;
 
 private:
@@ -40,6 +41,7 @@ private:
     int arg_count = 1;
 
     bool display = false;
+    bool gpu = false;
     ReconParameters reconParameters;
     QString iniFileName;
 };

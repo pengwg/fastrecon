@@ -57,7 +57,8 @@ error_t ProgramOptions::commandLineOptions(int argc, char *argv[])
         { "pils", 888, 0, 0, "PILS method"},
 
         { 0, 0, 0, 0, "Miscellaneous:", 3},
-        { "show", 777, 0, 0, "Display reconstruction in a window"},
+        { "show", 777, 0, 0, "Display result in a window"},
+        { "gpu", 666, 0, 0, "Use GPU computation if possible"},
 
         { 0, 0, 0, 0, "Help options:", -1},
         { 0, 'h', 0, OPTION_HIDDEN},
@@ -82,6 +83,9 @@ error_t ProgramOptions::parse_opt(int key, char *arg, struct argp_state *state)
 
     switch (key)
     {
+    case 666:
+        parent->gpu = true;
+        break;
     case 777:
         parent->display = true;
         break;
