@@ -22,7 +22,7 @@ ImageData<T>::ImageData(const ImageData<T> &imageData)
 template<typename T>
 ImageData<T>::ImageData(ImageData<T> &&imageData)
 {
-    copy(std::move(imageData));
+    move(imageData);
 }
 
 // Copy
@@ -37,7 +37,7 @@ ImageData<T> &ImageData<T>::operator=(const ImageData<T> &imageData)
 template<typename T>
 ImageData<T> &ImageData<T>::operator=(ImageData<T> &&imageData)
 {
-    copy(std::move(imageData));
+    move(imageData);
     return *this;
 }
 
@@ -98,7 +98,7 @@ void ImageData<T>::copy(const ImageData<T> &imageData)
 }
 
 template<typename T>
-void ImageData<T>::copy(ImageData<T> &&imageData)
+void ImageData<T>::move(ImageData<T> &imageData)
 {
     m_dim = imageData.m_dim;
     m_size = imageData.m_size;

@@ -30,7 +30,7 @@ public:
 private:
     using ImageData<T>::m_size;
     void copy(const cuImageData<T> &imageData);
-    void copy(cuImageData<T> &&imageData);
+    void move(cuImageData<T> &imageData);
 
     void fftShift2(cuComplexVector<T> *data);
     void fftShift3(cuComplexVector<T> *data);

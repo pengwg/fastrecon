@@ -23,7 +23,7 @@ cuImageData<T>::cuImageData(const cuImageData<T> &imageData)
 template<typename T>
 cuImageData<T>::cuImageData(cuImageData<T> &&imageData)
 {
-    copy(std::move(imageData));
+    move(imageData);
 }
 
 // Copy
@@ -38,7 +38,7 @@ cuImageData<T> &cuImageData<T>::operator=(const cuImageData<T> &imageData)
 template<typename T>
 cuImageData<T> &cuImageData<T>::operator=(cuImageData<T> &&imageData)
 {
-    copy(std::move(imageData));
+    move(imageData);
     return *this;
 }
 
@@ -109,9 +109,9 @@ void cuImageData<T>::copy(const cuImageData<T> &imageData)
 }
 
 template<typename T>
-void cuImageData<T>::copy(cuImageData<T> &&imageData)
+void cuImageData<T>::move(cuImageData<T> &imageData)
 {
-    ImageData<T>::copy(std::move(imageData));
+    ImageData<T>::move(imageData);
 
     m_channel_in_device = imageData.m_channel_in_device;
     if (m_cu_data == nullptr)
