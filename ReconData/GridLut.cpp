@@ -3,12 +3,28 @@
 #include <omp.h>
 
 #include "GridLut.h"
+#ifdef BUILD_CUDA
+#include "cuGridLut.h"
+#endif // BUILD_CUDA
+
 
 template<typename T>
-GridLut<T>::GridLut(unsigned dim, unsigned gridSize, ConvKernel &kernel)
-    : m_dim(dim), m_gridSize(gridSize), m_kernel(kernel)
+std::shared_ptr<GridLut<T>> GridLut<T>::Create(ReconData<T> &reconData, unsigned gridSize, const ConvKernel &kernel)
 {
+    GridLut<T> *instance = nullptr;
 
+#ifdef BUILD_CUDA
+    auto cu_data = dynamic_cast<cuReconData<T> *>(&reconData);
+    if (cu_data != nullptr)
+        instance = new cuGridLut<T>(*cu_data, kernel);
+#endif // BUILD_CUDA
+    if (instance == nullptr)
+        instance = new GridLut<T>(reconData, kernel);
+
+    instance->m_dim = reconData.rcDim();
+    instance->m_gridSize = gridSize;
+
+    return std::shared_ptr<GridLut<T>>(instance);;
 }
 
 template<typename T>
@@ -18,27 +34,27 @@ GridLut<T>::~GridLut()
 }
 
 template<typename T>
-void GridLut<T>::plan(ReconData<T> &reconData)
+void GridLut<T>::plan()
 {
-    reconData.normalizeTraj(m_gridSize);
+    m_associatedData.normalizeTraj(m_gridSize);
 }
 
 template<typename T>
-std::shared_ptr<ImageData<T> > GridLut<T>::execute(ReconData<T> &reconData)
+std::shared_ptr<ImageData<T> > GridLut<T>::execute()
 {
     omp_set_num_threads(m_num_threads);
 
-    auto img = new ImageData<T>(reconData.rcDim(), {m_gridSize, m_gridSize, m_gridSize});
+    auto img = new ImageData<T>(m_dim, {m_gridSize, m_gridSize, m_gridSize});
 
-#pragma omp parallel shared(img, reconData)
+#pragma omp parallel shared(img)
     {
         int id = omp_get_thread_num();
         QElapsedTimer timer;
         timer.start();
 #pragma omp for schedule(dynamic) ordered
-        for (int i = 0; i < reconData.channels(); i++)
+        for (int i = 0; i < m_associatedData.channels(); i++)
         {
-            auto out = griddingChannel(reconData, i);
+            auto out = griddingChannel(i);
 #pragma omp ordered
             {
                 img->addChannelImage(std::move(out));
@@ -50,16 +66,16 @@ std::shared_ptr<ImageData<T> > GridLut<T>::execute(ReconData<T> &reconData)
 }
 
 template<typename T>
-std::unique_ptr<ComplexVector<T>> GridLut<T>::griddingChannel(const ReconData<T> &reconData, int channel)
+std::unique_ptr<ComplexVector<T>> GridLut<T>::griddingChannel(int channel)
 {
-    const ComplexVector<T> *kData = reconData.getChannelData(channel);
-    auto itDcf = reconData.getDcf().cbegin();
+    const ComplexVector<T> *kData = m_associatedData.getChannelData(channel);
+    auto itDcf = m_associatedData.getDcf().cbegin();
 
     float kHW = m_kernel.getKernelWidth() / 2;
     const std::vector<float> *kernelData = m_kernel.getKernelData();
     int klength = kernelData->size();
 
-    auto itTraj = reconData.getTraj().cbegin();
+    auto itTraj = m_associatedData.getTraj().cbegin();
 
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};

@@ -32,20 +32,21 @@ template<typename T>
 class cuGridLut : public GridLut<T>
 {
 public:
-    cuGridLut(unsigned dim, unsigned gridSize, ConvKernel &kernel);
+    cuGridLut(cuReconData<T> &reconData, const ConvKernel &kernel);
     virtual ~cuGridLut() {}
 
-    virtual void plan(ReconData<T> &reconData) override;
-    virtual std::shared_ptr<ImageData<T>> execute(ReconData<T> &reconData) override;
+    virtual void plan() override;
+    virtual std::shared_ptr<ImageData<T>> execute() override;
     void setNumOfPartitions(int partitions) {
         m_gpu_partitions = partitions;
     }
 
 private:
-    std::unique_ptr<cuComplexVector<T>> griddingChannel(cuReconData<T> &reconData, int channel);
+    std::unique_ptr<cuComplexVector<T>> griddingChannel(int channel);
     void addDataMapFromDevice();
     const cuDataMap *getDeviceDataMapPartition(int index);
 
+    cuReconData<T> &m_associatedData;
     static std::vector<DataMap> m_all_data_map;
     cuDataMap m_cu_data_map;
     int m_index_data_map_in_device = -1;

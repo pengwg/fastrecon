@@ -9,11 +9,11 @@ template<typename T>
 class GridLut
 {
 public:
-    GridLut(unsigned dim, unsigned gridSize, ConvKernel &kernel);
+    static std::shared_ptr<GridLut<T>> Create(ReconData<T> &reconData, unsigned gridSize, const ConvKernel &kernel);
     virtual ~GridLut();
 
-    virtual void plan(ReconData<T> &reconData);
-    virtual std::shared_ptr<ImageData<T>> execute(ReconData<T> &reconData);
+    virtual void plan();
+    virtual std::shared_ptr<ImageData<T>> execute();
     void setNumOfThreads(unsigned threads) {
         m_num_threads = threads;
     }
@@ -22,8 +22,10 @@ public:
     }
 
 protected:
-    std::unique_ptr<ComplexVector<T>> griddingChannel(const ReconData<T> &reconData, int channel);
+    GridLut(ReconData<T> &reconData, const ConvKernel &kernel) : m_associatedData(reconData), m_kernel(kernel) {}
+    std::unique_ptr<ComplexVector<T>> griddingChannel(int channel);
 
+    ReconData<T> &m_associatedData;
     unsigned m_dim;
     unsigned m_gridSize;
     ConvKernel m_kernel;

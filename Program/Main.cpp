@@ -133,19 +133,16 @@ int main(int argc, char *argv[])
     unsigned gridSize = params.rcxres * overGridFactor;
     timer.start();
 
-    GridLut<float> *grid = nullptr;
+    auto grid = GridLut<float>::Create(*reconData, gridSize, kernel);
 #ifdef BUILD_CUDA
     if (options.isGPU()) {
-        grid = new cuGridLut<float>(reconData->rcDim(), gridSize, kernel);
-        dynamic_cast<cuGridLut<float> *>(grid)->setNumOfPartitions(25);
+        dynamic_cast<cuGridLut<float> *>(grid.get())->setNumOfPartitions(25);
     }
 #endif // BUILD_CUDA
-    if (grid == nullptr)
-        grid = new GridLut<float>(reconData->rcDim(), gridSize, kernel);
 
     grid->setNumOfThreads(threads);
-    grid->plan(*reconData);
-    auto imgData = grid->execute(*reconData);
+    grid->plan();
+    auto imgData = grid->execute();
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 
     ImageData<float> imgMap;
@@ -198,7 +195,6 @@ int main(int argc, char *argv[])
     std::cout << "\nProgram total time excluding I/O: " << timer0.elapsed() / 1000.0 << " s" << std::endl;
 
     delete reconData;
-    delete grid;
     delete fft;
 
     // -------------------------- Save Data ---------------------------

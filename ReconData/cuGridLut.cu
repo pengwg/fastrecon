@@ -16,28 +16,29 @@ std::vector<DataMap> cuGridLut<T>::m_all_data_map;
 template<typename T>
 const cuDataMap *cuGridLut<T>::m_cu_data_map_persistent = nullptr;
 
+
 template<typename T>
-cuGridLut<T>::cuGridLut(unsigned dim, unsigned gridSize, ConvKernel &kernel)
-    : GridLut<T>(dim, gridSize, kernel)
+cuGridLut<T>::cuGridLut(cuReconData<T> &reconData, const ConvKernel &kernel)
+    : GridLut<T>(reconData, kernel), m_associatedData(reconData)
 {
+
 }
 
 template<typename T>
-std::shared_ptr<ImageData<T> > cuGridLut<T>::execute(ReconData<T> &reconData)
+std::shared_ptr<ImageData<T> > cuGridLut<T>::execute()
 {
     if (m_all_data_map.empty()) {
-        plan(reconData);
+        plan();
     }
 
     QElapsedTimer timer;
     timer.start();
 
-    auto &cu_reconData = dynamic_cast<cuReconData<T> &>(reconData);
-    auto img = new cuImageData<T>(cu_reconData.rcDim(), {this->m_gridSize, this->m_gridSize, this->m_gridSize});
+    auto img = new cuImageData<T>(this->m_dim, {this->m_gridSize, this->m_gridSize, this->m_gridSize});
 
-    for (int i = 0; i < cu_reconData.channels(); i++)
+    for (int i = 0; i < m_associatedData.channels(); i++)
     {
-        auto out = griddingChannel(cu_reconData, i);
+        auto out = griddingChannel(i);
         img->addChannelImage(std::move(out));
         std::cout << "GPU gridding channel " << this->m_index << ':' << i << " | " << timer.restart() << " ms" << std::endl;
     }
@@ -146,9 +147,9 @@ const cuDataMap *cuGridLut<T>::getDeviceDataMapPartition(int index)
 }
 
 template<typename T>
-void cuGridLut<T>::plan(ReconData<T> &reconData)
+void cuGridLut<T>::plan()
 {
-    GridLut<T>::plan(reconData);
+    GridLut<T>::plan();
 
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -159,8 +160,7 @@ void cuGridLut<T>::plan(ReconData<T> &reconData)
     QElapsedTimer timer;
     timer.start();
 
-    auto &cu_reconData = dynamic_cast<cuReconData<T> &>(reconData);
-    auto &traj = cu_reconData.cuGetTraj();
+    auto &traj = m_associatedData.cuGetTraj();
 
     T half_W = this->m_kernel.getKernelWidth() / 2.0;
 
@@ -257,12 +257,12 @@ void gridding_kernel(const cu_complex<T> *kData, const T *dcf, cu_complex<T> *ou
 }
 
 template<typename T>
-std::unique_ptr<cuComplexVector<T>> cuGridLut<T>::griddingChannel(cuReconData<T> &reconData, int channel)
+std::unique_ptr<cuComplexVector<T>> cuGridLut<T>::griddingChannel(int channel)
 {
     //std::lock_guard<std::mutex> lock(m_mutex);
 
-    const cuComplexVector<T> *kData = reconData.cuGetChannelData(channel);
-    const auto &dcf = reconData.cuGetDcf();
+    const cuComplexVector<T> *kData = m_associatedData.cuGetChannelData(channel);
+    const auto &dcf = m_associatedData.cuGetDcf();
 
     auto out = std::unique_ptr<cuComplexVector<T>>(new cuComplexVector<T>((int)powf(this->m_gridSize, this->m_dim)));
 
