@@ -46,8 +46,8 @@ public:
     virtual void crop(const ImageSize &imageSize);
 
 protected:
-    void copy(const ImageData<T> &imageData);
-    void move(ImageData<T> &imageData);
+    virtual void copy(const ImageData<T> &imageData);
+    virtual void move(ImageData<T> &imageData);
 
     void fftShift2(ComplexVector<T> *data);
     void fftShift3(ComplexVector<T> *data);

@@ -29,8 +29,9 @@ public:
 
 private:
     using ImageData<T>::m_size;
-    void copy(const cuImageData<T> &imageData);
-    void move(cuImageData<T> &imageData);
+
+    virtual void copy(const ImageData<T> &imageData) override;
+    virtual void move(ImageData<T> &imageData) override;
 
     void fftShift2(cuComplexVector<T> *data);
     void fftShift3(cuComplexVector<T> *data);
