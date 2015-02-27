@@ -23,7 +23,7 @@ cuGridLut<T>::cuGridLut(unsigned dim, unsigned gridSize, ConvKernel &kernel)
 }
 
 template<typename T>
-std::unique_ptr<ImageData<T>> cuGridLut<T>::execute(ReconData<T> &reconData)
+std::shared_ptr<ImageData<T> > cuGridLut<T>::execute(ReconData<T> &reconData)
 {
     if (m_all_data_map.empty()) {
         plan(reconData);
@@ -41,7 +41,7 @@ std::unique_ptr<ImageData<T>> cuGridLut<T>::execute(ReconData<T> &reconData)
         img->addChannelImage(std::move(out));
         std::cout << "GPU gridding channel " << this->m_index << ':' << i << " | " << timer.restart() << " ms" << std::endl;
     }
-    return std::unique_ptr<ImageData<T>>(img);
+    return std::shared_ptr<ImageData<T>>(img);
 }
 
 template<typename T>

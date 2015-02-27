@@ -13,7 +13,7 @@ public:
     virtual ~GridLut();
 
     virtual void plan(ReconData<T> &reconData);
-    virtual std::unique_ptr<ImageData<T>> execute(ReconData<T> &reconData);
+    virtual std::shared_ptr<ImageData<T>> execute(ReconData<T> &reconData);
     void setNumOfThreads(unsigned threads) {
         m_num_threads = threads;
     }

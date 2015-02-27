@@ -24,7 +24,7 @@ void GridLut<T>::plan(ReconData<T> &reconData)
 }
 
 template<typename T>
-std::unique_ptr<ImageData<T>> GridLut<T>::execute(ReconData<T> &reconData)
+std::shared_ptr<ImageData<T> > GridLut<T>::execute(ReconData<T> &reconData)
 {
     omp_set_num_threads(m_num_threads);
 
@@ -46,7 +46,7 @@ std::unique_ptr<ImageData<T>> GridLut<T>::execute(ReconData<T> &reconData)
             }
         }
     }
-    return std::unique_ptr<ImageData<T>>(img);
+    return std::shared_ptr<ImageData<T>>(img);
 }
 
 template<typename T>

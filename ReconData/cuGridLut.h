@@ -36,7 +36,7 @@ public:
     virtual ~cuGridLut() {}
 
     virtual void plan(ReconData<T> &reconData) override;
-    virtual std::unique_ptr<ImageData<T>> execute(ReconData<T> &reconData) override;
+    virtual std::shared_ptr<ImageData<T>> execute(ReconData<T> &reconData) override;
     void setNumOfPartitions(int partitions) {
         m_gpu_partitions = partitions;
     }
