@@ -83,6 +83,19 @@ ComplexVector<T> *ImageData<T>::getChannelImage(int channel)
 }
 
 template<typename T>
+void ImageData<T>::updateChannelImage(ComplexVector<T> &&image, const ImageSize &imageSize, int channel)
+{
+    if (image.size() != imageSize.x * imageSize.y * imageSize.z)
+    {
+        std::cerr << "Error: ImageData update wrong size!" << std::endl;
+        exit(1);
+    }
+
+    *getChannelImage(channel) = std::move(image);
+    m_size = imageSize;
+}
+
+template<typename T>
 void ImageData<T>::copy(const ImageData<T> &imageData)
 {
     m_dim = imageData.dim();
