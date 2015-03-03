@@ -5,3 +5,33 @@ cuImageFilter<T>::cuImageFilter(cuImageData<T> &imageData)
     : ImageFilter<T>(imageData), m_associatedData(imageData)
 {
 }
+
+template<typename T>
+void cuImageFilter<T>::lowFilter(int res)
+{
+    ImageFilter<T>::lowFilter(res);
+    m_associatedData.invalidateDevice();
+}
+
+template<typename T>
+void cuImageFilter<T>::normalize()
+{
+    ImageFilter<T>::normalize();
+    m_associatedData.invalidateDevice();
+}
+
+template<typename T>
+void cuImageFilter<T>::fftShift2(ComplexVector<T> *data)
+{
+    ImageFilter<T>::fftShift2(data);
+    m_associatedData.invalidateDevice();
+}
+
+template<typename T>
+void cuImageFilter<T>::fftShift3(ComplexVector<T> *data)
+{
+    ImageFilter<T>::fftShift3(data);
+    m_associatedData.invalidateDevice();
+}
+
+template class cuImageFilter<float>;

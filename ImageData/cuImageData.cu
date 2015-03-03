@@ -139,42 +139,4 @@ void cuImageData<T>::move(ImageData<T> &imageData)
     }
 }
 
-template<typename T>
-void cuImageData<T>::fftShift()
-{
-    for (int n = 0; n < this->channels(); n++)
-    {
-        auto data = cuGetChannelImage(n);
-
-        if (this->m_dim == 3)
-            fftShift3(data);
-        else
-            fftShift2(data);
-    }
-}
-
-template<typename T>
-void cuImageData<T>::fftShift2(cuComplexVector<T>  *data)
-{
-
-}
-
-template<typename T>
-void cuImageData<T>::fftShift3(cuComplexVector<T> *data)
-{
-
-}
-
-template<typename T>
-void cuImageData<T>::lowFilter(int res)
-{
-
-}
-
-template<typename T>
-void cuImageData<T>::normalize()
-{
-
-}
-
 template class cuImageData<float>;

@@ -15,6 +15,7 @@
 #include "ConvKernel.h"
 #include "GridLut.h"
 #include "FFT.h"
+#include "ImageFilter.h"
 
 #ifdef BUILD_CUDA
 #include "cuReconData.h"
@@ -161,7 +162,9 @@ int main(int argc, char *argv[])
     timer.restart();
     fft->setNumOfThreads(threads);
     fft->excute(*imgData);
-    imgData->ImageData<float>::fftShift();
+
+    auto filter = ImageFilter<float>::Create(*imgData);
+    filter->fftShift();
     std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
     // -------------- Recon Methods -----------------------------------
@@ -170,16 +173,17 @@ int main(int argc, char *argv[])
 
     timer.restart();
     if (params.pils) {
+        auto filterMap = ImageFilter<float>::Create(imgMap);
         std::cout << "\nRecon PILS... " << std::endl;
-        imgMap.lowFilter(22);
+        filterMap->lowFilter(22);
         std::cout << "\nLow pass filtering | " << timer.restart() << " ms" << std::endl;
 
         std::cout << "\nFFT low res image... " << std::endl;
         fft->excute(imgMap);
-        imgMap.fftShift();
+        filterMap->fftShift();
         std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
-        imgMap.normalize();
+        filterMap->normalize();
 
         std::cout << "\nSum of Square Field Map..." << std::flush;
         finalImage = recon.SOS(imgMap);

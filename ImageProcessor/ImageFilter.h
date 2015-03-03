@@ -17,11 +17,11 @@ public:
 protected:
     ImageFilter(ImageData<T> &imageData);
 
-private:
-    ImageData<T> &m_associatedData;
-
     virtual void fftShift2(ComplexVector<T> *data);
     virtual void fftShift3(ComplexVector<T> *data);
+
+private:
+    ImageData<T> &m_associatedData;
 };
 
 #endif // IMAGEFILTER_H

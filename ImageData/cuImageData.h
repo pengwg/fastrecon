@@ -21,9 +21,6 @@ public:
     using ImageData<T>::addChannelImage;
     void addChannelImage(std::unique_ptr<cuComplexVector<T>> image);
     cuComplexVector<T> *cuGetChannelImage(int channel);
-    virtual void fftShift() override;
-    virtual void lowFilter(int res) override;
-    virtual void normalize() override;
     void syncDeviceToHost();
     void invalidateDevice();
 
@@ -32,9 +29,6 @@ private:
 
     virtual void copy(const ImageData<T> &imageData) override;
     virtual void move(ImageData<T> &imageData) override;
-
-    void fftShift2(cuComplexVector<T> *data);
-    void fftShift3(cuComplexVector<T> *data);
 
     std::unique_ptr<cuComplexVector<T>> m_cu_data;
     int m_channel_in_device = -1;

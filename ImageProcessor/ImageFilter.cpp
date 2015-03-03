@@ -18,7 +18,7 @@ std::shared_ptr<ImageFilter<T>> ImageFilter<T>::Create(ImageData<T> &imageData)
     if (instance == nullptr)
         instance = new ImageFilter<T>(imageData);
 
-    return std::shared_ptr<ImageData<T>>(instance);;
+    return std::shared_ptr<ImageFilter<T>>(instance);;
 }
 
 template<typename T>
@@ -36,7 +36,7 @@ void ImageFilter<T>::fftShift()
     {
         auto data = m_associatedData.getChannelImage(n);
 
-        if (this->m_dim == 3)
+        if (m_associatedData.dim() == 3)
             fftShift3(data);
         else
             fftShift2(data);
@@ -196,3 +196,5 @@ void ImageFilter<T>::crop(const ImageSize &imageSize)
         m_associatedData.updateChannelImage(std::move(out), imageSize, n);
     }
 }
+
+template class ImageFilter<float>;

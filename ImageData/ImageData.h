@@ -41,17 +41,9 @@ public:
 
     void updateChannelImage(ComplexVector<T> &&image, const ImageSize &size, int channel);
 
-    virtual void fftShift();
-    virtual void lowFilter(int res);
-    virtual void normalize();
-    virtual void crop(const ImageSize &imageSize);
-
 protected:
     virtual void copy(const ImageData<T> &imageData);
     virtual void move(ImageData<T> &imageData);
-
-    void fftShift2(ComplexVector<T> *data);
-    void fftShift3(ComplexVector<T> *data);
 
     int m_dim = 0;
     ImageSize m_size = {0, 0, 0};
