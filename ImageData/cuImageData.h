@@ -21,11 +21,11 @@ public:
     using ImageData<T>::addChannelImage;
     void addChannelImage(std::unique_ptr<cuComplexVector<T>> image);
     cuComplexVector<T> *cuGetChannelImage(int channel);
-    void update();
-
     virtual void fftShift() override;
     virtual void lowFilter(int res) override;
     virtual void normalize() override;
+    void syncDeviceToHost();
+    void invalidateDevice();
 
 private:
     using ImageData<T>::m_size;

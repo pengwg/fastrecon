@@ -86,13 +86,19 @@ cuComplexVector<T> *cuImageData<T>::cuGetChannelImage(int channel)
 }
 
 template<typename T>
-void cuImageData<T>::update()
+void cuImageData<T>::syncDeviceToHost()
 {
     if (m_channel_in_device == -1) return;
 
     auto &h_data = reinterpret_cast<hostVector<typename cuComplexVector<T>::value_type> &>
             (*this->m_data_multichannel[m_channel_in_device]);
     thrust::copy(m_cu_data->begin(), m_cu_data->end(), h_data.begin());
+}
+
+template<typename T>
+void cuImageData<T>::invalidateDevice()
+{
+    m_channel_in_device = -1;
 }
 
 template<typename T>
