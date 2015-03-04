@@ -27,13 +27,13 @@ endif(CUDA_FOUND)
 include_directories(
     ImageData/
     ReconData/
-    ImageProcessor/
+    ImageFilter/
     ${FFTW3_INCLUDE_DIR}
 )
 
 add_subdirectory(ImageData)
 add_subdirectory(ReconData)
-add_subdirectory(ImageProcessor)
+add_subdirectory(ImageFilter)
 
 add_library(Recon SHARED ${IMAGE_SRC_FILES} ${RECON_SRC_FILES} ${IMAGEPROCESSOR_SRC_FILES})
 target_link_libraries(Recon ${FFTW3_LIBRARIES} gsl blas)
