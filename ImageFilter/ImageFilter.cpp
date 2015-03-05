@@ -197,4 +197,56 @@ void ImageFilter<T>::crop(const ImageSize &imageSize)
     }
 }
 
+template<typename T>
+void ImageFilter<T>::SOS(ImageSize reconSize)
+{
+    SOS(m_associatedData, reconSize);
+
+    for (auto &data : *m_associatedData.getChannelImage(0))
+    {
+        data = std::sqrt(data);
+    }
+}
+
+template<typename T>
+void ImageFilter<T>::SOS(const ImageData<T> &map, ImageSize reconSize)
+{
+    auto imageSize = m_associatedData.imageSize();
+    auto x0 = (imageSize.x - reconSize.x) / 2;
+    auto y0 = (imageSize.y - reconSize.y) / 2;
+    auto z0 = (imageSize.z - reconSize.z) / 2;
+
+    ComplexVector<T> out(reconSize.x * reconSize.y * reconSize.z);
+
+    for (int n = 0; n < m_associatedData.channels(); n++)
+    {
+        auto itOut = out.begin();
+        auto itInput = m_associatedData.getChannelImage(n)->cbegin();
+        auto itMap = map.getChannelImage(n)->cbegin();
+
+#pragma omp parallel for
+        for (auto z = 0u; z < reconSize.z; z++)
+        {
+            auto in1 = (z + z0) * (imageSize.x * imageSize.y) + y0 * imageSize.x;
+            auto out1 = z * (reconSize.x * reconSize.y);
+            for (auto y = 0u; y < reconSize.y; y++)
+            {
+                auto in2 = y * imageSize.x + in1 + x0;
+                auto out2 = y * reconSize.x + out1;
+                for (auto x = 0u; x < reconSize.x; x++)
+                {
+                    auto in3 = x + in2;
+                    auto out3 = x + out2;
+
+                    auto data = *(itInput + in3);
+                    auto mapData = *(itMap + in3);
+                    *(itOut+out3) += data * std::conj(mapData);
+                }
+            }
+        }
+    }
+    m_associatedData.setChannels(1);
+    m_associatedData.updateChannelImage(std::move(out), reconSize, 0);
+}
+
 template class ImageFilter<float>;

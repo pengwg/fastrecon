@@ -11,7 +11,6 @@
 
 #include "ProgramOptions.h"
 #include "ReconData.h"
-#include "ImageRecon.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
 #include "FFT.h"
@@ -168,9 +167,6 @@ int main(int argc, char *argv[])
     std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
     // -------------- Recon Methods -----------------------------------
-    ImageRecon recon(*imgData, {params.rcxres, params.rcyres, params.rczres});
-    ImageData<float> finalImage;
-
     timer.restart();
     if (params.pils) {
         auto filterMap = ImageFilter<float>::Create(imgMap);
@@ -186,13 +182,13 @@ int main(int argc, char *argv[])
         filterMap->normalize();
 
         std::cout << "\nSum of Square Field Map..." << std::flush;
-        finalImage = recon.SOS(imgMap);
+        filter->SOS(imgMap, {params.rcxres, params.rcyres, params.rczres});
         std::cout << " | " << timer.elapsed() << " ms" << std::endl;
     }
     else
     {
         std::cout << "\nRecon SOS... " << std::flush;
-        finalImage = recon.SOS();
+        filter->SOS({params.rcxres, params.rcyres, params.rczres});
         std::cout << " | " << timer.elapsed() << " ms" << std::endl;
     }
 
@@ -204,7 +200,7 @@ int main(int argc, char *argv[])
     // -------------------------- Save Data ---------------------------
     QFile file(params.path + params.outFile);
     file.open(QIODevice::WriteOnly);
-    for (const auto &data : *finalImage.getChannelImage()) {
+    for (const auto &data : *imgData->getChannelImage()) {
         auto value = std::abs(data);
         file.write((const char *)&value, sizeof(decltype(value)));
     }
@@ -215,10 +211,10 @@ int main(int argc, char *argv[])
     if (options.isDisplay())
     {
         QApplication app(argc, argv);
-        for (int i = 0; i < finalImage.channels(); i++)
+        for (int i = 0; i < imgData->channels(); i++)
         {
-            auto data = finalImage.getChannelImage(i);
-            displayData(*data, finalImage.imageSize(), QString("channel ") + QString::number(n++));
+            auto data = imgData->getChannelImage(i);
+            displayData(*data, imgData->imageSize(), QString("channel ") + QString::number(n++));
         }
         return app.exec();
     }

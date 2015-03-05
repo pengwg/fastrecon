@@ -13,6 +13,8 @@ public:
     virtual void lowFilter(int res);
     virtual void normalize();
     virtual void crop(const ImageSize &imageSize);
+    virtual void SOS(ImageSize reconSize);
+    virtual void SOS(const ImageData<T> &map, ImageSize reconSize);
 
 protected:
     ImageFilter(ImageData<T> &imageData);
