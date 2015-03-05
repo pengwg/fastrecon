@@ -23,6 +23,7 @@ public:
     int channels() const {
         return m_channels;
     }
+    virtual void setChannels(int channels);
 
     ImageSize imageSize() const {
         return m_size;
@@ -35,10 +36,8 @@ public:
     std::size_t dataSize() const;
 
     void addChannelImage(std::unique_ptr<ComplexVector<T>> image);
-
     const ComplexVector<T> *getChannelImage(int channel = 0) const;
     ComplexVector<T> *getChannelImage(int channel = 0);
-
     void updateChannelImage(ComplexVector<T> &&image, const ImageSize &size, int channel);
 
 protected:

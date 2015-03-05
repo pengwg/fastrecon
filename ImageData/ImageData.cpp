@@ -42,6 +42,18 @@ ImageData<T> &ImageData<T>::operator=(ImageData<T> &&imageData)
 }
 
 template<typename T>
+void ImageData<T>::setChannels(int channels)
+{
+    if (channels > m_channels)
+    {
+        std::cerr << "Warning: setChannels can only reduce channels." << std::endl;
+        return;
+    }
+    m_data_multichannel.resize(channels);
+    m_channels = channels;
+}
+
+template<typename T>
 std::size_t ImageData<T>::dataSize() const
 {
     if (m_dim == 3)

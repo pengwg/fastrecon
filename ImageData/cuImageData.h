@@ -21,6 +21,8 @@ public:
     using ImageData<T>::addChannelImage;
     void addChannelImage(std::unique_ptr<cuComplexVector<T>> image);
     cuComplexVector<T> *cuGetChannelImage(int channel);
+    virtual void setChannels(int channels) override;
+
     void syncDeviceToHost();
     void invalidateDevice();
 
