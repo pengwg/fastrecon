@@ -11,7 +11,7 @@ ReconData<T>::ReconData(int samples, int acquisitions) : m_samples(samples), m_a
 }
 
 template<typename T>
-void ReconData<T>::addChannelData(const ComplexVector<T> &data)
+void ReconData<T>::addChannelData(ComplexVector<T> &&data)
 {
     if (m_size != data.size())
     {
@@ -19,8 +19,7 @@ void ReconData<T>::addChannelData(const ComplexVector<T> &data)
         exit(1);
     }
 
-    auto p_data = new ComplexVector<T>(data);
-    m_kDataMultiChannel.push_back(std::unique_ptr<ComplexVector<T>>(p_data));
+    m_kDataMultiChannel.push_back(std::move(data));
 }
 
 template<typename T>
@@ -103,10 +102,11 @@ void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringL
 
     // Load data
     std::cout << std::endl << "Read data:" << std::endl;
-    ComplexVector<T> kdata(m_size);
+    ComplexVector<T> kdata;
 
     for (const QString &name : dataFileList)
     {
+        kdata.resize(m_size);
         std::cout << name.toStdString() << std::endl;
 
         QFile file(name);
@@ -119,8 +119,7 @@ void ReconData<T>::loadFromFiles(const QStringList &dataFileList, const QStringL
             std::cout << "Error: wrong data size in " << name.toStdString() << std::endl;
             std::exit(1);
         }
-
-        addChannelData(kdata);
+        addChannelData(std::move(kdata));
     }
 }
 
@@ -165,7 +164,7 @@ void ReconData<T>::updateSingleAcquisition(const std::complex<T> *data, int acqu
         std::cerr << "Error: channel " << channel << " is empty!" << std::endl << std::flush;
         return;
     }
-    auto &channel_data = *m_kDataMultiChannel[channel];
+    auto &channel_data = m_kDataMultiChannel[channel];
     std::copy_n(data, m_samples, channel_data.begin() + m_samples * acquisition);
 }
 
@@ -176,7 +175,7 @@ const ComplexVector<T> *ReconData<T>::getChannelData(int channel) const
     {
         return nullptr;
     }
-    return m_kDataMultiChannel[channel].get();
+    return &m_kDataMultiChannel[channel];
 }
 
 template<typename T>

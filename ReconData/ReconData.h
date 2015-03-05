@@ -24,33 +24,25 @@ public:
     virtual ~ReconData() {}
 
     void loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName);
-    void addChannelData(const ComplexVector<T> &data);
+    void addChannelData(ComplexVector<T> &&data);
     void setDcf(std::vector<T> &dcf);
     void loadTraj(const QVector<T> &traj, int dim);
     virtual void updateSingleAcquisition(const std::complex<T> *data, int acquisition, int channel = 0);
-
-    void normalizeTraj(unsigned size);
-    
+    void normalizeTraj(unsigned size);    
     std::pair<T, T> getCompBounds(int comp) const {
         return m_bounds[comp];
     }
-
     int dataSize() const {
         return m_size;
     }
-
     int rcDim() const { return m_dim; }
-
     const TrajVector &getTraj() const {
         return m_traj;
     }
-
     const std::vector<T> &getDcf() const {
         return m_dcf;
     }
-
     const ComplexVector<T> *getChannelData(int channel) const;
-
     int channels() const { return m_kDataMultiChannel.size(); }
     virtual void clear();
 
@@ -62,7 +54,7 @@ protected:
     std::vector<std::pair<T, T>> m_bounds;
 
     TrajVector m_traj;
-    std::vector<std::unique_ptr<ComplexVector<T>>> m_kDataMultiChannel;
+    std::vector<ComplexVector<T>> m_kDataMultiChannel;
     std::vector<T> m_dcf;
 
 private:
