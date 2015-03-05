@@ -8,10 +8,9 @@ cuImageData<T>::cuImageData()
 }
 
 template<typename T>
-cuImageData<T>::cuImageData(const int dim, const ImageSize &imageSize, std::unique_ptr<ComplexVector<T>> image)
+cuImageData<T>::cuImageData(const int dim, const ImageSize &imageSize)
     : ImageData<T>(dim, imageSize)
 {
-    addChannelImage(std::move(image));
 }
 
 template<typename T>
@@ -47,7 +46,8 @@ void cuImageData<T>::addChannelImage(std::unique_ptr<cuComplexVector<T>> image)
 {
     if (image == nullptr) return;
 
-    auto im = new hostVector<typename cuComplexVector<T>::value_type>(image->size());
+    ComplexVector<T> out(image->size());
+    auto im = reinterpret_cast<hostVector<typename cuComplexVector<T>::value_type> *>(&out);
     thrust::copy(image->begin(), image->end(), im->begin());
 
     m_cu_data = std::move(image);
@@ -58,7 +58,7 @@ void cuImageData<T>::addChannelImage(std::unique_ptr<cuComplexVector<T>> image)
     //cudaMemcpy(im->data(), image_ptr, im->size() * sizeof(typename ComplexVector<T>::value_type), cudaMemcpyDeviceToHost);
     //thrust::host_vector<typename cuComplexVector<T>::value_type> h_im(*image);
 
-    ImageData<T>::addChannelImage(std::unique_ptr<ComplexVector<T>>(reinterpret_cast<ComplexVector<T> *>(im)));
+    ImageData<T>::addChannelImage(std::move(out));
     m_channel_in_device = this->m_channels - 1;
 }
 
@@ -72,7 +72,7 @@ cuComplexVector<T> *cuImageData<T>::cuGetChannelImage(int channel)
     else if (channel < this->channels())
     {
         auto &h_data = reinterpret_cast<hostVector<typename cuComplexVector<T>::value_type> &>
-                (*this->m_data_multichannel[channel]);
+                (this->m_data_multichannel[channel]);
         if (m_cu_data == nullptr)
             m_cu_data.reset(new cuComplexVector<T>(h_data));
         else
@@ -99,7 +99,7 @@ void cuImageData<T>::syncDeviceToHost()
     if (m_channel_in_device == -1) return;
 
     auto &h_data = reinterpret_cast<hostVector<typename cuComplexVector<T>::value_type> &>
-            (*this->m_data_multichannel[m_channel_in_device]);
+            (this->m_data_multichannel[m_channel_in_device]);
     thrust::copy(m_cu_data->begin(), m_cu_data->end(), h_data.begin());
 }
 

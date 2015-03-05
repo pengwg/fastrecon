@@ -4,13 +4,13 @@
 #include "ImageData.h"
 
 template<typename T>
-ImageData<T>::ImageData(const int dim, const ImageSize &size, std::unique_ptr<ComplexVector<T>> image)
+ImageData<T>::ImageData(const int dim, const ImageSize &size)
     : m_dim(dim), m_size(size)
 {
     if (dim == 2)
         m_size.z = 1;
 
-    addChannelImage(std::move(image));
+    //addChannelImage(std::move(image));
 }
 
 template<typename T>
@@ -63,11 +63,9 @@ std::size_t ImageData<T>::dataSize() const
 }
 
 template<typename T>
-void ImageData<T>::addChannelImage(std::unique_ptr<ComplexVector<T>> image)
+void ImageData<T>::addChannelImage(ComplexVector<T> &&image)
 {
-    if (image == nullptr) return;
-
-    if (image->size() != dataSize())
+    if (image.size() != dataSize())
     {
         std::cerr << "Error: ImageData wrong size!" << std::endl;
         exit(1);
@@ -80,7 +78,7 @@ template<typename T>
 const ComplexVector<T> *ImageData<T>::getChannelImage(int channel) const
 {
     if (channel < channels())
-        return m_data_multichannel[channel].get();
+        return &m_data_multichannel[channel];
     else
         return nullptr;
 }
@@ -89,7 +87,7 @@ template<typename T>
 ComplexVector<T> *ImageData<T>::getChannelImage(int channel)
 {
     if (channel < channels())
-        return m_data_multichannel[channel].get();
+        return &m_data_multichannel[channel];
     else
         return nullptr;
 }
@@ -116,8 +114,7 @@ void ImageData<T>::copy(const ImageData<T> &imageData)
 
     for (const auto &data : imageData.m_data_multichannel)
     {
-        auto data_copy = new ComplexVector<T>(*data);
-        addChannelImage(std::unique_ptr<ComplexVector<T>>(data_copy));
+        addChannelImage(ComplexVector<T>(data));
     }
     std::cout << "-- ImageData: copy --" << std::endl;
 }
@@ -130,6 +127,7 @@ void ImageData<T>::move(ImageData<T> &imageData)
     m_channels = imageData.m_channels;
 
     m_data_multichannel = std::move(imageData.m_data_multichannel);
+    imageData.m_data_multichannel.clear();
 
     imageData.m_dim = 0;
     imageData.m_size = {0};

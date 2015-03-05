@@ -9,7 +9,7 @@ class cuImageData : public ImageData<T>
 {
 public:
     cuImageData();
-    cuImageData(const int dim, const ImageSize &imageSize, std::unique_ptr<ComplexVector<T>> image = nullptr);
+    cuImageData(const int dim, const ImageSize &imageSize);
 
     cuImageData(const cuImageData<T> &imageData);
     cuImageData(cuImageData<T> &&imageData);

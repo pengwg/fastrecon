@@ -23,7 +23,7 @@ public:
 
 protected:
     GridLut(ReconData<T> &reconData, const ConvKernel &kernel) : m_associatedData(reconData), m_kernel(kernel) {}
-    std::unique_ptr<ComplexVector<T>> griddingChannel(int channel);
+    ComplexVector<T> griddingChannel(int channel);
 
     ReconData<T> &m_associatedData;
     unsigned m_dim;

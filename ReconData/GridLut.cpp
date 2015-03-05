@@ -40,7 +40,7 @@ void GridLut<T>::plan()
 }
 
 template<typename T>
-std::shared_ptr<ImageData<T> > GridLut<T>::execute()
+std::shared_ptr<ImageData<T>> GridLut<T>::execute()
 {
     omp_set_num_threads(m_num_threads);
 
@@ -66,7 +66,7 @@ std::shared_ptr<ImageData<T> > GridLut<T>::execute()
 }
 
 template<typename T>
-std::unique_ptr<ComplexVector<T>> GridLut<T>::griddingChannel(int channel)
+ComplexVector<T> GridLut<T>::griddingChannel(int channel)
 {
     const ComplexVector<T> *kData = m_associatedData.getChannelData(channel);
     auto itDcf = m_associatedData.getDcf().cbegin();
@@ -79,7 +79,7 @@ std::unique_ptr<ComplexVector<T>> GridLut<T>::griddingChannel(int channel)
 
     float center[3] = {0};
     int start[3] = {0}, end[3] = {0};
-    auto out = new ComplexVector<T>(std::pow(m_gridSize, m_dim));
+    ComplexVector<T> out(std::pow(m_gridSize, m_dim));
 
     for (const auto &sample : (*kData))
     {
@@ -97,7 +97,7 @@ std::unique_ptr<ComplexVector<T>> GridLut<T>::griddingChannel(int channel)
         auto data = (*itDcf++) * sample;
 
         int i = start[2] * m_gridSize * m_gridSize + start[1] * m_gridSize + start[0];
-        auto itOut = out->begin() + i;
+        auto itOut = out.begin() + i;
 
         // Step size for linear addressing
         int di = m_gridSize - (end[0] - start[0]) - 1;
@@ -131,7 +131,7 @@ std::unique_ptr<ComplexVector<T>> GridLut<T>::griddingChannel(int channel)
             itOut += di2;
         }
     }
-    return std::unique_ptr<ComplexVector<T>>(out);
+    return out;
 }
 
 template class GridLut<float>;
