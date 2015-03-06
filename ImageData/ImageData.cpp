@@ -42,18 +42,6 @@ ImageData<T> &ImageData<T>::operator=(ImageData<T> &&imageData)
 }
 
 template<typename T>
-void ImageData<T>::setChannels(int channels)
-{
-    if (channels > m_channels)
-    {
-        std::cerr << "Warning: setChannels can only reduce channels." << std::endl;
-        return;
-    }
-    m_data_multichannel.resize(channels);
-    m_channels = channels;
-}
-
-template<typename T>
 std::size_t ImageData<T>::dataSize() const
 {
     if (m_dim == 3)
@@ -90,19 +78,6 @@ ComplexVector<T> *ImageData<T>::getChannelImage(int channel)
         return &m_data_multichannel[channel];
     else
         return nullptr;
-}
-
-template<typename T>
-void ImageData<T>::updateChannelImage(ComplexVector<T> &&image, const ImageSize &imageSize, int channel)
-{
-    if (image.size() != imageSize.x * imageSize.y * imageSize.z)
-    {
-        std::cerr << "Error: ImageData update wrong size!" << std::endl;
-        exit(1);
-    }
-
-    *getChannelImage(channel) = std::move(image);
-    m_size = imageSize;
 }
 
 template<typename T>

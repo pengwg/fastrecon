@@ -86,14 +86,6 @@ cuComplexVector<T> *cuImageData<T>::cuGetChannelImage(int channel)
 }
 
 template<typename T>
-void cuImageData<T>::setChannels(int channels)
-{
-    ImageData<T>::setChannels(channels);
-    if (m_channel_in_device > channels - 1)
-        invalidateDevice();
-}
-
-template<typename T>
 void cuImageData<T>::syncDeviceToHost()
 {
     if (m_channel_in_device == -1) return;

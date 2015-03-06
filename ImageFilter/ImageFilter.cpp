@@ -173,6 +173,7 @@ void ImageFilter<T>::crop(const ImageSize &imageSize)
     }
 
     ComplexVector<T> out;
+    ImageData<T> img(m_associatedData.dim(), imageSize);
     for (int n = 0; n < m_associatedData.channels(); n++)
     {
         out.resize(imageSize.x * imageSize.y * imageSize.z);
@@ -193,8 +194,9 @@ void ImageFilter<T>::crop(const ImageSize &imageSize)
                 }
             }
         }
-        m_associatedData.updateChannelImage(std::move(out), imageSize, n);
+        img.addChannelImage(std::move(out));
     }
+    m_associatedData = std::move(img);
 }
 
 template<typename T>
@@ -217,6 +219,7 @@ void ImageFilter<T>::SOS(const ImageData<T> &map, ImageSize reconSize)
     auto z0 = (imageSize.z - reconSize.z) / 2;
 
     ComplexVector<T> out(reconSize.x * reconSize.y * reconSize.z);
+    ImageData<T> img(m_associatedData.dim(), reconSize);
 
     for (int n = 0; n < m_associatedData.channels(); n++)
     {
@@ -245,8 +248,8 @@ void ImageFilter<T>::SOS(const ImageData<T> &map, ImageSize reconSize)
             }
         }
     }
-    m_associatedData.setChannels(1);
-    m_associatedData.updateChannelImage(std::move(out), reconSize, 0);
+    img.addChannelImage(std::move(out));
+    m_associatedData = std::move(img);
 }
 
 template class ImageFilter<float>;
