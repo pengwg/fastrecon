@@ -5,6 +5,8 @@
 #include "cuImageFilter.h"
 #endif // BUILD_CUDA
 
+#include "FFT.h"
+
 template<typename T>
 std::shared_ptr<ImageFilter<T>> ImageFilter<T>::Create(ImageData<T> &imageData)
 {
@@ -19,6 +21,13 @@ std::shared_ptr<ImageFilter<T>> ImageFilter<T>::Create(ImageData<T> &imageData)
         instance = new ImageFilter<T>(imageData);
 
     return std::shared_ptr<ImageFilter<T>>(instance);;
+}
+
+template<typename T>
+ImageFilter<T>::~ImageFilter()
+{
+    if (m_fft != nullptr)
+        delete m_fft;
 }
 
 template<typename T>
@@ -40,57 +49,6 @@ void ImageFilter<T>::fftShift()
             fftShift3(data);
         else
             fftShift2(data);
-    }
-}
-
-template<typename T>
-void ImageFilter<T>::fftShift2(ComplexVector<T> *data)
-{
-    auto size = m_associatedData.imageSize();
-    auto n0h = size.x / 2;
-    auto n1h = size.y / 2;
-
-    for (auto y = 0ul; y < n1h; y++)
-    {
-        auto y1 = y + n1h;
-
-        for (auto x = 0ul; x < size.x; x++)
-        {
-            auto x1 = x < n0h ? x + n0h : x - n0h;
-            auto i = y * size.x + x;
-            auto j = y1 * size.x + x1;
-
-            std::swap((*data)[i], (*data)[j]);
-        }
-    }
-}
-
-template<typename T>
-void ImageFilter<T>::fftShift3(ComplexVector<T> *data)
-{
-    auto size = m_associatedData.imageSize();
-    auto n0h = size.x / 2;
-    auto n1h = size.y / 2;
-    auto n2h = size.z / 2;
-
-    for (auto z = 0ul; z < n2h; z++)
-    {
-        auto z1 = z + n2h;
-
-        for (auto y = 0ul; y < size.y; y++)
-        {
-            auto y1 = y < n1h ? y + n1h : y - n1h;
-
-            for (auto x = 0ul; x < size.x; x++)
-            {
-                auto x1 = x < n0h ? x + n0h : x - n0h;
-
-                auto i = z * size.x * size.y + y * size.x + x;
-                auto j = z1 * size.x * size.y + y1 * size.x + x1;
-
-                std::swap((*data)[i], (*data)[j]);
-            }
-        }
     }
 }
 
@@ -250,6 +208,77 @@ void ImageFilter<T>::SOS(const ImageData<T> &map, ImageSize reconSize)
     }
     img.addChannelImage(std::move(out));
     m_associatedData = std::move(img);
+}
+
+template<typename T>
+void ImageFilter<T>::fftPlan(int sign)
+{
+    if (m_fft != nullptr)
+        delete m_fft;
+
+    m_fft = new FFT(m_associatedData.dim(), m_associatedData.imageSize(), sign);
+    m_fft->setNumOfThreads(m_num_threads);
+    m_fft->plan();
+}
+
+template<typename T>
+void ImageFilter<T>::fftExecute()
+{
+    if (m_fft == nullptr) {
+        fftPlan();
+    }
+    m_fft->excute(m_associatedData);
+}
+
+template<typename T>
+void ImageFilter<T>::fftShift2(ComplexVector<T> *data)
+{
+    auto size = m_associatedData.imageSize();
+    auto n0h = size.x / 2;
+    auto n1h = size.y / 2;
+
+    for (auto y = 0ul; y < n1h; y++)
+    {
+        auto y1 = y + n1h;
+
+        for (auto x = 0ul; x < size.x; x++)
+        {
+            auto x1 = x < n0h ? x + n0h : x - n0h;
+            auto i = y * size.x + x;
+            auto j = y1 * size.x + x1;
+
+            std::swap((*data)[i], (*data)[j]);
+        }
+    }
+}
+
+template<typename T>
+void ImageFilter<T>::fftShift3(ComplexVector<T> *data)
+{
+    auto size = m_associatedData.imageSize();
+    auto n0h = size.x / 2;
+    auto n1h = size.y / 2;
+    auto n2h = size.z / 2;
+
+    for (auto z = 0ul; z < n2h; z++)
+    {
+        auto z1 = z + n2h;
+
+        for (auto y = 0ul; y < size.y; y++)
+        {
+            auto y1 = y < n1h ? y + n1h : y - n1h;
+
+            for (auto x = 0ul; x < size.x; x++)
+            {
+                auto x1 = x < n0h ? x + n0h : x - n0h;
+
+                auto i = z * size.x * size.y + y * size.x + x;
+                auto j = z1 * size.x * size.y + y1 * size.x + x1;
+
+                std::swap((*data)[i], (*data)[j]);
+            }
+        }
+    }
 }
 
 template class ImageFilter<float>;

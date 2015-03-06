@@ -13,14 +13,11 @@
 #include "ReconData.h"
 #include "ConvKernel.h"
 #include "GridLut.h"
-#include "FFT.h"
 #include "ImageFilter.h"
 
 #ifdef BUILD_CUDA
 #include "cuReconData.h"
-#include "cuImageData.h"
 #include "cuGridLut.h"
-#include "cuFFT.h"
 #endif //BUILD_CUDA
 
 template<typename T>
@@ -149,20 +146,14 @@ int main(int argc, char *argv[])
     if (params.pils)
         imgMap = *imgData;
 
+    auto filter = ImageFilter<float>::Create(*imgData);
+    filter->setNumOfThreads(threads);
+
     // --------------- FFT ----------------------------------
-    FFT *fft = nullptr;
-#ifdef BUILD_CUDA
-    if (options.isGPU())
-        fft = new cuFFT(reconData->rcDim(), {gridSize, gridSize, gridSize});
-#endif // BUILD_CUDA
-    if (fft == nullptr)
-        fft = new FFT(reconData->rcDim(), {gridSize, gridSize, gridSize});
+    filter->fftPlan();
     
     timer.restart();
-    fft->setNumOfThreads(threads);
-    fft->excute(*imgData);
-
-    auto filter = ImageFilter<float>::Create(*imgData);
+    filter->fftExecute();
     filter->fftShift();
     std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
@@ -175,7 +166,7 @@ int main(int argc, char *argv[])
         std::cout << "\nLow pass filtering | " << timer.restart() << " ms" << std::endl;
 
         std::cout << "\nFFT low res image... " << std::endl;
-        fft->excute(imgMap);
+        filterMap->fftExecute();
         filterMap->fftShift();
         std::cout << "FFT total time " << timer.restart() << " ms" << std::endl;
 
@@ -195,7 +186,6 @@ int main(int argc, char *argv[])
     std::cout << "\nProgram total time excluding I/O: " << timer0.elapsed() / 1000.0 << " s" << std::endl;
 
     delete reconData;
-    delete fft;
 
     // -------------------------- Save Data ---------------------------
     QFile file(params.path + params.outFile);

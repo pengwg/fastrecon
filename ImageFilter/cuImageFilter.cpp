@@ -21,6 +21,23 @@ void cuImageFilter<T>::normalize()
 }
 
 template<typename T>
+void cuImageFilter<T>::fftPlan(int sign)
+{
+    if (this->m_fft != nullptr)
+        delete this->m_fft;
+
+    switch (sign)
+    {
+    case FFTW_FORWARD: sign = CUFFT_FORWARD;
+        break;
+    case FFTW_BACKWARD: sign = CUFFT_INVERSE;
+    }
+
+    this->m_fft = new cuFFT(m_associatedData.dim(), m_associatedData.imageSize(), sign);
+    this->m_fft->plan();
+}
+
+template<typename T>
 void cuImageFilter<T>::fftShift2(ComplexVector<T> *data)
 {
     ImageFilter<T>::fftShift2(data);
