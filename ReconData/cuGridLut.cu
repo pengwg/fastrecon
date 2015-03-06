@@ -6,6 +6,7 @@
 #include <cassert>
 
 #include "cuGridLut.h"
+#include "ConvKernel.h"
 
 template<typename T>
 std::mutex cuGridLut<T>::m_mutex;
@@ -18,17 +19,18 @@ const cuDataMap *cuGridLut<T>::m_cu_data_map_persistent = nullptr;
 
 
 template<typename T>
-cuGridLut<T>::cuGridLut(cuReconData<T> &reconData, const ConvKernel &kernel)
-    : GridLut<T>(reconData, kernel), m_associatedData(reconData)
+cuGridLut<T>::cuGridLut(cuReconData<T> &reconData)
+    : GridLut<T>(reconData), m_associatedData(reconData)
 {
 
 }
 
 template<typename T>
-std::shared_ptr<ImageData<T> > cuGridLut<T>::execute()
+std::shared_ptr<ImageData<T>> cuGridLut<T>::execute()
 {
     if (m_all_data_map.empty()) {
-        plan();
+        std::cerr << "Error: run cuGridLut<T> first.";
+        exit(1);
     }
 
     QElapsedTimer timer;
@@ -147,9 +149,9 @@ const cuDataMap *cuGridLut<T>::getDeviceDataMapPartition(int index)
 }
 
 template<typename T>
-void cuGridLut<T>::plan()
+void cuGridLut<T>::plan(unsigned reconSize, float overGridFactor, float kWidth, unsigned klength)
 {
-    GridLut<T>::plan();
+    GridLut<T>::plan(reconSize, overGridFactor, kWidth, klength);
 
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -162,7 +164,7 @@ void cuGridLut<T>::plan()
 
     auto &traj = m_associatedData.cuGetTraj();
 
-    T half_W = this->m_kernel.getKernelWidth() / 2.0;
+    T half_W = this->m_kernel->getKernelWidth() / 2.0;
 
     auto cells_per_sample = new thrust::device_vector<unsigned> (traj.size());
     thrust::transform(traj.begin(), traj.end(), cells_per_sample->begin(), compute_num_cells_per_sample<T>(half_W, this->m_dim));
@@ -270,7 +272,7 @@ std::unique_ptr<cuComplexVector<T>> cuGridLut<T>::griddingChannel(int channel)
     auto d_out = thrust::raw_pointer_cast(out->data());
     auto d_dcf = thrust::raw_pointer_cast(dcf.data());
 
-    auto kernel = this->m_kernel.getKernelData();
+    auto kernel = this->m_kernel->getKernelData();
     assert(kernel->size() == sizeof(d_kernel) / sizeof(d_kernel[0]));
     cudaMemcpyToSymbol(d_kernel, kernel->data(), kernel->size() * sizeof(float));
 
@@ -297,7 +299,7 @@ std::unique_ptr<cuComplexVector<T>> cuGridLut<T>::griddingChannel(int channel)
         auto d_tuples_last = thrust::raw_pointer_cast(cu_data_map->tuples_last.data());
 
         gridding_kernel<T><<<dimGrid, blockSize>>>(d_kData, d_dcf, d_out, d_bucket_begin, d_bucket_end, d_tuples_last,
-                                                    this->m_kernel.getKernelWidth() / 2.0, image_size);
+                                                    this->m_kernel->getKernelWidth() / 2.0, image_size);
         cudaDeviceSynchronize();
 
     }

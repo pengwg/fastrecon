@@ -7,35 +7,46 @@
 #include "cuGridLut.h"
 #endif // BUILD_CUDA
 
+#include "ConvKernel.h"
 
 template<typename T>
-std::shared_ptr<GridLut<T>> GridLut<T>::Create(ReconData<T> &reconData, unsigned gridSize, const ConvKernel &kernel)
+GridLut<T>::GridLut(ReconData<T> &reconData)
+    : m_associatedData(reconData)
+{
+}
+
+template<typename T>
+GridLut<T>::~GridLut()
+{
+    if (m_kernel != nullptr)
+        delete m_kernel;
+}
+
+template<typename T>
+std::shared_ptr<GridLut<T>> GridLut<T>::Create(ReconData<T> &reconData)
 {
     GridLut<T> *instance = nullptr;
 
 #ifdef BUILD_CUDA
     auto cu_data = dynamic_cast<cuReconData<T> *>(&reconData);
     if (cu_data != nullptr)
-        instance = new cuGridLut<T>(*cu_data, kernel);
+        instance = new cuGridLut<T>(*cu_data);
 #endif // BUILD_CUDA
     if (instance == nullptr)
-        instance = new GridLut<T>(reconData, kernel);
-
-    instance->m_dim = reconData.rcDim();
-    instance->m_gridSize = gridSize;
+        instance = new GridLut<T>(reconData);
 
     return std::shared_ptr<GridLut<T>>(instance);;
 }
 
 template<typename T>
-GridLut<T>::~GridLut()
+void GridLut<T>::plan(unsigned reconSize, float overGridFactor, float kWidth, unsigned klength)
 {
+    m_dim = m_associatedData.rcDim();
+    m_gridSize = unsigned(reconSize * overGridFactor);
+    if (m_kernel != nullptr)
+        delete m_kernel;
+    m_kernel = new ConvKernel(kWidth, overGridFactor,klength);
 
-}
-
-template<typename T>
-void GridLut<T>::plan()
-{
     m_associatedData.normalizeTraj(m_gridSize);
 }
 
@@ -71,8 +82,8 @@ ComplexVector<T> GridLut<T>::griddingChannel(int channel)
     const ComplexVector<T> *kData = m_associatedData.getChannelData(channel);
     auto itDcf = m_associatedData.getDcf().cbegin();
 
-    float kHW = m_kernel.getKernelWidth() / 2;
-    const std::vector<float> *kernelData = m_kernel.getKernelData();
+    float kHW = m_kernel->getKernelWidth() / 2;
+    const std::vector<float> *kernelData = m_kernel->getKernelData();
     int klength = kernelData->size();
 
     auto itTraj = m_associatedData.getTraj().cbegin();

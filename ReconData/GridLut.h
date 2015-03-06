@@ -1,18 +1,22 @@
 #ifndef GRIDLUT_H
 #define GRIDLUT_H
 
-#include "ConvKernel.h"
 #include "ReconData.h"
 #include "ImageData.h"
+
+class ConvKernel;
 
 template<typename T>
 class GridLut
 {
-public:
-    static std::shared_ptr<GridLut<T>> Create(ReconData<T> &reconData, unsigned gridSize, const ConvKernel &kernel);
-    virtual ~GridLut();
+protected:
+    GridLut(ReconData<T> &reconData);
 
-    virtual void plan();
+public:
+    virtual ~GridLut();
+    static std::shared_ptr<GridLut<T>> Create(ReconData<T> &reconData);
+
+    virtual void plan(unsigned reconSize, float overGridFactor, float kWidth, unsigned klength = 32);
     virtual std::shared_ptr<ImageData<T>> execute();
     void setNumOfThreads(unsigned threads) {
         m_num_threads = threads;
@@ -22,13 +26,12 @@ public:
     }
 
 protected:
-    GridLut(ReconData<T> &reconData, const ConvKernel &kernel) : m_associatedData(reconData), m_kernel(kernel) {}
     ComplexVector<T> griddingChannel(int channel);
 
     ReconData<T> &m_associatedData;
-    unsigned m_dim;
-    unsigned m_gridSize;
-    ConvKernel m_kernel;
+    unsigned m_dim = 0;
+    unsigned m_gridSize = 0;
+    ConvKernel *m_kernel = nullptr;
     std::vector<float> m_center[3];
     std::vector<int> m_start[3];
     std::vector<int> m_end[3];

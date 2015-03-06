@@ -11,7 +11,6 @@
 
 #include "ProgramOptions.h"
 #include "ReconData.h"
-#include "ConvKernel.h"
 #include "GridLut.h"
 #include "ImageFilter.h"
 
@@ -121,16 +120,10 @@ int main(int argc, char *argv[])
     QElapsedTimer timer0, timer;
     timer0.start();
 
-    // -------------- Gridding kernel ------------------------
-    int kWidth = params.kernel_width;
-    float overGridFactor = params.overgridding_factor;
-    ConvKernel kernel(kWidth, overGridFactor, 512);
-
     // -------------- Gridding -------------------------------
-    unsigned gridSize = params.rcxres * overGridFactor;
     timer.start();
+    auto grid = GridLut<float>::Create(*reconData);
 
-    auto grid = GridLut<float>::Create(*reconData, gridSize, kernel);
 #ifdef BUILD_CUDA
     if (options.isGPU()) {
         dynamic_cast<cuGridLut<float> *>(grid.get())->setNumOfPartitions(25);
@@ -138,7 +131,7 @@ int main(int argc, char *argv[])
 #endif // BUILD_CUDA
 
     grid->setNumOfThreads(threads);
-    grid->plan();
+    grid->plan(params.rcxres, params.overgridding_factor, params.kernel_width, 512);
     auto imgData = grid->execute();
     std::cout << "Gridding total time " << timer.elapsed() << " ms" << std::endl;
 

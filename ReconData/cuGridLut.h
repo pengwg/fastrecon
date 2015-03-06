@@ -32,10 +32,10 @@ template<typename T>
 class cuGridLut : public GridLut<T>
 {
 public:
-    cuGridLut(cuReconData<T> &reconData, const ConvKernel &kernel);
+    cuGridLut(cuReconData<T> &reconData);
     virtual ~cuGridLut() {}
 
-    virtual void plan() override;
+    virtual void plan(unsigned reconSize, float overGridFactor, float kWidth, unsigned klength = 32) override;
     virtual std::shared_ptr<ImageData<T>> execute() override;
     void setNumOfPartitions(int partitions) {
         m_gpu_partitions = partitions;
