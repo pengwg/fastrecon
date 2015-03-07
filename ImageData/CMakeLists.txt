@@ -10,6 +10,5 @@ set(CU_IMAGE_SRC_FILES
     CACHE INTERNAL ""
 )
 
-file(GLOB HDR_FILES *.h)
-install(FILES ${HDR_FILES} DESTINATION include)
+install(FILES common.h ImageData.h DESTINATION include)
 

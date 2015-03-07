@@ -13,5 +13,4 @@ set(CU_RECON_SRC_FILES
     CACHE INTERNAL ""
 )
 
-file(GLOB HDR_FILES *.h)
-install(FILES ${HDR_FILES} DESTINATION include)
+install(FILES ReconData.h cuReconData.h GridLut.h DESTINATION include)

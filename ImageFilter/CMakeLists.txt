@@ -10,5 +10,4 @@ set(CU_IMAGEPROCESSOR_SRC_FILES
     CACHE INTERNAL ""
 )
 
-file(GLOB HDR_FILES *.h)
-install(FILES ${HDR_FILES} DESTINATION include)
+install(FILES ImageFilter.h DESTINATION include)
