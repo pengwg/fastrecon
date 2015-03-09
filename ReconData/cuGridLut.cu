@@ -158,7 +158,7 @@ void cuGridLut<T>::plan(unsigned reconSize, float overGridFactor, float kWidth, 
     if(!m_all_data_map.empty())
         return;
 
-    std::cout << "\nGPU plan, partition data by " << m_gpu_partitions << " ..." << std::endl;
+    std::cout << "\nGPU gridding plan, partition data by " << m_gpu_partitions << " ..." << std::endl;
     QElapsedTimer timer;
     timer.start();
 

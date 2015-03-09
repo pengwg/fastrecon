@@ -55,8 +55,7 @@ void FFT::excute(ImageData<float> &imgData)
 {
     omp_set_num_threads(m_num_threads);
 
-    int threads = omp_get_max_threads();
-    if ((int)m_plan.size() < threads)
+    if (m_plan.size() < m_num_threads)
     {
         plan();
     }

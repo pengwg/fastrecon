@@ -138,7 +138,6 @@ void ImageFilter<T>::crop(const ImageSize &imageSize)
         auto itOut = out.begin();
         auto itInput = m_associatedData.getChannelImage(n)->cbegin();
 
-#pragma omp parallel for
         for (auto z = 0ul; z < imageSize.z; z++)
         {
             auto in1 = (z + z0) * (size.x * size.y) + y0 * size.x;
@@ -185,7 +184,6 @@ void ImageFilter<T>::SOS(const ImageData<T> &map, ImageSize reconSize)
         auto itInput = m_associatedData.getChannelImage(n)->cbegin();
         auto itMap = map.getChannelImage(n)->cbegin();
 
-#pragma omp parallel for
         for (auto z = 0u; z < reconSize.z; z++)
         {
             auto in1 = (z + z0) * (imageSize.x * imageSize.y) + y0 * imageSize.x;

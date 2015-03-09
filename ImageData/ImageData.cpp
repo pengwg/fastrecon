@@ -105,7 +105,7 @@ void ImageData<T>::move(ImageData<T> &imageData)
     imageData.m_data_multichannel.clear();
 
     imageData.m_dim = 0;
-    imageData.m_size = {0};
+    imageData.m_size = {0, 0, 0};
     imageData.m_channels = 0;
     std::cout << "-- ImageData: move --" << std::endl;
 }
