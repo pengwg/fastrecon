@@ -73,6 +73,7 @@ std::shared_ptr<ImageData<T>> GridLut<T>::execute()
             }
         }
     }
+    omp_set_num_threads(1);
     return std::shared_ptr<ImageData<T>>(img);
 }
 

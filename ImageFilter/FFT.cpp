@@ -87,5 +87,6 @@ void FFT::excute(ImageData<float> &imgData)
             std::cout << "Thread " << id << " CPU FFT channel " << m_index << ':' << i << " | " << timer.restart() << " ms" << std::endl;
         }
     }
+    omp_set_num_threads(1);
 }
 
