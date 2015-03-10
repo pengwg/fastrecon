@@ -13,4 +13,4 @@ set(CU_RECON_SRC_FILES
     CACHE INTERNAL ""
 )
 
-install(FILES ReconData.h cuReconData.h GridLut.h DESTINATION include)
+install(FILES ReconData.h GridLut.h DESTINATION include)

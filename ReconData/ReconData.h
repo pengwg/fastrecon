@@ -17,10 +17,12 @@ struct Point {
 template<typename T>
 class ReconData
 {
+protected:
+    ReconData(int samples, int acquisitions);
+
 public:
     typedef std::vector<Point<T>> TrajVector;
-
-    ReconData(int samples, int acquisitions);
+    static std::shared_ptr<ReconData<T>> Create(int samples, int acquisitions, bool gpu = false);
     virtual ~ReconData() {}
 
     void loadFromFiles(const QStringList &dataFileList, const QStringList &trajFileList, const QString &dcfFileName);

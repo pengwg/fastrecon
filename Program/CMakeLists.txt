@@ -4,6 +4,6 @@ set(MAIN_SRC_FILES
 )
 
 add_executable(fastrecon ${MAIN_SRC_FILES})
-target_link_libraries(fastrecon ${RECON_LIB})
+target_link_libraries(fastrecon Recon)
 qt5_use_modules(fastrecon Core Widgets)
 

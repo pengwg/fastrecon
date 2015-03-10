@@ -3,11 +3,31 @@
 #include <QVector>
 
 #include "ReconData.h"
+#ifdef BUILD_CUDA
+#include "cuReconData.h"
+#endif // BUILD_CUDA
 
 template<typename T>
 ReconData<T>::ReconData(int samples, int acquisitions) : m_samples(samples), m_acquisitions(acquisitions)
 {
     m_size = samples * acquisitions;
+}
+
+template<typename T>
+std::shared_ptr<ReconData<T>> ReconData<T>::Create(int samples, int acquisitions, bool gpu)
+{
+    ReconData<T> *instance = nullptr;
+#ifdef BUILD_CUDA
+    if (gpu)
+        instance = new cuReconData<T>(samples, acquisitions);
+#endif // BUILD_CUDA
+    if (instance == nullptr) {
+        if (gpu)
+            std::cout << "Program was not built with CUDA, using CPU recon." << std::endl;
+        instance = new ReconData<T>(samples, acquisitions);
+    }
+
+    return std::shared_ptr<ReconData<T>>(instance);;
 }
 
 template<typename T>

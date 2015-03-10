@@ -105,15 +105,8 @@ int main(int argc, char *argv[])
     ReconParameters params = options.getReconParameters();
 
     // -------------- Load multi-channel data -----------------
-    ReconData<float> *reconData = nullptr;
-#ifdef BUILD_CUDA
-    if (options.isGPU())
-        reconData = new cuReconData<float>(params.samples, params.projections);
-#endif // BUILD_CUDA
-    if (reconData == nullptr)
-        reconData = new ReconData<float>(params.samples, params.projections);
-
-    loadReconData(params, reconData);
+    auto reconData = ReconData<float>::Create(params.samples, params.projections, options.isGPU());
+    loadReconData(params, reconData.get());
 
     unsigned threads = std::min(reconData->channels(), omp_get_num_procs());
 
@@ -177,8 +170,6 @@ int main(int argc, char *argv[])
     }
 
     std::cout << "\nProgram total time excluding I/O: " << timer0.elapsed() / 1000.0 << " s" << std::endl;
-
-    delete reconData;
 
     // -------------------------- Save Data ---------------------------
     QFile file(params.path + params.outFile);
