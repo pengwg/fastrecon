@@ -173,8 +173,8 @@ void cuGridLut<T>::plan(unsigned reconSize, float overGridFactor, float kWidth, 
     thrust::inclusive_scan(cells_per_sample->begin(), cells_per_sample->end(), tuple_index.begin(), thrust::plus<unsigned> ());
     delete cells_per_sample;
 
-    m_cu_data_map.bucket_begin.resize(powf(this->m_gridSize, this->m_dim));
-    m_cu_data_map.bucket_end.resize(powf(this->m_gridSize, this->m_dim));
+    m_cu_data_map.bucket_begin.resize(std::pow(this->m_gridSize, this->m_dim));
+    m_cu_data_map.bucket_end.resize(std::pow(this->m_gridSize, this->m_dim));
     thrust::device_vector<int> cu_tuples_first;
 
     std::cout << " Traj size: " << traj.size() << ", Image size: " << m_cu_data_map.bucket_begin.size() << ", Number of pairs: " << tuple_index.back() << std::endl;
@@ -209,10 +209,10 @@ void cuGridLut<T>::plan(unsigned reconSize, float overGridFactor, float kWidth, 
 
         thrust::counting_iterator<int> search_begin(0);
         thrust::lower_bound(cu_tuples_first.begin(), cu_tuples_first.end(), search_begin,
-                            search_begin + (int)powf(this->m_gridSize, this->m_dim), m_cu_data_map.bucket_begin.begin());
+                            search_begin + std::pow(this->m_gridSize, this->m_dim), m_cu_data_map.bucket_begin.begin());
 
         thrust::upper_bound(cu_tuples_first.begin(), cu_tuples_first.end(), search_begin,
-                            search_begin + (int)powf(this->m_gridSize, this->m_dim), m_cu_data_map.bucket_end.begin());
+                            search_begin + std::pow(this->m_gridSize, this->m_dim), m_cu_data_map.bucket_end.begin());
 
         addDataMapFromDevice();
 
@@ -266,7 +266,7 @@ std::unique_ptr<cuComplexVector<T>> cuGridLut<T>::griddingChannel(int channel)
     const cuComplexVector<T> *kData = m_associatedData.cuGetChannelData(channel);
     const auto &dcf = m_associatedData.cuGetDcf();
 
-    auto out = std::unique_ptr<cuComplexVector<T>>(new cuComplexVector<T>((int)powf(this->m_gridSize, this->m_dim)));
+    auto out = std::unique_ptr<cuComplexVector<T>>(new cuComplexVector<T>(std::pow(this->m_gridSize, this->m_dim)));
 
     auto d_kData = thrust::raw_pointer_cast(kData->data());
     auto d_out = thrust::raw_pointer_cast(out->data());

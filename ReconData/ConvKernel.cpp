@@ -18,7 +18,7 @@ ConvKernel::ConvKernel(float kWidth,  float overGridFactor, int length)
 
     for (int i = 0; i < m_length; i++) {
         float k = dk * i;
-        double x = beta * sqrt(1 - powf(2 * k / w, 2));
+        double x = beta * sqrt(1 - std::pow(2 * k / w, 2));
 
         data->at(i) = gsl_sf_bessel_I0(x) / w;
 
